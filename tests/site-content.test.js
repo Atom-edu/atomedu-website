@@ -80,6 +80,10 @@ test('home carousel uses three distinct backgrounds', () => {
   assert.match(home, /images\/bg2\.jpg/);
   assert.match(home, /images\/bg3\.jpg/);
   assert.doesNotMatch(home, /images\/bg[23]\.svg/);
+  assert.ok(existsSync(resolve(root, 'images/bg2.jpg')));
+  assert.ok(existsSync(resolve(root, 'images/bg3.jpg')));
+  assert.match(home, /Cosmic Cliffs in the Carina Nebula\. Image: NASA, ESA, CSA, STScI\./);
+  assert.match(home, /Hooded-leaf pelargonium on Table Mountain\. Photo supplied by atomEDU\./);
 });
 
 test('home presents both corporate partners and the official VC Boom link', () => {

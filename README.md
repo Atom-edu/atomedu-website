@@ -52,7 +52,7 @@ See [the engine API and supported inputs](./engine/README.md) and [the product p
 Loaded from Google Fonts: Poiret One (headings), Fraunces (serif accent words), Space Grotesk (body). They load over the internet. To ship offline, download the font files and point the `@font-face` rules at local copies.
 
 ## About the images
-The first home slide uses the local polar graph image `images/bg1.png`; its attribution is on the site. The second and third slides use original vector graph artwork in `images/bg2.svg` and `images/bg3.svg`. The footer uses the original `images/footer.svg` artwork.
+The first home slide uses the local polar graph image `images/bg1.png`. The second uses the Webb Cosmic Cliffs image in `images/bg2.jpg`, and the third uses the Table Mountain pelargonium photo in `images/bg3.jpg`. Image credits are listed on the site. The footer uses the original `images/footer.svg` artwork.
 
 ## Color and type
 Edit the variables at the top of `styles.css` under `:root` to change the palette. The accent is `--accent` (currently a warm clay). Everything keys off those variables.
