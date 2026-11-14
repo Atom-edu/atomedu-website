@@ -1,6 +1,6 @@
 // Standalone browser UI. All mathematical decisions belong to ./engine/index.js.
 // Engine calls may return values or promises. Typesetting never certifies a proof.
-import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js';
+import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-15';
 import { latexToInput } from './engine/latex.js';
 
 const $ = (id) => document.getElementById(id);
@@ -28,7 +28,7 @@ let clearHistory = null;
 
 const solveField = createMathField('f(x)=2/(x-3)+1', {
   id: 'solve-input', ariaLabel: 'Your problem', className: 'math-input',
-  describedBy: 'solve-input-help', placeholder: 'x^{2}+bx+c=0',
+  placeholder: 'x^{2}+bx+c=0',
 });
 $('solve-field-mount').append(solveField, createLatexDisclosure(solveField));
 const checkField = createMathField('3x+2=2(x+4)', {
@@ -37,8 +37,7 @@ const checkField = createMathField('3x+2=2(x+4)', {
 $('check-field-mount').append(checkField, createLatexDisclosure(checkField));
 createKeypad($('math-keypad'), { announce, onEnter() {
   if (currentView === 'graph') {
-    graphWorkspace?.addExpression('');
-    $('graph-sidebar-host').querySelector('.graph-expression-row:last-child math-field')?.focus();
+    $('graph-sidebar-host').querySelector('.graph-row-draft math-field')?.focus();
   } else if (!running) forms[currentView]?.requestSubmit();
 } });
 
@@ -323,6 +322,7 @@ function emptyState(view) {
 function showView(view, focus = false) {
   if (!views.includes(view)) return;
   if (running && currentView !== view) cancelRun(false);
+  if (currentView !== view) closeKeypad();
   currentView = view;
   tabs.forEach((tab) => {
     const active = tab.dataset.view === view;
@@ -338,7 +338,7 @@ function showView(view, focus = false) {
     ensureGraphWorkspace().then((graph) => {
       if (!graph || currentView !== 'graph') return;
       setDefaultMathField($('graph-sidebar-host').querySelector('math-field'));
-      requestAnimationFrame(() => graph.resize());
+      queueMicrotask(() => graph.resize());
     });
   } else {
     $('result-heading').textContent = { solve: 'The reasoning', check: 'Your work, checked', generate: 'Your practice problem' }[view];
@@ -632,7 +632,7 @@ function restoreGraphState(direction) {
   graphHistoryRestoring = true;
   const snapshot = JSON.parse(graphHistory[next]);
   graphWorkspace.setExpressions(snapshot.expressions);
-  requestAnimationFrame(() => { graphHistoryRestoring = false; });
+  queueMicrotask(() => { graphHistoryRestoring = false; });
   setDefaultMathField($('graph-sidebar-host').querySelector('math-field'));
 }
 
@@ -643,21 +643,27 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-15').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions([''], {
       sidebarHost: $('graph-sidebar-host'),
+      viewport: { xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 },
+      equalAspect: true,
       onChange: rememberGraphState,
       onShowSidebar: () => setRailCollapsed(false),
     }));
-    requestAnimationFrame(() => {
-      // Equal-aspect sizing settles in the first frame and is not a user action.
-      graphHistory = [graphStateSnapshot(graphWorkspace.getState())];
-      graphHistoryIndex = 0;
-    });
+    // Capture edits before the next canvas frame, including in background tabs.
+    // The plotter's onChange still records window changes and gesture updates.
+    graphHistory = [graphStateSnapshot(graphWorkspace.getState())];
+    graphHistoryIndex = 0;
+    for (const eventName of ['input', 'change', 'click']) {
+      $('graph-sidebar-host').addEventListener(eventName, () => queueMicrotask(() => {
+        if (graphWorkspace && !graphHistoryRestoring) rememberGraphState(graphWorkspace.getState());
+      }));
+    }
     if (currentView === 'graph') {
       setDefaultMathField($('graph-sidebar-host').querySelector('math-field'));
-      requestAnimationFrame(() => graphWorkspace.resize());
+      queueMicrotask(() => graphWorkspace.resize());
     }
     return graphWorkspace;
   }).catch((error) => {
@@ -698,7 +704,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-15').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);
@@ -1052,7 +1058,7 @@ function setRailCollapsed(collapsed) {
   $('workbench').classList.toggle('rail-collapsed', collapsed);
   $('rail-expand').hidden = !collapsed;
   if (collapsed) closeKeypad();
-  requestAnimationFrame(() => graphWorkspace?.resize());
+  queueMicrotask(() => graphWorkspace?.resize());
 }
 
 $('keyboard-toggle').addEventListener('click', async () => {
@@ -1064,26 +1070,11 @@ $('keyboard-toggle').addEventListener('click', async () => {
 });
 new MutationObserver(() => {
   $('keyboard-toggle').setAttribute('aria-expanded', String($('math-keypad').classList.contains('is-open')));
+  queueMicrotask(() => graphWorkspace?.resize());
 }).observe($('math-keypad'), { attributes: true, attributeFilter: ['class'] });
 
 $('rail-collapse').addEventListener('click', () => setRailCollapsed(true));
 $('rail-expand').addEventListener('click', () => setRailCollapsed(false));
-$('rail-add').addEventListener('click', () => {
-  if (currentView === 'graph') {
-    graphWorkspace?.addExpression('');
-    $('graph-sidebar-host').querySelector('.graph-expression-row:last-child math-field')?.focus();
-  } else if (currentView === 'check') {
-    addWorkStep('', true);
-    markDirty('check');
-  } else if (currentView === 'generate') {
-    $('generate-form').requestSubmit();
-  } else {
-    clearHistory = { view: 'solve', before: solveField.value, undone: false };
-    setMathFieldValue(solveField, '');
-    markDirty('solve');
-    solveField.focus();
-  }
-});
 $('rail-clear').addEventListener('click', () => {
   if (currentView === 'graph') graphWorkspace?.setExpressions(['']);
   else if (currentView === 'check') {
@@ -1154,17 +1145,61 @@ window.atomI18n?.subscribe?.(syncLanguageOptions);
 syncLanguageOptions();
 
 const tourSteps = [
-  { view: 'solve', symbol: 'ƒ(x)', title: 'Start with a problem', description: 'Type in the math field or use the math pad to build an expression visually.' },
-  { view: 'solve', symbol: '✓', title: 'See each step', description: 'Solve a problem, then reveal the proof one step at a time. Results and domain restrictions stay easy to scan.' },
-  { view: 'check', symbol: '⋮⋮', title: 'Check your work', description: 'Enter your own lines, drag to reorder them, and see where a transition changes the reasoning.' },
-  { view: 'graph', symbol: '⌁', title: 'Explore the graph', description: 'Add expressions in the left panel. Pan and zoom across the full graph on the right.' },
+  { view: 'solve', icon: 'M4 17h4l3-10 3 10h6M3 20h18', title: 'Start with a problem', description: 'Type in the math field or use the math pad to build an expression visually.' },
+  { view: 'solve', icon: 'M4 18h5v-4h5v-4h6V6m-3 0h3v3', title: 'See each step', description: 'Solve a problem, then reveal the proof one step at a time. Results and domain restrictions stay easy to scan.' },
+  { view: 'check', icon: 'm4 12 5 5L20 6', title: 'Check your work', description: 'Enter your own lines, drag to reorder them, and see where a transition changes the reasoning.' },
+  { view: 'generate', icon: 'm12 2 1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2ZM5 16l.7 2.3L8 19l-2.3.7L5 22l-.7-2.3L2 19l2.3-.7L5 16Z', title: 'Generate practice', description: 'Choose a topic and difficulty, then generate a problem checked by the engine.' },
+  { view: 'graph', icon: 'M3 3v18h18M5 17c3-1 3-8 6-8s3 5 5 5 3-4 5-6', title: 'Explore the graph', description: 'Enter expressions on the left. Pan and zoom across the graph on the right.' },
 ];
 let tourStep = 0;
 const tourText = (value) => window.atomI18n?.translate?.(value) || value;
+async function loadGraphExample(expression) {
+  const graph = await ensureGraphWorkspace();
+  graph?.setExpressions([expression]);
+  if (graph) rememberGraphState(graph.getState());
+}
+document.querySelectorAll('[data-tour-view]').forEach((button) => button.addEventListener('click', () => {
+  showView(button.dataset.tourView);
+  closePopovers();
+  closeKeypad();
+}));
+
+const tourExamples = [
+  { section: 'Solve', view: 'solve', label: 'Quadratic equation', action: () => { loadSolveProblem(EXAMPLES[1].input); $('solve-task').value = ''; } },
+  { section: 'Solve', view: 'solve', label: 'Rational function', action: () => loadSolveProblem(EXAMPLES[0].input) },
+  { section: 'Check work', view: 'check', label: 'Correct solution', action: () => { const sample = CHECK_EXAMPLES.valid; setMathFieldValue(checkField, sample.problem); replaceWorkSteps(sample.steps); markDirty('check'); } },
+  { section: 'Check work', view: 'check', label: 'Find a mistake', action: () => { const sample = CHECK_EXAMPLES.mistake; setMathFieldValue(checkField, sample.problem); replaceWorkSteps(sample.steps); markDirty('check'); } },
+  { section: 'Generate', view: 'generate', label: 'Foundation practice', action: () => { if ($('generate-topic').querySelector('option[value="linear"]')) $('generate-topic').value = 'linear'; $('generate-difficulty').value = '0.250'; syncDifficultyControl(); } },
+  { section: 'Generate', view: 'generate', label: 'Challenging practice', action: () => { if ($('generate-topic').querySelector('option[value="quadratic"]')) $('generate-topic').value = 'quadratic'; $('generate-difficulty').value = '0.750'; syncDifficultyControl(); } },
+  { section: 'Graph', view: 'graph', label: 'Parabola', action: () => loadGraphExample('y=x^2') },
+  { section: 'Graph', view: 'graph', label: 'Line', action: () => loadGraphExample('y=2x+1') },
+  { section: 'Graph', view: 'graph', label: 'Circle', action: () => loadGraphExample('x^2+y^2=9') },
+];
+let lastTourExampleSection = '';
+for (const sample of tourExamples) {
+  if (sample.section !== lastTourExampleSection) {
+    $('tour-examples').append(node('h3', '', sample.section));
+    lastTourExampleSection = sample.section;
+  }
+  const button = node('button', 'lab-tour-example', sample.label);
+  button.type = 'button';
+  button.addEventListener('click', async () => {
+    closePopovers();
+    showView(sample.view);
+    await sample.action();
+  });
+  $('tour-examples').append(button);
+}
 function renderTour() {
   const step = tourSteps[tourStep];
   $('tour-count').textContent = `${tourStep + 1} of ${tourSteps.length}`;
-  $('tour-illustration').textContent = step.symbol;
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', step.icon);
+  icon.append(path);
+  $('tour-illustration').replaceChildren(icon);
   $('tour-title').textContent = tourText(step.title);
   $('tour-description').textContent = tourText(step.description);
   $('tour-previous').hidden = tourStep === 0;

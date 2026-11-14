@@ -3,26 +3,32 @@
  * createGraph(container, {
  *   expressions: ['y=x^2', 'x^2+y^2=9'], readExpression: latexToInput,
  *   createExpressionField(value, onChange) { return createMathField(value, { onInput: onChange }); },
- *   onChange(state) {}, viewport, equalAspect: true, parameters: { a: 1, b: 0, c: 0 },
+ *   onChange(state) {}, viewport, equalAspect, parameters: { a: 1, b: 0, c: 0 },
  *   showExport: true, compact: false, height: 520,
  * })
  * Editor values/callbacks are strings (LaTeX with a supplied editor/reader).
  * readExpression may also return {kind:'piecewise', variable:'x'|'y', pieces:
  * [{expression: internalString, condition: comparisonString|'otherwise'}]}.
  * setExpressions accepts strings or { expression, id?, color?, visible? }.
+ * getExpressions returns detached entries suitable for setExpressions; the
+ * trailing blank editor is UI-only and never appears in state/history.
  * getState/onChange return detached JSON-safe state: expressions (with error/kind),
  * viewport, parameters, equalAspect, trace. No sampled result is a proof.
  * zoom(factor, anchor?) uses factor > 1 to zoom in and a WORLD-coordinate anchor.
- * addExpression returns its row id. setViewport validates and expands the window
- * to equal units when equalAspect is enabled. destroy removes only this workspace.
+ * The nominal home viewport is x ±8.89772485081, y ±5. With equalAspect on,
+ * resize and reset keep the vertical span and adjust x to the canvas ratio.
+ * addExpression returns its row id. setViewport expands to equal units when
+ * equalAspect is enabled.
+ * destroy removes only this workspace.
  */
 import {
-  DEFAULT_VIEWPORT, DEFAULT_PARAMETERS, GRAPH_LIMITS, validateViewport,
+  DEFAULT_PARAMETERS, GRAPH_LIMITS, validateViewport,
   niceStep, getTicks, worldToScreen, screenToWorld, zoomViewport, panViewport,
   equalizeViewport, compileGraphExpression, sampleExplicit, contourSegments,
 } from './model.js';
 
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
+const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });
 let instanceNumber = 0;
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const format = n => {
@@ -42,19 +48,18 @@ export function createGraph(container, options = {}) {
     <header class="graph-toolbar">
       <div class="graph-heading"><strong>Graph</strong></div>
       <div class="graph-actions">
-        <button type="button" data-graph-action="window" aria-label="Window settings" title="Window settings">⚙</button>
-        <button type="button" data-graph-action="zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
-        <button type="button" data-graph-action="zoom-out" aria-label="Zoom out" title="Zoom out (−)">−</button>
-        <button type="button" data-graph-action="reset" title="Reset window (Home)">Reset</button>
-        <button type="button" data-graph-action="fit" title="Fit visible sampled curves">Fit</button>
-        <button type="button" data-graph-action="export" title="Download this numerical graph as a PNG">Save PNG</button>
+        <button type="button" data-graph-action="zoom-in" aria-label="Zoom in" title="Zoom in (+)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button type="button" data-graph-action="zoom-out" aria-label="Zoom out" title="Zoom out (−)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+        <button type="button" data-graph-action="reset" aria-label="Reset window" title="Reset window (Home)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11.5 12 4l8.5 7.5M6.5 10v9h11v-9M10 19v-5h4v5"/></svg><span>Reset</span></button>
+        <button type="button" data-graph-action="fit" aria-label="Fit visible curves" title="Fit visible sampled curves"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5m6 0h5v5M20 15v5h-5M9 20H4v-5"/></svg><span>Fit</span></button>
+        <button type="button" data-graph-action="export" aria-label="Download PNG" title="Download this numerical graph as a PNG"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg><span>PNG</span></button>
+        <button type="button" data-graph-action="window" aria-label="Window settings" title="Window settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2h4l.5 2.4 1.6.7 2.1-1.3L21 6.6l-1.3 2.1.7 1.6 2.4.5v4l-2.4.5-.7 1.6 1.3 2.1-2.8 2.8-2.1-1.3-1.6.7L14 22h-4l-.5-2.4-1.6-.7-2.1 1.3L3 17.4l1.3-2.1-.7-1.6-2.4-.5v-4l2.4-.5.7-1.6L3 5l2.8-2.8 2.1 1.3 1.6-.7L10 2Z"/><circle cx="12" cy="12" r="3"/></svg><span>Settings</span></button>
       </div>
     </header>
     <div class="graph-body">
       <aside class="graph-sidebar" aria-label="Graph expressions">
         <div class="graph-list-heading"><span>Expressions</span><span class="graph-count"></span></div>
         <div class="graph-expression-list"></div>
-        <button class="graph-add" type="button" data-graph-action="add">+ Add expression</button>
         <section class="graph-parameters" aria-label="Expression parameters" hidden></section>
         <details class="graph-window">
           <summary>Window settings</summary>
@@ -85,9 +90,10 @@ export function createGraph(container, options = {}) {
   if (!ctx || !bg) { sidebar.remove(); root.remove(); throw new Error('This browser does not provide a 2D canvas context.'); }
   const readout = $('.graph-coordinate-readout'), traceOutput = $('.graph-trace'), parameterSection = $('.graph-parameters');
   const fields = {}, listeners = [], pointers = new Map(), geometries = new Map();
-  let rows = [], rowNumber = 0, width = 800, height = 520, dpr = 1, frame = null, sized = false;
+  let rows = [], draftRow = null, rowNumber = 0, width = 800, height = 520, dpr = 1, frame = null, sized = false;
   let destroyed = false, sceneDirty = true, pendingChange = false, pointer = null, drag = null, pinch = null, trace = null;
-  let equalAspect = options.equalAspect !== false, viewport = validateViewport(options.viewport || DEFAULT_VIEWPORT);
+  let equalAspect = options.equalAspect !== false;
+  let viewport = validateViewport(options.viewport || PLOTTER_DEFAULT_VIEWPORT);
   const homeViewport = { ...viewport }, parameters = { ...DEFAULT_PARAMETERS };
   for (const name of ['a', 'b', 'c']) if (Number.isFinite(options.parameters?.[name])) parameters[name] = clamp(options.parameters[name], -100, 100);
   $('.graph-equal').checked = equalAspect;
@@ -97,6 +103,7 @@ export function createGraph(container, options = {}) {
     expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, error: row.error, kind: row.compiled?.kind || null })),
     viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, trace: trace ? { ...trace } : null,
   });
+  const getExpressions = () => rows.map(({ id, expression, color, visible }) => ({ id, expression, color, visible }));
   function schedule(change = false, scene = true) {
     if (destroyed) return;
     sceneDirty ||= scene; pendingChange ||= change;
@@ -105,6 +112,14 @@ export function createGraph(container, options = {}) {
   function setView(next, { equalize = false, notify = true } = {}) {
     viewport = equalize && equalAspect ? equalizeViewport(next, width, height) : validateViewport(next);
     syncWindow(); schedule(notify);
+  }
+  function equalizeFromY(next) {
+    const cx = (next.xMin + next.xMax) / 2;
+    const span = (next.yMax - next.yMin) * width / height;
+    const candidate = { ...next, xMin: cx - span / 2, xMax: cx + span / 2 };
+    if (!Number.isFinite(span) || span < GRAPH_LIMITS.minSpan || Math.abs(candidate.xMin) > GRAPH_LIMITS.coordinate || Math.abs(candidate.xMax) > GRAPH_LIMITS.coordinate)
+      return equalizeViewport(next, width, height);
+    return validateViewport(candidate);
   }
   function syncWindow() {
     for (const key of Object.keys(fields)) if (doc.activeElement !== fields[key]) fields[key].value = String(Number(viewport[key].toPrecision(12)));
@@ -126,7 +141,6 @@ export function createGraph(container, options = {}) {
 
   function updateCount() {
     $('.graph-count').textContent = `${rows.length} / ${GRAPH_LIMITS.expressions}`;
-    $('[data-graph-action="add"]').disabled = rows.length >= GRAPH_LIMITS.expressions;
   }
   function updateParameters() {
     const used = [...new Set(rows.flatMap(row => row.compiled?.parameters || []))].sort();
@@ -154,45 +168,81 @@ export function createGraph(container, options = {}) {
       try { row.compiled = compileGraphExpression(row.expression, { readExpression: options.readExpression }); }
       catch (error) { row.error = error.message || 'This expression could not be graphed.'; }
     }
-    row.errorNode.textContent = row.error || (row.compiled?.kind === 'inequality' ? 'Approximate shading. Undefined samples are omitted, so edges may have gaps.' : row.compiled?.piecewise ? 'Piecewise function. The first matching branch is used, and open endpoints are excluded.' : '');
+    row.messageNode.textContent = row.error || (row.compiled?.kind === 'inequality' ? 'Approximate shading. Undefined samples are omitted, so edges may have gaps.' : row.compiled?.piecewise ? 'Piecewise function. The first matching branch is used, and open endpoints are excluded.' : '');
+    row.warningIcon.hidden = !row.error;
+    row.warningIcon.title = row.error || '';
     row.errorNode.classList.toggle('graph-expression-error', !!row.error);
+    row.element.classList.toggle('graph-row-invalid', !!row.error);
     row.field.setAttribute('aria-invalid', row.error ? 'true' : 'false');
     row.element.classList.toggle('graph-row-hidden', !row.visible);
-    updateParameters(); clearTrace(); schedule(true);
+    updateParameters(); clearTrace(); schedule(!row.draft);
   }
-  function makeRow(expression, config = {}) {
-    const element = doc.createElement('div'); element.className = 'graph-expression-row';
-    const id = typeof config.id === 'string' && config.id && !rows.some(row => row.id === config.id) ? config.id : `${prefix}-curve-${++rowNumber}`;
+  function renumberRows() {
+    rows.forEach((row, index) => { row.number.textContent = String(index + 1); });
+    if (draftRow) draftRow.number.textContent = String(rows.length + 1);
+  }
+  function ensureDraft() {
+    if (!draftRow && rows.length < GRAPH_LIMITS.expressions) makeRow('', {}, true);
+    renumberRows();
+  }
+  function commitDraft(row) {
+    if (!row.draft || rows.length >= GRAPH_LIMITS.expressions) return;
+    row.draft = false; draftRow = null; rows.push(row);
+    row.element.classList.remove('graph-row-draft');
+    row.visibleInput.disabled = false; row.picker.disabled = false; row.remove.hidden = false;
+    ensureDraft(); updateCount(); schedule(true);
+  }
+  function makeRow(expression, config = {}, draft = false) {
+    const element = doc.createElement('div'); element.className = `graph-expression-row${draft ? ' graph-row-draft' : ''}`;
+    const id = typeof config.id === 'string' && config.id && !rows.some(row => row.id === config.id) && draftRow?.id !== config.id ? config.id : `${prefix}-curve-${++rowNumber}`;
     const color = /^#[0-9a-f]{6}$/i.test(config.color || '') ? config.color : COLORS[rows.length % COLORS.length];
-    const row = { id, expression, color, visible: config.visible !== false, error: null, compiled: null, element };
+    const row = { id, expression, color, visible: config.visible !== false, error: null, compiled: null, element, draft };
     const controls = doc.createElement('div'); controls.className = 'graph-expression-controls';
     const visible = doc.createElement('input'); visible.type = 'checkbox'; visible.checked = row.visible; visible.className = 'graph-visibility'; visible.title = 'Show or hide curve'; visible.setAttribute('aria-label', 'Show expression');
+    visible.disabled = draft;
+    const visibilityLabel = doc.createElement('label'); visibilityLabel.className = 'graph-visibility-label'; visibilityLabel.title = 'Show or hide expression';
     const picker = doc.createElement('input'); picker.type = 'color'; picker.value = color; picker.className = 'graph-color'; picker.title = 'Curve color'; picker.setAttribute('aria-label', 'Curve color');
+    picker.disabled = draft;
     const number = doc.createElement('span'); number.className = 'graph-expression-number'; number.textContent = String(rows.length + 1);
     const remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'graph-delete'; remove.textContent = '×'; remove.title = 'Delete expression'; remove.setAttribute('aria-label', 'Delete expression');
-    controls.append(visible, picker, number, remove);
+    remove.hidden = draft;
+    visibilityLabel.append(visible, number); controls.append(visibilityLabel, picker, remove);
     const field = options.createExpressionField ? options.createExpressionField(expression, value => {
-      if (destroyed || !rows.includes(row)) return;
+      if (destroyed || (!rows.includes(row) && draftRow !== row)) return;
       row.expression = typeof value === 'string' ? value : String(value?.target?.value ?? '');
+      if (row.draft && row.expression.trim()) commitDraft(row);
       compileRow(row);
     }) : doc.createElement('input');
     if (!field?.setAttribute || !field?.classList) throw new TypeError('createExpressionField must return an HTMLElement.');
     if (!options.createExpressionField) {
       field.type = 'text'; field.value = expression; field.placeholder = 'e.g. y=x^2'; field.maxLength = GRAPH_LIMITS.expressionLength; field.autocomplete = 'off'; field.spellcheck = false;
-      field.addEventListener('input', () => { row.expression = field.value; compileRow(row); });
+      field.addEventListener('input', () => { row.expression = field.value; if (row.draft && row.expression.trim()) commitDraft(row); compileRow(row); });
     }
     field.classList.add('graph-expression-field'); field.setAttribute('aria-label', 'Graph expression');
+    field.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
+      event.preventDefault(); event.stopPropagation();
+      if (row.draft) commitDraft(row);
+      draftRow?.field.focus();
+    }, true);
     const errorNode = doc.createElement('p'); errorNode.className = 'graph-expression-message'; errorNode.id = `${prefix}-message-${++rowNumber}`; errorNode.setAttribute('role', 'status');
+    const warningIcon = doc.createElement('span'); warningIcon.className = 'graph-warning-icon'; warningIcon.setAttribute('aria-hidden', 'true'); warningIcon.hidden = true;
+    warningIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg>';
+    const messageNode = doc.createElement('span'); messageNode.className = 'graph-message-text'; errorNode.append(warningIcon, messageNode);
     field.setAttribute('aria-describedby', errorNode.id);
-    Object.assign(row, { field, errorNode }); element.style.setProperty('--curve-color', color); element.append(controls, field, errorNode);
+    Object.assign(row, { field, errorNode, warningIcon, messageNode, number, visibleInput: visible, picker, remove }); element.style.setProperty('--curve-color', color); element.append(controls, field, errorNode);
+    element.addEventListener('click', event => {
+      if (row.draft && event.target !== field && !field.contains(event.target)) field.focus();
+    });
     visible.addEventListener('change', () => { row.visible = visible.checked; element.classList.toggle('graph-row-hidden', !row.visible); clearTrace(); schedule(true); });
     picker.addEventListener('input', () => { row.color = picker.value; element.style.setProperty('--curve-color', row.color); schedule(true); });
     remove.addEventListener('click', () => {
       rows = rows.filter(other => other !== row); disposeRow(row); updateCount(); updateParameters(); clearTrace();
-      rows.forEach((other, i) => { other.element.querySelector('.graph-expression-number').textContent = String(i + 1); });
-      schedule(true); $('[data-graph-action="add"]').focus();
+      ensureDraft(); schedule(true); draftRow?.field.focus();
     });
-    rows.push(row); list.append(element); compileRow(row); updateCount();
+    if (draft) draftRow = row; else rows.push(row);
+    list.insertBefore(element, draft ? null : draftRow?.element || null);
+    compileRow(row); updateCount();
     return row;
   }
   function disposeRow(row) { row.field.destroy?.(); row.element.remove(); }
@@ -200,19 +250,20 @@ export function createGraph(container, options = {}) {
     if (destroyed) return null;
     if (rows.length >= GRAPH_LIMITS.expressions) throw new RangeError(`A graph can contain at most ${GRAPH_LIMITS.expressions} expressions.`);
     if (typeof expression !== 'string') throw new TypeError('Graph expressions must be strings.');
-    return makeRow(expression, config).id;
+    const row = makeRow(expression, config); ensureDraft(); return row.id;
   }
   function setExpressions(expressions) {
     if (destroyed) return;
     if (!Array.isArray(expressions) || expressions.length > GRAPH_LIMITS.expressions) throw new RangeError(`Supply an array of at most ${GRAPH_LIMITS.expressions} graph expressions.`);
     const entries = expressions.map(entry => typeof entry === 'string' ? { expression: entry } : entry);
     if (entries.some(entry => !entry || typeof entry.expression !== 'string')) throw new TypeError('Each expression must be a string or an object with an expression string.');
-    rows.forEach(disposeRow); rows = []; clearTrace();
-    entries.forEach(entry => makeRow(entry.expression, entry)); updateCount(); updateParameters(); schedule(true);
+    rows.forEach(disposeRow); if (draftRow) disposeRow(draftRow);
+    rows = []; draftRow = null; clearTrace();
+    entries.forEach(entry => makeRow(entry.expression, entry)); ensureDraft(); updateCount(); updateParameters(); schedule(true);
   }
 
   function grid(context) {
-    context.clearRect(0, 0, width, height); context.fillStyle = '#fffefa'; context.fillRect(0, 0, width, height);
+    context.clearRect(0, 0, width, height); context.fillStyle = '#ffffff'; context.fillRect(0, 0, width, height);
     const xSpan = viewport.xMax - viewport.xMin, ySpan = viewport.yMax - viewport.yMin;
     const xTarget = Math.max(2, width / 85), yTarget = Math.max(2, height / 65);
     const xStep = niceStep(xSpan, xTarget), yStep = niceStep(ySpan, yTarget);
@@ -221,7 +272,7 @@ export function createGraph(container, options = {}) {
     const line = (x1, y1, x2, y2) => { context.moveTo(x1, y1); context.lineTo(x2, y2); };
     context.lineWidth = 1;
     for (const minor of [true, false]) {
-      context.beginPath(); context.strokeStyle = minor ? '#f0efe9' : '#e1e1d9';
+      context.beginPath(); context.strokeStyle = minor ? '#f1f3f5' : '#e3e7eb';
       const xs = minor ? xStep / 5 : xStep, ys = minor ? yStep / 5 : yStep;
       // Use integer indexes, capped independently of potentially huge bounds.
       const xi = Math.ceil(viewport.xMin / xs), yi = Math.ceil(viewport.yMin / ys);
@@ -298,7 +349,7 @@ export function createGraph(container, options = {}) {
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
         const s = worldToScreen(p, viewport, width, height);
         if (Math.abs(s.x) > 1e6 || Math.abs(s.y) > 1e6) continue;
-        bg.beginPath(); bg.arc(s.x, s.y, 5, 0, Math.PI * 2); bg.fillStyle = row.color; bg.fill(); bg.lineWidth = 1.5; bg.strokeStyle = '#fffefa'; bg.stroke();
+        bg.beginPath(); bg.arc(s.x, s.y, 5, 0, Math.PI * 2); bg.fillStyle = row.color; bg.fill(); bg.lineWidth = 1.5; bg.strokeStyle = '#fff'; bg.stroke();
         bg.font = '11px system-ui, sans-serif'; bg.fillStyle = row.color; bg.textAlign = 'left'; bg.textBaseline = 'bottom'; bg.fillText(`(${format(p.x)}, ${format(p.y)})`, s.x + 9, s.y - 6);
         geometries.set(row.id, [[p]]); continue;
       }
@@ -310,7 +361,7 @@ export function createGraph(container, options = {}) {
         const p = worldToScreen(endpoint, viewport, width, height);
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || p.x < -6 || p.x > width + 6 || p.y < -6 || p.y > height + 6) continue;
         bg.beginPath(); bg.arc(p.x, p.y, 4.5, 0, Math.PI * 2); bg.lineWidth = 1.8;
-        bg.fillStyle = endpoint.open ? '#fffefa' : row.color; bg.strokeStyle = row.color; bg.fill(); bg.stroke();
+        bg.fillStyle = endpoint.open ? '#fff' : row.color; bg.strokeStyle = row.color; bg.fill(); bg.stroke();
         if (!endpoint.open) paths.push([{ x: endpoint.x, y: endpoint.y }]);
       }
     }
@@ -349,18 +400,11 @@ export function createGraph(container, options = {}) {
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); bg.setTransform(dpr, 0, 0, dpr, 0, 0);
     const viewChanged = equalAspect && (!sized || oldWidth !== width || oldHeight !== height);
-    if (viewChanged && !sized) viewport = equalizeViewport(viewport, width, height);
-    else if (viewChanged) {
-      // Keep the vertical window stable on resize; horizontal units follow it.
-      const cx = (viewport.xMin + viewport.xMax) / 2, span = Math.min(2e12, (viewport.yMax - viewport.yMin) * width / height);
-      let next = { ...viewport, xMin: cx - span / 2, xMax: cx + span / 2 };
-      if (Math.abs(next.xMin) > 1e12 || Math.abs(next.xMax) > 1e12 || next.xMax - next.xMin < GRAPH_LIMITS.minSpan) next = equalizeViewport(viewport, width, height);
-      viewport = validateViewport(next); syncWindow();
-    }
+    if (viewChanged) viewport = equalizeFromY(viewport);
     sized = true; syncWindow(); schedule(viewChanged);
   }
   function zoom(factor, anchor) { if (!destroyed) setView(zoomViewport(viewport, factor, anchor)); }
-  function reset() { if (!destroyed) { clearTrace(); setView(homeViewport, { equalize: true }); } }
+  function reset() { if (!destroyed) { clearTrace(); setView(equalAspect ? equalizeFromY(homeViewport) : homeViewport); } }
   function fit() {
     if (sceneDirty) { drawScene(); sceneDirty = false; }
     let points = [...geometries.values()].flat(2).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
@@ -495,7 +539,6 @@ export function createGraph(container, options = {}) {
     if (action === 'reset') reset();
     if (action === 'fit') fit();
     if (action === 'export') exportPNG();
-    if (action === 'add' && rows.length < GRAPH_LIMITS.expressions) { addExpression(''); rows.at(-1).field.focus(); }
   };
   on(root, 'click', handleGraphAction);
   if (sidebarHost) on(sidebar, 'click', handleGraphAction);
@@ -512,14 +555,14 @@ export function createGraph(container, options = {}) {
   observeResolution();
   setExpressions(options.expressions || []); resize(); schedule();
   return {
-    addExpression, setExpressions, getState: state,
+    addExpression, getExpressions, setExpressions, getState: state,
     setViewport(next) { if (!destroyed) setView(validateViewport(next), { equalize: true }); },
     zoom, reset, resize,
     destroy() {
       if (destroyed) return;
       destroyed = true; if (frame !== null) win.cancelAnimationFrame(frame);
       observer?.disconnect(); resolutionQuery?.removeEventListener?.('change', resolutionChanged);
-      listeners.forEach(remove => remove()); rows.forEach(disposeRow); rows = []; pointers.clear(); geometries.clear(); sidebar.remove(); root.remove();
+      listeners.forEach(remove => remove()); rows.forEach(disposeRow); if (draftRow) disposeRow(draftRow); rows = []; draftRow = null; pointers.clear(); geometries.clear(); sidebar.remove(); root.remove();
     },
   };
 }

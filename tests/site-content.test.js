@@ -60,6 +60,8 @@ test('Proof Lab has a dedicated dark app header and access back to the site', ()
   assert.match(html, /data-language="es"/);
   assert.match(html, /id="tour-menu-button"/);
   assert.match(html, /id="tour-dialog"/);
+  assert.match(html, /data-tour-view="generate"/);
+  assert.match(html, /id="tour-examples"/);
   assert.match(html, /id="graph-sidebar-host"/);
   assert.doesNotMatch(html, /<footer class="site-footer">/);
 });
@@ -144,7 +146,9 @@ test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', 
   assert.match(css, /difficulty-slider::\-webkit-slider-runnable-track/);
   assert.match(lab, /class="coverage-fab"/);
   assert.match(lab, /<dialog class="coverage-dialog" id="coverage"/);
-  assert.match(lab, /<details class="examples-disclosure"><summary>Examples<\/summary>/);
+  assert.match(lab, /<details class="lab-tour-examples"><summary>Examples<\/summary>/);
+  assert.doesNotMatch(lab, /id="rail-add"|id="solve-input-help"/);
+  assert.match(script, /view: 'generate', icon:/);
   assert.match(script, /150 - \(performance\.now\(\) - startedAt\)/);
   assert.match(script, /Show next step/);
   assert.match(script, /step-drag-handle/);

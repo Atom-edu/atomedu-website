@@ -101,6 +101,17 @@ export function createMathField(value = '', {
   if (describedBy) field.setAttribute('aria-describedby', describedBy);
   field.setAttribute('math-virtual-keyboard-policy', 'manual');
   field.mathVirtualKeyboardPolicy = 'manual';
+  // MathLive may dispatch focus/focusin asynchronously after focus() returns.
+  // Open the pad in the same turn for callers that focus a field programmatically.
+  const focusField = field.focus.bind(field);
+  field.focus = (...args) => {
+    const result = focusField(...args);
+    if (field.isConnected && !field.readOnly && !field.closest('[hidden]')) {
+      setActiveMathField(field);
+      openKeypad(field);
+    }
+    return result;
+  };
   field.smartFence = true;
   field.smartMode = false;
   field.onScrollIntoView = () => {
@@ -160,10 +171,7 @@ export function createLatexDisclosure(field, { label = 'Edit LaTeX source' } = {
     setMathFieldValue(field, input.value, { latex: true });
     field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
   });
-  const hint = document.createElement('p');
-  hint.className = 'field-help';
-  hint.textContent = 'This source stays synchronized with the visual expression.';
-  details.append(summary, input, hint);
+  details.append(summary, input);
   return details;
 }
 
@@ -198,7 +206,7 @@ const ALGEBRA = [
   key('Product with bounds', '\\prod_{#?}^{#?}#0', `\\prod_{${BOX}}^{${BOX}}${BOX}`),
   key('Interval', '\\left[#0,#?\\right]', `\\left[${BOX},${BOX}\\right]`),
   key('Set', '\\left\\{#0\\right\\}', `\\left\\{${BOX}\\right\\}`),
-  key('Union', '\\cup'), key('Intersection', '\\cap'), key('Member of', '\\in'), key('Real numbers', '\\mathbb{R}'),
+  key('Union', '\\cup'), key('Intersection', '\\cap'), key('Member of', '\\in'),
 ];
 const FUNCTIONS = [
   key('Sine', '\\sin\\left(#0\\right)', `\\sin(${BOX})`),
@@ -239,7 +247,6 @@ const NUMBERS = [
   key('1', '1'), key('2', '2'), key('3', '3'), key('Subtract', '-'),
   key('0', '0'), key('Decimal point', '.'), key('Equals', '='), key('Add', '+'),
 ];
-
 export function createKeypad(container, { announce = () => {}, onEnter = () => {} } = {}) {
   keypadElement = container;
   container.setAttribute('aria-hidden', 'true');
@@ -270,7 +277,8 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   headingActions.append(target, done);
   heading.append(titleGroup, headingActions);
   const updateTarget = (field) => {
-    target.textContent = field ? `Return to ${field.getAttribute('aria-label')}` : 'Choose an expression';
+    target.textContent = field ? 'Return' : 'Choose a field';
+    target.setAttribute('aria-label', field ? `Return to ${field.getAttribute('aria-label')}` : 'Choose a math expression');
     target.disabled = !field;
   };
   focusListeners.add(updateTarget);
@@ -286,6 +294,8 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   };
   document.addEventListener('pointerdown', openFromFieldInteraction, true);
   document.addEventListener('focusin', openFromFieldInteraction, true);
+  // Keyboard and scripted activation can dispatch click without pointerdown or focusin.
+  document.addEventListener('click', openFromFieldInteraction, true);
   document.addEventListener('pointerdown', endKeypadInteraction, true);
   document.addEventListener('keydown', endKeypadInteraction, true);
   const closeOnEscape = (event) => {
@@ -314,11 +324,42 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   function makeButton(data) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `math-key ${data.command ? 'math-key-command' : ''}`;
-    if (!data.text && data.preview.length > 24) button.classList.add('math-key-wide');
+    button.className = `math-key ${data.command || data.action ? 'math-key-command' : ''}`;
+    if (data.icon) button.classList.add(`math-key-action-${data.icon}`);
+    if (!data.text && data.preview?.length > 24) button.classList.add('math-key-wide');
     button.setAttribute('aria-label', data.label);
     button.title = data.label;
-    if (data.text) button.textContent = data.text;
+    if (data.icon) {
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('width', '24');
+      icon.setAttribute('height', '24');
+      icon.setAttribute('fill', 'none');
+      icon.setAttribute('stroke', 'currentColor');
+      icon.setAttribute('stroke-width', '1.9');
+      icon.setAttribute('stroke-linecap', 'round');
+      icon.setAttribute('stroke-linejoin', 'round');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.classList.add('math-key-icon');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', {
+        left: 'M19 12H5m6-6-6 6 6 6',
+        right: 'M5 12h14m-6-6 6 6-6 6',
+        backspace: 'M9 5H21v14H9L2 12l7-7Zm3 4 6 6m0-6-6 6',
+        next: 'M4 12h13m-5-5 5 5-5 5m8-12v14',
+        undo: 'M9 7H4m0 0 4-4M4 7l4 4m-4-4h10a6 6 0 0 1 0 12h-2',
+        redo: 'M15 7h5m0 0-4-4m4 4-4 4m4-4H10a6 6 0 0 0 0 12h2',
+        return: 'M20 5v8a4 4 0 0 1-4 4H5m5-5-5 5 5 5',
+      }[data.icon]);
+      icon.append(path);
+      button.append(icon);
+      if (data.text) {
+        const caption = document.createElement('span');
+        caption.className = 'math-key-caption';
+        caption.textContent = data.text;
+        button.append(caption);
+      }
+    } else if (data.text) button.textContent = data.text;
     else button.append(renderMath(data.preview));
     // Preserve the math selection when a pointer taps the pad.
     button.addEventListener('pointerdown', (event) => event.preventDefault());
@@ -373,13 +414,13 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   });
   NUMBERS.forEach((data) => numberPad.append(makeButton(data)));
   [
-    { label: 'Move cursor left', command: 'moveToPreviousChar', text: '←' },
-    { label: 'Move cursor right', command: 'moveToNextChar', text: '→' },
-    { label: 'Backspace', command: 'deleteBackward', text: '⌫' },
-    { label: 'Next placeholder', command: 'moveToNextPlaceholder', text: 'Next box ⇥' },
-    { label: 'Undo', command: 'undo', text: '↶ Undo' },
-    { label: 'Redo', command: 'redo', text: '↷ Redo' },
-    { label: 'Enter', action: 'enter', text: '↵ Enter' },
+    { label: 'Move cursor left', command: 'moveToPreviousChar', icon: 'left' },
+    { label: 'Move cursor right', command: 'moveToNextChar', icon: 'right' },
+    { label: 'Backspace', command: 'deleteBackward', icon: 'backspace' },
+    { label: 'Next placeholder', command: 'moveToNextPlaceholder', icon: 'next', text: 'Next' },
+    { label: 'Undo', command: 'undo', icon: 'undo', text: 'Undo' },
+    { label: 'Redo', command: 'redo', icon: 'redo', text: 'Redo' },
+    { label: 'Return', action: 'enter', icon: 'return', text: 'Return' },
   ].forEach((data) => commands.append(makeButton(data)));
   [templates, numberPad, commands].forEach((group) => {
     group.addEventListener('keydown', (event) => {
@@ -408,6 +449,7 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
     focusListeners.delete(updateTarget);
     document.removeEventListener('pointerdown', openFromFieldInteraction, true);
     document.removeEventListener('focusin', openFromFieldInteraction, true);
+    document.removeEventListener('click', openFromFieldInteraction, true);
     document.removeEventListener('pointerdown', endKeypadInteraction, true);
     document.removeEventListener('keydown', endKeypadInteraction, true);
     document.removeEventListener('keydown', closeOnEscape);
