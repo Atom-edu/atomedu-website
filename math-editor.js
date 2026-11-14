@@ -32,7 +32,7 @@ function openKeypad(field) {
   requestAnimationFrame(() => requestAnimationFrame(() => keepFieldAboveKeypad(field)));
 }
 
-function closeKeypad() {
+export function closeKeypad() {
   if (!keypadElement) return;
   keypadInteraction = false;
   keypadElement.classList.remove('is-open');
@@ -241,12 +241,17 @@ export function createKeypad(container, { announce = () => {} } = {}) {
   const titleGroup = document.createElement('div');
   const title = document.createElement('h2');
   title.id = 'math-keypad-heading';
-  title.textContent = 'Build it like you write it.';
+  title.textContent = 'Math pad';
   const hint = document.createElement('p');
-  hint.textContent = 'Choose a template. Fill the gray boxes. Keep going.';
+  hint.textContent = 'Tap a symbol, then keep typing in the field above.';
   titleGroup.append(title, hint);
-  const target = document.createElement('span');
+  const target = document.createElement('button');
+  target.type = 'button';
   target.className = 'keypad-target';
+  target.addEventListener('click', () => {
+    keypadInteraction = false;
+    getActiveMathField()?.focus();
+  });
   const done = document.createElement('button');
   done.type = 'button';
   done.className = 'keypad-done';
@@ -257,47 +262,9 @@ export function createKeypad(container, { announce = () => {} } = {}) {
   headingActions.className = 'keypad-heading-actions';
   headingActions.append(target, done);
   heading.append(titleGroup, headingActions);
-  const preview = document.createElement('div');
-  preview.className = 'keypad-preview';
-  const previewLabel = document.createElement('span');
-  previewLabel.className = 'keypad-preview-label';
-  previewLabel.textContent = 'Active expression';
-  const previewContent = document.createElement('div');
-  previewContent.className = 'keypad-preview-content';
-  previewContent.setAttribute('aria-label', 'Live preview of the active expression');
-  const returnToField = document.createElement('button');
-  returnToField.type = 'button';
-  returnToField.className = 'text-button keypad-return';
-  returnToField.textContent = 'Return to field ↑';
-  returnToField.addEventListener('click', () => {
-    keypadInteraction = false;
-    getActiveMathField()?.focus();
-  });
-  preview.append(previewLabel, previewContent, returnToField);
-  let previewField = null;
-  const updatePreview = () => {
-    const source = previewField?.value || '';
-    if (!source) {
-      previewContent.textContent = 'Your expression will appear here as you type.';
-      previewContent.classList.add('is-empty');
-      return;
-    }
-    previewContent.classList.remove('is-empty');
-    // MathLive's empty template slots are rendered as inert gray boxes in KaTeX.
-    const latex = source.replace(/\\placeholder(?:\[[^\]]*\])?\{\}/g, BOX);
-    previewContent.replaceChildren(renderMath(latex, { tag: 'div', className: 'keypad-preview-math' }));
-  };
   const updateTarget = (field) => {
-    target.textContent = `Editing: ${field?.getAttribute('aria-label') || 'choose an expression'}`;
-    returnToField.disabled = !field;
-    if (previewField !== field) {
-      previewField?.removeEventListener('input', updatePreview);
-      previewField?.removeEventListener('math-value-set', updatePreview);
-      previewField = field;
-      previewField?.addEventListener('input', updatePreview);
-      previewField?.addEventListener('math-value-set', updatePreview);
-    }
-    updatePreview();
+    target.textContent = field ? `Return to ${field.getAttribute('aria-label')}` : 'Choose an expression';
+    target.disabled = !field;
   };
   focusListeners.add(updateTarget);
   updateTarget(getActiveMathField());
@@ -422,12 +389,10 @@ export function createKeypad(container, { announce = () => {} } = {}) {
   footnote.className = 'keypad-footnote';
   footnote.textContent = 'Use Tab to move through template boxes. Integral and limit templates enter notation; solving depends on the engine’s listed coverage.';
   container.setAttribute('aria-labelledby', title.id);
-  container.append(heading, preview, tablist, layout, footnote);
+  container.append(heading, tablist, layout, footnote);
   chooseTab(0);
   return { destroy() {
     focusListeners.delete(updateTarget);
-    previewField?.removeEventListener('input', updatePreview);
-    previewField?.removeEventListener('math-value-set', updatePreview);
     document.removeEventListener('pointerdown', openFromFieldInteraction, true);
     document.removeEventListener('focusin', openFromFieldInteraction, true);
     document.removeEventListener('pointerdown', endKeypadInteraction, true);

@@ -89,10 +89,13 @@ test('home carousel uses three distinct backgrounds', () => {
 test('home presents both corporate partners and the official VC Boom link', () => {
   const home = read('index.html');
   assert.match(home, /Our featured partners/i);
+  assert.match(home, /class="partner-logo-row"/);
   assert.match(home, /images\/vc-boom-partner-logo\.svg/);
   assert.match(home, /images\/medaestheticsos-partner-badge\.svg/);
   assert.match(home, /https:\/\/vcboom\.com\/\?promo=PARTNER-ATOMEDU/);
   assert.match(home, /Official VC Boom partner/);
+  assert.match(home, /class="wrap home-dual"/);
+  assert.doesNotMatch(home, /No account, API key, or paid tier is needed to use Proof Lab/);
 });
 
 test('about page shows all three founders with their portraits and group photo', () => {
@@ -118,8 +121,27 @@ test('public website copy contains no former owner references', () => {
 test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', () => {
   const lab = read('proof-lab.html');
   const css = read('math-lab.css');
+  const script = read('math-lab.js');
+  const editor = read('math-editor.js');
   assert.doesNotMatch(lab, /Runs locally in your browser|No account\. No API keys\.|Local engine ready|Write naturally in LaTeX|A visual expression, with room to think/);
   assert.match(css, /\.math-keypad \{ position: fixed;/);
   assert.match(css, /\.math-keypad\.is-open/);
   assert.match(css, /difficulty-slider::\-webkit-slider-runnable-track/);
+  assert.match(lab, /class="coverage-fab"/);
+  assert.match(lab, /<dialog class="coverage-dialog" id="coverage"/);
+  assert.match(lab, /<details class="examples-disclosure"><summary>Examples<\/summary>/);
+  assert.match(script, /150 - \(performance\.now\(\) - startedAt\)/);
+  assert.match(script, /Show next step/);
+  assert.match(script, /step-drag-handle/);
+  assert.doesNotMatch(editor, /Active expression|Build it like you write it/);
+});
+
+test('legal page defines the free tool and states academic integrity consequences', () => {
+  const legal = read('legal.html');
+  assert.match(legal, /Last updated[\s\S]*November 14 2026/);
+  assert.match(legal, /mailto:hello@atom-edu\.org/);
+  assert.match(legal, /also called atom, Proof Lab, the tool, we, us, or our/);
+  assert.match(legal, /If you use the tool to cheat or break a rule/);
+  assert.match(legal, /disciplinary action, suspension/);
+  assert.doesNotMatch(legal, /plain-language draft|needs legal review|terms text is a draft/i);
 });

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=proof-lab-5" />
+  <link rel="stylesheet" href="styles.css?v=proof-lab-8" />
 </head>
 <body>
 
@@ -109,31 +109,27 @@
     </div>
   </section>
 
-  <!-- What it is -->
-  <section class="section">
-    <div class="wrap col">
-      <p class="kicker">What it is</p>
-      <h2 class="block-title heading-display">A proof tool built for math</h2>
-      <div class="prose" style="margin-top:1rem">
-        <p>Proof Lab is for working through supported math problems and checking the reasoning, not just displaying an answer. Its own rule-based engine handles the math locally in your browser.</p>
-        <p>Type a problem with the visual math editor, inspect a worked solution, or submit your own steps. The tool distinguishes a verified result from a partial or unsupported one.</p>
-      </div>
-      <div class="free-note" style="margin-top:1.5rem"><b>Free</b> <span>No account, API key, or paid tier is needed to use Proof Lab.</span></div>
-    </div>
-  </section>
-
-  <!-- Proof Lab workflow -->
-  <section class="section band">
-    <div class="wrap col">
-      <p class="kicker">How it works</p>
-      <h2 class="block-title heading-display">Four ways into the same math</h2>
-      <div class="prose" style="margin-top:1rem">
-        <p><b>Solve</b> works through a supported problem and shows the steps. <b>Check work</b> inspects your own line-by-line solution and can reveal skipped Ghost steps. <b>Generate</b> makes new practice problems by topic and difficulty. <b>Graph</b> lets you explore functions visually with pan and zoom.</p>
-        <p>The graph is for exploration, not proof. Exact verification comes from the rule engine, and unsupported cases are labeled instead of guessed.</p>
-      </div>
-      <a class="textlink" href="/features" style="margin-top:1.3rem;display:inline-flex">See what Proof Lab can do
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
+  <section class="section home-explainer-section">
+    <div class="wrap home-dual">
+      <article>
+        <p class="kicker">What it is</p>
+        <h2 class="block-title heading-display">A proof tool built for math</h2>
+        <div class="prose">
+          <p>Proof Lab works through supported math problems and checks the reasoning, not just the final answer. Its rule-based engine handles the math directly in your browser.</p>
+          <p>Use the visual editor, inspect a worked solution, or submit your own steps. Verified results stay separate from partial or unsupported work.</p>
+        </div>
+      </article>
+      <article>
+        <p class="kicker">How it works</p>
+        <h2 class="block-title heading-display">Four ways into the same math</h2>
+        <div class="prose">
+          <p><b>Solve</b> shows the reasoning. <b>Check work</b> examines each transition and can reveal Ghost steps. <b>Generate</b> creates practice by topic and difficulty. <b>Graph</b> gives you a visual space to explore.</p>
+          <p>The graph is for exploration. Exact verification comes from the rule engine, and unsupported cases are labeled instead of guessed.</p>
+        </div>
+        <a class="textlink" href="/features">See what Proof Lab can do
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </article>
     </div>
   </section>
 
@@ -149,28 +145,15 @@
 
   <section class="section band partners-section" aria-labelledby="partners-title">
     <div class="wrap">
-      <p class="kicker">Our featured partners</p>
-      <h2 class="block-title heading-display" id="partners-title">Growing with partners who believe in better tools</h2>
-      <p class="lead partners-intro">VC Boom and MedAestheticsOS support atomEDU as we bring Proof Lab to more students.</p>
-      <div class="partner-grid">
-        <article class="partner-card">
-          <a class="partner-logo-link" href="https://vcboom.com/?promo=PARTNER-ATOMEDU" target="_blank" rel="noopener noreferrer" aria-label="Visit VC Boom">
-            <img src="images/vc-boom-partner-logo.svg" alt="VC Boom" />
-          </a>
-          <h3>VC Boom</h3>
-          <p>VC Boom helps atomEDU reach new users and grow the community around Proof Lab.</p>
-          <a href="https://vcboom.com/?promo=PARTNER-ATOMEDU" class="official-partner" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid #211D15;background:#fff;font-family:system-ui,sans-serif;font-size:14px;font-weight:500;color:#211D15;text-decoration:none;">
-            <span aria-hidden="true"></span>
-            Official VC Boom partner
-          </a>
-        </article>
-        <article class="partner-card">
-          <div class="partner-logo-link partner-logo-dark">
-            <img src="images/medaestheticsos-partner-badge.svg" alt="MedAestheticsOS official technology partner" />
-          </div>
-          <h3>MedAestheticsOS</h3>
-          <p>MedAestheticsOS supports atomEDU as a corporate partner focused on technology and long term user growth.</p>
-        </article>
+      <h2 class="partners-title" id="partners-title">Our Featured Partners</h2>
+      <div class="partner-logo-row">
+        <div class="partner-logo-unit">
+          <a class="partner-mark partner-vcboom" href="https://vcboom.com/?promo=PARTNER-ATOMEDU" target="_blank" rel="noopener noreferrer" aria-label="Visit VC Boom"><img src="images/vc-boom-partner-logo.svg" alt="VC Boom" /></a>
+          <a href="https://vcboom.com/?promo=PARTNER-ATOMEDU" class="official-partner" target="_blank" rel="noopener noreferrer"><span aria-hidden="true"></span>Official VC Boom partner</a>
+        </div>
+        <div class="partner-logo-unit">
+          <div class="partner-mark partner-med"><img src="images/medaestheticsos-partner-badge.svg" alt="MedAestheticsOS official technology partner" /></div>
+        </div>
       </div>
     </div>
   </section>

@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=proof-lab-4">
+  <link rel="stylesheet" href="./styles.css?v=proof-lab-8">
   <link rel="stylesheet" href="./vendor/katex/katex.min.css">
-  <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-4">
-  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-4">
-  <script type="module" src="./math-lab.js?v=proof-lab-4"></script>
+  <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-8">
+  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-8">
+  <script type="module" src="./math-lab.js?v=proof-lab-8"></script>
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -51,7 +51,7 @@
   <main class="app-main" id="workspace">
     <div class="workspace-heading">
       <div><p class="eyebrow">THE WORKBENCH</p><h1 class="heading-display">Work through the math.</h1></div>
-      <div class="workspace-side"><button class="text-button" id="coverage-link" type="button">Coverage <span aria-hidden="true">↗</span></button></div>
+      <div class="workspace-side"><button class="text-button" id="coverage-link" type="button">Coverage &amp; limits <span aria-hidden="true">ⓘ</span></button></div>
     </div>
 
     <div class="engine-notice" id="engine-notice" hidden>
@@ -77,23 +77,26 @@
             <label class="field-label" for="solve-input">Expression, equation, or problem</label>
             <div class="math-field-mount" id="solve-field-mount"></div>
             <p class="field-help" id="solve-input-help">Type math or use the pad below. Fractions, roots, powers, and templates stay visual.</p>
-            <details class="advanced-input" id="structured-mode">
-              <summary>Advanced: structured geometry, systems and matrices</summary>
-              <label class="structured-toggle"><input id="use-structured" type="checkbox"> Solve a structured JSON request</label>
-              <label class="field-label" for="structured-input">Structured request</label>
-              <textarea id="structured-input" class="structured-input" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="structured-help" maxlength="20000" placeholder='{"kind":"matrix","operation":"inverse","matrix":[[1,2],[3,4]]}'></textarea>
-              <p class="field-help" id="structured-help">Use this mode for geometry givens, matrices, and other structured requests. The mathematical result is still typeset.</p>
+            <details class="panel-options" id="solve-options">
+              <summary>Options and advanced input</summary>
+              <div class="field-row">
+                <div class="field"><label class="field-label" for="solve-task">Task</label><select id="solve-task"><option value="">Auto-detect</option><option value="solve">Solve</option><option value="simplify">Simplify</option><option value="factor">Factor</option><option value="analyze">Analyze function</option><option value="conic">Analyze conic</option></select></div>
+                <div class="field"><label class="field-label" for="solve-difficulty">Difficulty</label><select id="solve-difficulty"><option value="">Auto-detect</option><option value="0.250">0.250 Foundation</option><option value="0.500">0.500 Developing</option><option value="0.750">0.750 Challenging</option></select></div>
+                <div class="field"><label class="field-label" for="solve-variable">Solve for</label><select id="solve-variable" aria-describedby="solve-variable-help"><option value="">Auto-detect</option><option value="x">x</option><option value="y">y</option><option value="l">l</option><option value="w">w</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="h">h</option><option value="n">n</option><option value="r">r</option><option value="t">t</option><option value="z">z</option></select><p class="field-help" id="solve-variable-help">Choose a target to rearrange a formula.</p></div>
+                <div class="field"><label class="field-label" for="solve-domain">Equation solutions</label><select id="solve-domain"><option value="real">Real numbers</option><option value="complex">Complex numbers</option></select></div>
+              </div>
+              <details class="advanced-input" id="structured-mode">
+                <summary>Structured geometry, systems, and matrices</summary>
+                <label class="structured-toggle"><input id="use-structured" type="checkbox"> Solve a structured JSON request</label>
+                <label class="field-label" for="structured-input">Structured request</label>
+                <textarea id="structured-input" class="structured-input" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="structured-help" maxlength="20000" placeholder='{"kind":"matrix","operation":"inverse","matrix":[[1,2],[3,4]]}'></textarea>
+                <p class="field-help" id="structured-help">Use this mode for geometry givens, matrices, and other structured requests. The mathematical result is still typeset.</p>
+              </details>
             </details>
-            <div class="field-row">
-              <div class="field"><label class="field-label" for="solve-task">Task</label><select id="solve-task"><option value="">Auto-detect</option><option value="solve">Solve</option><option value="simplify">Simplify</option><option value="factor">Factor</option><option value="analyze">Analyze function</option><option value="conic">Analyze conic</option></select></div>
-              <div class="field"><label class="field-label" for="solve-difficulty">Difficulty</label><select id="solve-difficulty"><option value="">Auto-detect</option><option value="0.250">0.250 Foundation</option><option value="0.500">0.500 Developing</option><option value="0.750">0.750 Challenging</option></select></div>
-              <div class="field"><label class="field-label" for="solve-variable">Solve for</label><select id="solve-variable" aria-describedby="solve-variable-help"><option value="">Auto-detect</option><option value="x">x</option><option value="y">y</option><option value="l">l</option><option value="w">w</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="h">h</option><option value="n">n</option><option value="r">r</option><option value="t">t</option><option value="z">z</option></select><p class="field-help" id="solve-variable-help">Choose a target to rearrange a formula.</p></div>
-              <div class="field"><label class="field-label" for="solve-domain">Equation solutions</label><select id="solve-domain"><option value="real">Real numbers</option><option value="complex">Complex numbers</option></select></div>
-            </div>
             <div class="form-error" id="solve-error" role="alert" hidden></div>
             <button class="button button-primary run-button" id="solve-submit" type="submit"><span>Solve problem</span><span aria-hidden="true">↗</span></button>
           </form>
-          <div class="example-section"><p class="field-label">Start with an example</p><div class="example-grid" id="solve-examples"></div><div class="example-groups" id="more-solve-examples"></div></div>
+          <details class="examples-disclosure"><summary>Examples</summary><div class="example-section"><div class="example-grid" id="solve-examples"></div><div class="example-groups" id="more-solve-examples"></div></div></details>
           <details class="input-guide"><summary>Notation &amp; engine coverage</summary><div class="details-body"><p>Use the keyboard below to insert templates, then fill each gray box. Select part of an expression before inserting a fraction or power to wrap your selection.</p><p>Each field has an optional synchronized LaTeX source editor. Systems, geometry proofs, and matrix operations can also use Advanced structured mode.</p><p>Notation validation checks the LaTeX. Proof verification separately checks the mathematics using the engine’s supported rules. Neither a well-formed expression nor a graph establishes a proof.</p></div></details>
         </section>
 
@@ -105,12 +108,12 @@
             <div class="steps-heading"><span class="field-label" id="work-steps-label">Your solution steps</span><span class="subtle">One line per step</span></div>
             <div class="work-steps" id="work-steps" role="group" aria-labelledby="work-steps-label"></div>
             <button class="button button-secondary button-small add-step" id="add-step" type="button"><span aria-hidden="true">+</span> Add a step</button>
-            <p class="field-help">Start with your first transformation. Skipped reasoning may appear as labeled Ghost steps. Write every step visually in LaTeX; use Solve for structured systems and geometry.</p>
+            <p class="field-help">Start with your first transformation. Skipped reasoning may appear as labeled Ghost steps. Use the visual math editor for each line; use Solve for structured systems and geometry.</p>
             <div class="form-error" id="check-error" role="alert" hidden></div>
             <button class="button button-primary run-button" id="check-submit" type="submit"><span>Check my work</span><span aria-hidden="true">↗</span></button>
           </form>
-          <div class="example-section"><p class="field-label">Try a solution</p><div class="example-grid"><button class="example-button" data-check-example="valid" type="button">A correct solution <span aria-hidden="true">↗</span></button><button class="example-button" data-check-example="mistake" type="button">Find the mistake <span aria-hidden="true">↗</span></button><button class="example-button" data-check-example="skipped" type="button">A bigger leap <span aria-hidden="true">↗</span></button><button class="example-button" id="clear-work" type="button">Start from scratch <span aria-hidden="true">↗</span></button></div></div>
-          <div class="quiet-note"><span class="ghost-key" aria-hidden="true"></span><p><strong>Ghost steps fill in the gaps.</strong> They are reconstructed reasoning, separate from the lines you submitted. Their verification state is shown explicitly.</p></div>
+          <details class="examples-disclosure"><summary>Examples</summary><div class="example-section"><div class="example-grid"><button class="example-button" data-check-example="valid" type="button">A correct solution <span aria-hidden="true">↗</span></button><button class="example-button" data-check-example="mistake" type="button">Find the mistake <span aria-hidden="true">↗</span></button><button class="example-button" data-check-example="skipped" type="button">A bigger leap <span aria-hidden="true">↗</span></button><button class="example-button" id="clear-work" type="button">Start from scratch <span aria-hidden="true">↗</span></button></div></div></details>
+          <details class="ghost-note"><summary>About Ghost steps</summary><div class="quiet-note"><span class="ghost-key" aria-hidden="true"></span><p><strong>Ghost steps fill in the gaps.</strong> They are reconstructed reasoning, separate from the lines you submitted. Their verification state is shown explicitly.</p></div></details>
         </section>
 
         <section class="input-panel" id="view-generate" role="tabpanel" aria-labelledby="tab-generate" hidden>
@@ -120,8 +123,8 @@
             <div class="difficulty-header"><label class="field-label" for="generate-difficulty">Difficulty</label><output for="generate-difficulty" id="difficulty-value">0.400</output></div>
             <input id="generate-difficulty" class="difficulty-slider" type="range" min="0" max="1" step="0.001" value="0.4" aria-describedby="difficulty-help">
             <div class="range-labels"><span>Foundation</span><span>Challenging</span></div>
-            <p class="field-help" id="difficulty-help">A difficulty estimate from 0.000 to 1.000. The engine may adjust its route to match the problem.</p>
-            <div class="field seed-field"><label class="field-label" for="generate-seed">Seed <span class="optional">optional</span></label><div class="seed-controls"><input id="generate-seed" type="text" maxlength="100" placeholder="Leave blank for a fresh problem" autocomplete="off" aria-describedby="seed-help"><button class="icon-button" id="random-seed" type="button" aria-label="Choose a random seed">↻</button></div><p class="field-help" id="seed-help">Reuse the same topic, difficulty, and seed for repeatable practice. Each result shows its seed.</p></div>
+            <p class="sr-only" id="difficulty-help">Difficulty runs from 0.000 to 1.000. The engine may adjust its route to match the problem.</p>
+            <details class="panel-options generate-options"><summary>Advanced and seed</summary><p class="field-help">The engine may adjust its route to match the generated problem.</p><div class="field seed-field"><label class="field-label" for="generate-seed">Seed <span class="optional">optional</span></label><div class="seed-controls"><input id="generate-seed" type="text" maxlength="100" placeholder="Leave blank for a fresh problem" autocomplete="off" aria-describedby="seed-help"><button class="icon-button" id="random-seed" type="button" aria-label="Choose a random seed">↻</button></div><p class="field-help" id="seed-help">Reuse a topic, difficulty, and seed for repeatable practice.</p></div></details>
             <div class="form-error" id="generate-error" role="alert" hidden></div>
             <button class="button button-primary run-button" id="generate-submit" type="submit"><span>Generate problem</span><span aria-hidden="true">↗</span></button>
           </form>
@@ -145,10 +148,16 @@
 
     <section class="math-keypad" id="math-keypad" aria-label="Math keyboard"></section>
 
-    <section class="coverage-panel" id="coverage" aria-labelledby="coverage-heading" tabindex="-1">
-      <div class="coverage-intro"><p class="eyebrow">BUILT AROUND RULES</p><h2 class="heading-display" id="coverage-heading">Know the boundaries.</h2><p>Coverage comes from the connected engine. LaTeX notation validation and mathematical proof verification are separate checks. Selected algebra and geometry families are supported.</p></div>
-      <div class="coverage-content"><div class="coverage-list" id="coverage-list"><p class="subtle">Connect the engine to see its declared topics.</p></div><details class="capability-details"><summary>Engine capabilities</summary><pre id="capabilities-content">Waiting for the engine.</pre></details></div>
-    </section>
+    <button class="coverage-fab" id="coverage-fab" type="button" aria-label="Open coverage and limits" aria-controls="coverage"><span aria-hidden="true">i</span></button>
+    <dialog class="coverage-dialog" id="coverage" aria-labelledby="coverage-heading">
+      <div class="coverage-dialog-card">
+        <div class="coverage-dialog-toolbar"><span>Proof Lab information</span><button id="coverage-close" type="button" aria-label="Close coverage and limits">×</button></div>
+        <section class="coverage-panel" tabindex="-1">
+          <div class="coverage-intro"><p class="eyebrow">BUILT AROUND RULES</p><h2 class="heading-display" id="coverage-heading">Know the boundaries.</h2><p>Coverage comes from the connected engine. LaTeX notation validation and mathematical proof verification are separate checks. Selected algebra and geometry families are supported.</p></div>
+          <div class="coverage-content"><div class="coverage-list" id="coverage-list"><p class="subtle">Connect the engine to see its declared topics.</p></div><details class="capability-details"><summary>Engine capabilities</summary><pre id="capabilities-content">Waiting for the engine.</pre></details></div>
+        </section>
+      </div>
+    </dialog>
   </main>
   <footer class="site-footer">
     <div class="footer-shell">
@@ -183,7 +192,7 @@
   </footer>
   <p class="sr-only" id="live-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <noscript><div class="noscript-message">Proof Lab needs JavaScript to connect to the local math engine. Enable it and reload this page.</div></noscript>
-  <script src="site.js?v=proof-lab-4"></script>
+  <script src="site.js?v=proof-lab-8"></script>
   <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // Standalone browser UI. All mathematical decisions belong to ./engine/index.js.
 // Engine calls may return values or promises. Typesetting never certifies a proof.
-import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField } from './math-editor.js';
+import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, closeKeypad } from './math-editor.js';
 import { latexToInput } from './engine/latex.js';
 
 const $ = (id) => document.getElementById(id);
@@ -17,6 +17,7 @@ let runId = 0;
 let running = false;
 let topics = [];
 let stepId = 0;
+let draggedStep = null;
 let graphWorkspace = null;
 let graphLoading = null;
 const resultGraphs = new Map();
@@ -388,7 +389,11 @@ function setBusy(busy, view) {
   $('result-panel').setAttribute('aria-busy', String(busy));
   $('result-loading').hidden = !busy;
   $('copy-result').disabled = busy;
-  toolViews.forEach((name) => { $(`${name}-submit`).disabled = busy; });
+  toolViews.forEach((name) => {
+    const button = $(`${name}-submit`);
+    button.disabled = busy;
+    button.classList.toggle('is-loading', busy && name === view);
+  });
   if (busy) {
     $('loading-title').textContent = { solve: 'Working through the problem…', check: 'Checking each transition…', generate: 'Creating your practice problem…' }[view];
   }
@@ -404,16 +409,19 @@ async function run(view, callback) {
   if (running) return;
   clearError(view);
   const id = ++runId;
+  const startedAt = performance.now();
   setBusy(true, view);
   announce({ solve: 'Solving your problem.', check: 'Checking your work.', generate: 'Generating a problem.' }[view]);
   let timer;
   try {
-    // Yield a frame so the loading state is visible before synchronous core work.
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // Yield to the browser so the loading state paints even in a background tab.
+    await new Promise((resolve) => setTimeout(resolve, 0));
     const localEngine = await connectEngine();
     if (id !== runId) return;
     const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('The engine is taking longer than expected. Try a smaller problem or run it again.')), 20000); });
     const result = await Promise.race([callback(localEngine), timeout]);
+    const remaining = 150 - (performance.now() - startedAt);
+    if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
     if (id !== runId) return;
     if (!result || !result.element) throw new Error('The engine did not return a displayable result.');
     const previous = results.get(view);
@@ -426,6 +434,8 @@ async function run(view, callback) {
     if (matchMedia('(max-width: 760px)').matches) $('result-panel').scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
   } catch (error) {
     if (id !== runId) return;
+    const remaining = 150 - (performance.now() - startedAt);
+    if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
     const message = errorMessage(error);
     showError(view, message);
     announce(message);
@@ -460,18 +470,33 @@ function appendRestrictions(container, restrictions, latexRestrictions) {
   container.append(box);
 }
 
+function renderAnswerValue(value) {
+  if (isObject(value)) {
+    const nested = node('dl', 'answer-data answer-data-nested');
+    for (const [key, child] of Object.entries(value)) {
+      if (child === undefined) continue;
+      const row = node('div', 'answer-entry answer-entry-nested');
+      row.append(node('dt', '', humanize(key)), renderAnswerValue(child));
+      nested.append(row);
+    }
+    return nested;
+  }
+  if (Array.isArray(value) && value.length === 0) return node('span', 'answer-empty', 'None');
+  return mathNode('dd', 'answer-value', value);
+}
+
 function renderAnswer(answer, latexAnswer) {
-  if (typeof latexAnswer === 'string' && latexAnswer) return mathNode('div', 'answer-math', latexAnswer, true);
   if (isObject(answer)) {
     const root = node('dl', 'answer-data');
     for (const [key, value] of Object.entries(answer)) {
       if (['kind', 'complete', 'coefficients', 'approximations', 'verified'].includes(key) || value === undefined) continue;
       const row = node('div', 'answer-entry');
-      row.append(node('dt', '', humanize(key)), mathNode('dd', '', value));
+      row.append(node('dt', '', humanize(key)), renderAnswerValue(value));
       root.append(row);
     }
     return root;
   }
+  if (typeof latexAnswer === 'string' && latexAnswer) return mathNode('div', 'answer-math', latexAnswer, true);
   return answer == null ? node('p', 'answer-note', 'No answer was returned.') : mathNode('div', 'answer-math', answer);
 }
 
@@ -499,11 +524,40 @@ function proofTimeline(steps, numerical = false, latexSteps = []) {
 }
 
 function appendProof(container, steps, numerical = false, latexSteps = []) {
+  const values = array(steps);
+  const section = node('section', 'proof-section');
   const heading = node('div', 'timeline-heading');
-  heading.append(node('h3', '', numerical ? 'Formula check timeline' : 'Proof timeline'), node('span', '', `${array(steps).length} ${array(steps).length === 1 ? 'step' : 'steps'}`));
-  container.append(heading);
-  if (array(steps).length) container.append(proofTimeline(steps, numerical, latexSteps));
-  else container.append(node('p', 'subtle', 'The engine did not return proof steps for this result.'));
+  const progress = node('span', '', values.length ? `1 of ${values.length}` : '0 steps');
+  heading.append(node('h3', '', numerical ? 'Formula check timeline' : 'Proof timeline'), progress);
+  section.append(heading);
+  if (!values.length) {
+    section.append(node('p', 'subtle', 'The engine did not return proof steps for this result.'));
+    container.append(section);
+    return;
+  }
+  const timeline = proofTimeline(values, numerical, latexSteps);
+  const items = [...timeline.children];
+  items.slice(1).forEach((item) => { item.hidden = true; });
+  section.append(timeline);
+  if (items.length > 1) {
+    let visible = 1;
+    const controls = node('div', 'timeline-controls');
+    const next = node('button', 'button button-secondary timeline-next', 'Show next step');
+    next.type = 'button';
+    next.addEventListener('click', () => {
+      items[visible].hidden = false;
+      visible += 1;
+      progress.textContent = `${visible} of ${items.length}`;
+      if (visible === items.length) {
+        next.textContent = 'All steps shown';
+        next.disabled = true;
+      }
+      items[visible - 1].scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'nearest' });
+    });
+    controls.append(next);
+    section.append(controls);
+  }
+  container.append(section);
 }
 
 function appendRouting(container, routing) {
@@ -531,13 +585,14 @@ function appendRouting(container, routing) {
 }
 
 // Both graph surfaces use the same local plotter and visual-expression factory.
-function graphOptions(expressions) {
+function graphOptions(expressions, extra = {}) {
   return {
     expressions,
     readExpression: latexToInput,
     createExpressionField(value, onChange) {
       return createMathField(value, { ariaLabel: 'Graph expression', onInput: onChange });
     },
+    ...extra,
   };
 }
 
@@ -545,7 +600,9 @@ async function ensureGraphWorkspace() {
   if (graphWorkspace) return graphWorkspace;
   if (graphLoading) return graphLoading;
   const host = $('graph-workspace-canvas');
-  host.replaceChildren(node('p', 'graph-loading', 'Preparing the graphing workspace…'));
+  const loading = node('div', 'graph-loading');
+  loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
+  host.replaceChildren(loading);
   graphLoading = import('./graph/plotter.js').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions(['y=x^2', 'y=2x+1']));
@@ -567,9 +624,13 @@ function appendFunctionDetails(container, details) {
   if (!isObject(details) || !details.function) return;
   const data = details.function;
   const expression = typeof data === 'string' ? data : data.expression;
-  const block = node('section', 'graph-block');
+  const block = node('details', 'graph-block graph-disclosure');
+  const summary = node('summary', 'graph-summary');
+  summary.append(node('span', '', 'Explore the graph'), node('span', 'graph-summary-note', 'Optional numerical view'));
+  block.append(summary);
+  const content = node('div', 'graph-disclosure-body');
   const heading = node('div', 'graph-preview-heading');
-  heading.append(node('h3', '', 'Explore the function'));
+  heading.append(node('h3', '', 'Function graph'));
   const expand = node('button', 'text-button', 'Open full graph ↗');
   expand.type = 'button';
   expand.addEventListener('click', async () => {
@@ -577,19 +638,28 @@ function appendFunctionDetails(container, details) {
     const graph = await ensureGraphWorkspace();
     if (graph && expression) graph.setExpressions([`y=${toLatex(expression)}`]);
   });
-  heading.append(expand); block.append(heading);
+  heading.append(expand); content.append(heading);
   const host = node('div', 'function-graph');
-  block.append(host, node('p', 'graph-caption', 'Pan, zoom, and inspect. This numerical graph is separate from the proof and exact domain restrictions.'));
-  if (expression) {
+  content.append(host, node('p', 'graph-caption', 'Pan, zoom, and inspect. This numerical graph is separate from the proof and exact domain restrictions.'));
+  let graphStarted = false;
+  const startGraph = () => {
+    if (graphStarted) return;
+    graphStarted = true;
+    if (!expression) { host.append(node('p', 'subtle', 'No graphable function expression was returned.')); return; }
+    const loading = node('div', 'graph-loading');
+    loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
+    host.replaceChildren(loading);
     import('./graph/plotter.js').then(({ createGraph }) => {
-      const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`]));
+      host.replaceChildren();
+      const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);
       requestAnimationFrame(() => graph.resize());
     }).catch(() => host.replaceChildren(node('p', 'subtle', 'The interactive graph is unavailable. Exact function properties are shown in the reasoning.')));
-  } else host.append(node('p', 'subtle', 'No graphable function expression was returned.'));
+  };
+  block.addEventListener('toggle', () => { if (block.open) startGraph(); });
   const disclosure = node('details', 'result-disclosure');
   disclosure.append(node('summary', '', 'Function metadata'), node('pre', '', asText(data, true)));
-  block.append(disclosure); container.append(block);
+  content.append(disclosure); block.append(content); container.append(block);
 }
 
 function renderSolve(result, problem) {
@@ -782,6 +852,12 @@ function addWorkStep(value = '', focus = false) {
   const container = $('work-steps');
   if (container.childElementCount >= 50) { announce('You can check up to 50 steps at a time.'); return; }
   const row = node('div', 'work-step');
+  row.draggable = true;
+  const dragHandle = node('button', 'step-drag-handle');
+  dragHandle.type = 'button';
+  dragHandle.title = 'Drag to reorder this step';
+  dragHandle.setAttribute('aria-label', 'Reorder solution step');
+  dragHandle.append(node('span'), node('span'), node('span'), node('span'));
   const label = node('label', 'work-step-number');
   const input = createMathField(value, { id: `work-step-${++stepId}`, ariaLabel: 'Solution step', className: 'step-input' });
   label.htmlFor = input.id;
@@ -805,7 +881,30 @@ function addWorkStep(value = '', focus = false) {
   });
   const fieldGroup = node('div', 'step-field-group');
   fieldGroup.append(input, createLatexDisclosure(input));
-  row.append(label, fieldGroup, remove);
+  row.append(dragHandle, label, fieldGroup, remove);
+  row.addEventListener('dragstart', (event) => {
+    draggedStep = row;
+    row.classList.add('is-dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', input.id);
+  });
+  row.addEventListener('dragend', () => {
+    row.classList.remove('is-dragging');
+    draggedStep = null;
+    renumberSteps();
+    markDirty('check');
+  });
+  dragHandle.addEventListener('keydown', (event) => {
+    if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    event.preventDefault();
+    const sibling = event.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
+    if (!sibling) return;
+    if (event.key === 'ArrowUp') container.insertBefore(row, sibling);
+    else container.insertBefore(sibling, row);
+    renumberSteps();
+    markDirty('check');
+    dragHandle.focus();
+  });
   container.append(row);
   renumberSteps();
   if (focus) input.focus();
@@ -819,6 +918,7 @@ function renumberSteps() {
     field.setAttribute('aria-label', `Solution step ${index + 1}`);
     field.placeholder = index === 0 ? 'x+3=7' : 'x=4';
     row.querySelector('.remove-step').setAttribute('aria-label', `Remove step ${index + 1}`);
+    row.querySelector('.step-drag-handle').setAttribute('aria-label', `Reorder solution step ${index + 1}. Use arrow keys or drag.`);
   });
   $('add-step').disabled = $('work-steps').childElementCount >= 50;
 }
@@ -827,6 +927,22 @@ function replaceWorkSteps(values) {
   $('work-steps').replaceChildren();
   values.forEach((value) => addWorkStep(value));
 }
+
+$('work-steps').addEventListener('dragover', (event) => {
+  if (!draggedStep) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  const siblings = [...$('work-steps').querySelectorAll('.work-step:not(.is-dragging)')];
+  const next = siblings.find((sibling) => event.clientY < sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2);
+  $('work-steps').insertBefore(draggedStep, next || null);
+});
+
+$('work-steps').addEventListener('drop', (event) => {
+  if (!draggedStep) return;
+  event.preventDefault();
+  renumberSteps();
+  markDirty('check');
+});
 
 function randomSeed() {
   if (globalThis.crypto?.getRandomValues) return crypto.getRandomValues(new Uint32Array(1))[0];
@@ -975,10 +1091,21 @@ syncDifficultyControl();
 $('random-seed').addEventListener('click', () => { $('generate-seed').value = String(randomSeed()); markDirty('generate'); });
 $('retry-engine').addEventListener('click', () => connectEngine().then(() => announce('Local engine connected.')).catch((error) => announce(errorMessage(error))));
 $('cancel-run').addEventListener('click', () => cancelRun());
-$('coverage-link').addEventListener('click', () => {
-  $('coverage').focus({ preventScroll: true });
-  $('coverage').scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'start' });
-});
+function openCoverage() {
+  const dialog = $('coverage');
+  closeKeypad();
+  if (!dialog.open) dialog.showModal();
+  $('coverage-close').focus();
+}
+
+function closeCoverage() {
+  if ($('coverage').open) $('coverage').close();
+}
+
+$('coverage-link').addEventListener('click', openCoverage);
+$('coverage-fab').addEventListener('click', openCoverage);
+$('coverage-close').addEventListener('click', closeCoverage);
+$('coverage').addEventListener('click', (event) => { if (event.target === $('coverage')) closeCoverage(); });
 $('copy-result').addEventListener('click', async () => {
   const result = results.get(currentView);
   if (!result?.copy) return;
@@ -1001,4 +1128,5 @@ if (!/Mac|iPhone|iPad/.test(navigator.platform || '')) $('shortcut-modifier').te
 replaceWorkSteps(CHECK_EXAMPLES.mistake.steps);
 const initialView = location.hash.slice(1);
 showView(views.includes(initialView) ? initialView : 'solve');
+if (initialView === 'coverage') openCoverage();
 connectEngine().catch(() => { /* The persistent connection notice explains recovery. */ });
