@@ -9,7 +9,6 @@ const expectedNav = [
   ['Home', 'index.html'],
   ['Features', 'features.html'],
   ['Learn', 'learn.html'],
-  ['Proof Lab', 'proof-lab.html'],
   ['About', 'about.html'],
   ['Contact', 'contact.html'],
   ['Start math', 'proof-lab.html'],
@@ -32,7 +31,7 @@ for (const page of pages) {
     assert.ok(mobile, 'mobile navigation exists');
     assert.deepEqual(links(desktop), expectedNav);
     assert.deepEqual(links(mobile), expectedNav);
-    if (page !== 'legal.html') {
+    if (!['legal.html', 'proof-lab.html'].includes(page)) {
       assert.match(desktop, new RegExp(`data-nav="${page}"`));
       assert.match(mobile, new RegExp(`data-nav="${page}"`));
     }
