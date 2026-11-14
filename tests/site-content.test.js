@@ -82,8 +82,8 @@ test('home carousel uses three distinct backgrounds', () => {
   assert.doesNotMatch(home, /images\/bg[23]\.svg/);
   assert.ok(existsSync(resolve(root, 'images/bg2.jpg')));
   assert.ok(existsSync(resolve(root, 'images/bg3.jpg')));
-  assert.match(home, /Cosmic Cliffs in the Carina Nebula\. Image: NASA, ESA, CSA, STScI\./);
-  assert.match(home, /Hooded-leaf pelargonium on Table Mountain\. Photo supplied by atomEDU\./);
+  assert.match(home, /Cosmic Cliffs in the Carina Nebula\. NASA, ESA, CSA, STScI\. Accessed November 11 2026 by Awasthi\./);
+  assert.match(home, /Cape Mallow by AJ Higgs, CC BY 4\.0, via Wikimedia Commons\. Accessed November 11 2026 by Awasthi\./);
 });
 
 test('home presents both corporate partners and the official VC Boom link', () => {
@@ -95,14 +95,23 @@ test('home presents both corporate partners and the official VC Boom link', () =
   assert.match(home, /Official VC Boom partner/);
 });
 
-test('about page shows all four owners with their photos', () => {
+test('about page shows all three founders with their portraits and group photo', () => {
   const about = read('about.html');
   for (const [name, image] of [
     ['Rahul Awasthi', 'awasthi.jpeg'], ['Pritam Avuthu', 'avuthu.jpeg'],
-    ['Akshaj Sanikommu', 'sanikommu.jpeg'], ['Aryan Patel', 'patel.jpeg'],
+    ['Akshaj Sanikommu', 'sanikommu.jpeg'],
   ]) {
     assert.match(about, new RegExp(name));
     assert.match(about, new RegExp(`images/${image.replace('.', '\\.')}`));
+  }
+  assert.match(about, /images\/founders-group\.jpg/);
+  assert.ok(existsSync(resolve(root, 'images/founders-group.jpg')));
+});
+
+test('public website copy contains no former owner references', () => {
+  const formerOwnerTerms = ['Ary' + 'an', 'Pa' + 'tel'];
+  for (const page of pages) {
+    for (const term of formerOwnerTerms) assert.ok(!read(page).toLowerCase().includes(term.toLowerCase()));
   }
 });
 
