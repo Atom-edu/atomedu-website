@@ -77,8 +77,29 @@ test('legacy demos forward into the current proof tool', () => {
 test('home carousel uses three distinct backgrounds', () => {
   const home = read('index.html');
   assert.match(home, /images\/bg1\.png/);
-  assert.match(home, /images\/bg2\.svg/);
-  assert.match(home, /images\/bg3\.svg/);
+  assert.match(home, /images\/bg2\.jpg/);
+  assert.match(home, /images\/bg3\.jpg/);
+  assert.doesNotMatch(home, /images\/bg[23]\.svg/);
+});
+
+test('home presents both corporate partners and the official VC Boom link', () => {
+  const home = read('index.html');
+  assert.match(home, /Our featured partners/i);
+  assert.match(home, /images\/vc-boom-partner-logo\.svg/);
+  assert.match(home, /images\/medaestheticsos-partner-badge\.svg/);
+  assert.match(home, /https:\/\/vcboom\.com\/\?promo=PARTNER-ATOMEDU/);
+  assert.match(home, /Official VC Boom partner/);
+});
+
+test('about page shows all four owners with their photos', () => {
+  const about = read('about.html');
+  for (const [name, image] of [
+    ['Rahul Awasthi', 'awasthi.jpeg'], ['Pritam Avuthu', 'avuthu.jpeg'],
+    ['Akshaj Sanikommu', 'sanikommu.jpeg'], ['Aryan Patel', 'patel.jpeg'],
+  ]) {
+    assert.match(about, new RegExp(name));
+    assert.match(about, new RegExp(`images/${image.replace('.', '\\.')}`));
+  }
 });
 
 test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', () => {
