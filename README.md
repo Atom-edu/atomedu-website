@@ -46,13 +46,13 @@ See [the engine API and supported inputs](./engine/README.md) and [the product p
 ## Shared files
 - `styles.css` - all styling (cream palette, fonts, layout)
 - `site.js` - sticky header, mobile menu, active nav link
-- `images/` - `logo.svg`, `bg1.png`, `footer.svg`
+- `images/` - logos, three graph backgrounds, and footer artwork
 
 ## Fonts
 Loaded from Google Fonts: Poiret One (headings), Fraunces (serif accent words), Space Grotesk (body). They load over the internet. To ship offline, download the font files and point the `@font-face` rules at local copies.
 
 ## About the images
-The home slides use the local polar-graph image `images/bg1.png`; its attribution is on the site. The footer uses the original `images/footer.svg` artwork. Update the home slide backgrounds in `index.html` or the shared footer image on each public page to change them.
+The first home slide uses the local polar graph image `images/bg1.png`; its attribution is on the site. The second and third slides use original vector graph artwork in `images/bg2.svg` and `images/bg3.svg`. The footer uses the original `images/footer.svg` artwork.
 
 ## Color and type
 Edit the variables at the top of `styles.css` under `:root` to change the palette. The accent is `--accent` (currently a warm clay). Everything keys off those variables.

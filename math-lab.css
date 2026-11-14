@@ -213,9 +213,16 @@ summary::marker { color: #888b83; }
 .ghost-key { width: 14px; height: 17px; border: 1px dashed var(--line); border-radius: 4px; margin-top: 3px; flex-shrink: 0; background: var(--cream); }
 .difficulty-header { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; }
 .difficulty-header label { margin-bottom: 0; }
-.difficulty-header output { font-family: "SFMono-Regular", Consolas, monospace; color: var(--clay-deep); font-size: 12px; background: var(--clay-wash); padding: 2px 6px; border-radius: 4px; }
-.difficulty-slider { width: 100%; accent-color: var(--clay); height: 26px; margin: 12px 0 0; }
-.range-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+.difficulty-header output { min-width: 64px; font-family: "SFMono-Regular", Consolas, monospace; text-align: center; color: var(--clay-deep); font-size: 12px; font-weight: 650; background: var(--clay-wash); border: 1px solid #dfc9ba; padding: 5px 9px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.difficulty-slider { --difficulty-progress: 40%; appearance: none; -webkit-appearance: none; display: block; width: 100%; height: 36px; margin: 8px 0 0; background: transparent; }
+.difficulty-slider::-webkit-slider-runnable-track { height: 10px; border: 1px solid #d2cbc0; border-radius: 999px; background: linear-gradient(90deg, var(--clay) 0 var(--difficulty-progress), #ddd8cf var(--difficulty-progress) 100%); box-shadow: inset 0 1px 2px #1f2a361c; }
+.difficulty-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 23px; height: 23px; margin-top: -7.5px; border: 4px solid var(--clay); border-radius: 50%; background: #fffdf9; box-shadow: 0 2px 7px #1f2a3630, 0 0 0 1px #ffffff; }
+.difficulty-slider::-moz-range-track { height: 10px; border: 1px solid #d2cbc0; border-radius: 999px; background: #ddd8cf; box-shadow: inset 0 1px 2px #1f2a361c; }
+.difficulty-slider::-moz-range-progress { height: 10px; border-radius: 999px; background: var(--clay); }
+.difficulty-slider::-moz-range-thumb { width: 17px; height: 17px; border: 4px solid var(--clay); border-radius: 50%; background: #fffdf9; box-shadow: 0 2px 7px #1f2a3630; }
+.difficulty-slider:focus-visible { outline: none; }
+.difficulty-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 2px 7px #1f2a3630, 0 0 0 4px #bf5a2e24; }
+.range-labels { display: flex; justify-content: space-between; margin-top: -1px; color: var(--muted); font-size: 10px; font-weight: 550; letter-spacing: .15px; }
 .seed-field { margin-top: 24px; }
 .optional { margin-left: 4px; font-weight: 400; color: var(--muted); }
 .seed-controls { display: flex; gap: 7px; }
@@ -374,11 +381,16 @@ textarea.structured-input { min-height: 150px; padding: 12px; }
 .notation-errors { flex-basis: 100%; font-size: 11px; color: var(--muted); }
 .notation-errors ul { margin: 8px 0 0; padding-left: 18px; }
 
-.math-keypad { margin-top: 24px; padding: 25px; border: 1px solid var(--line); border-radius: var(--radius); background: #f0ebe3; box-shadow: 0 5px 16px #1f2a3608; }
+.math-keypad { position: fixed; z-index: 90; left: max(0px, calc((100vw - 74rem) / 2)); right: max(0px, calc((100vw - 74rem) / 2)); bottom: 0; max-height: min(67dvh, 650px); overflow-x: hidden; overflow-y: auto; margin: 0; padding: 20px 24px 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 18px 18px 0 0; background: #f0ebe3f7; box-shadow: 0 -18px 55px #1f2a3629, 0 -1px 0 #ffffffa8 inset; backdrop-filter: blur(18px); transform: translateY(calc(100% + 24px)); opacity: 0; visibility: hidden; pointer-events: none; transition: transform .24s ease, opacity .18s ease, visibility 0s linear .24s; overscroll-behavior: contain; }
+.math-keypad.is-open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+body.math-keypad-open { padding-bottom: min(67dvh, 650px); }
 .keypad-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .keypad-heading h2 { font-size: 20px; font-weight: 500; letter-spacing: -.5px; }
 .keypad-heading p { margin-top: 5px; font-size: 12px; color: var(--muted); }
+.keypad-heading-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
 .keypad-target { font-size: 11px; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--cream); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.keypad-done { min-height: 34px; padding: 7px 13px; border: 1px solid var(--ink); border-radius: 7px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 650; }
+.keypad-done:hover { background: #344354; }
 .keypad-preview { display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; align-items: center; gap: 15px; min-height: 80px; margin-top: 19px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
 .keypad-preview-label { color: var(--muted); font-size: 10px; }
 .keypad-preview-content { min-width: 0; max-height: 145px; overflow: auto; padding: 6px 2px; font-size: 23px; }
@@ -393,9 +405,10 @@ textarea.structured-input { min-height: 150px; padding: 12px; }
 .keypad-templates { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: minmax(59px, 1fr); gap: 7px; }
 .keypad-numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(59px, 1fr)); gap: 7px; padding-left: 17px; border-left: 1px solid var(--line); }
 .keypad-commands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(59px, 1fr)); gap: 7px; }
-.math-key { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 59px; padding: 10px 5px; background: var(--paper); border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px; color: var(--ink); font-size: 21px; transition: background .12s, border-color .12s, transform .12s; }
-.math-key > .rendered-math { pointer-events: none; }
-.math-key .katex { font-size: 1.05em; }
+.math-key { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 59px; overflow: hidden; padding: 10px 5px; background: var(--paper); border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px; color: var(--ink); font-size: 21px; contain: paint; transition: background .12s, border-color .12s, transform .12s; }
+.math-key > .rendered-math { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; min-width: 0; overflow: hidden; pointer-events: none; }
+.math-key .katex { max-width: 100%; font-size: 1.02em; white-space: nowrap; }
+.math-key-wide .katex { font-size: .75em; }
 .math-key:hover { background: #f9eee3; border-color: #d6bda4; }
 .math-key:active { transform: translateY(1px); background: #efdfce; border-bottom-width: 1px; }
 .math-key-command { background: #e7ddd1; border-color: var(--line); font-size: 12px; font-weight: 550; }
@@ -423,8 +436,10 @@ textarea.structured-input { min-height: 150px; padding: 12px; }
   .keypad-commands .math-key { min-height: 44px; }
 }
 @media (max-width: 760px) {
-  .math-keypad { padding: 20px; }
+  .math-keypad { left: 0; right: 0; max-height: 72dvh; padding: 18px 14px 16px; border-radius: 15px 15px 0 0; }
+  body.math-keypad-open { padding-bottom: 72dvh; }
   .keypad-heading { align-items: start; flex-direction: column; gap: 10px; }
+  .keypad-heading-actions { width: 100%; justify-content: space-between; }
   .keypad-heading h2 { font-size: 21px; }
   .keypad-target { max-width: 100%; font-size: 10px; }
   .keypad-preview { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 11px 13px; }
@@ -461,6 +476,9 @@ textarea.structured-input { min-height: 150px; padding: 12px; }
   .tab-icon { width: 13px; font-size: 14px; }
   math-field.visual-math-field { font-size: 25px; }
   .graph-workspace { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .math-keypad { transition: none; }
 }
 @media print {
   .math-keypad, .graph-workspace, .latex-disclosure, .graph-block { display: none !important; }

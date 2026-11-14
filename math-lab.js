@@ -145,7 +145,7 @@ function mathNode(tag, className, value, latex = false) {
 function appendNotationStatus(container, result) {
   const status = node('div', 'notation-status');
   status.append(badge(result.latex?.valid === true ? 'LaTeX verified' : 'LaTeX not verified', result.latex?.valid === true ? 'notation' : 'unverified'));
-  status.append(node('span', '', 'LaTeX syntax check · independent of mathematical verification.'));
+  status.append(node('span', '', 'LaTeX syntax check. Independent of mathematical verification.'));
   if (result.latex?.valid !== true && array(result.latex?.errors).length) {
     const errors = node('details', 'notation-errors');
     errors.append(node('summary', '', 'Notation details'));
@@ -173,8 +173,10 @@ function verificationBadge(verified, numerical = false) {
 }
 
 function setEngineStatus(state, message) {
-  $('engine-status').className = `engine-status ${state}`;
-  $('engine-status-text').textContent = message;
+  const status = $('engine-status');
+  const text = $('engine-status-text');
+  if (status) status.className = `engine-status ${state}`;
+  if (text) text.textContent = message;
 }
 
 async function connectEngine() {
@@ -194,7 +196,7 @@ async function connectEngine() {
     engine = module;
     topics = array(module.TOPICS).filter((topic) => isObject(topic) && typeof topic.id === 'string' && typeof topic.label === 'string');
     populateTopics();
-    setEngineStatus('ready', 'Local engine ready');
+    setEngineStatus('ready', 'Ready');
     $('engine-notice').hidden = true;
     renderCoverage();
     try {
@@ -212,7 +214,7 @@ async function connectEngine() {
     const fileProtocol = location.protocol === 'file:';
     $('engine-notice-title').textContent = fileProtocol ? 'Open this workspace through a local server.' : 'The math engine could not be loaded.';
     $('engine-notice-message').textContent = fileProtocol
-      ? 'Browser modules need HTTP. Run python3 -m http.server 8000 in the project folder, then open localhost:8000/proof-lab.html.'
+      ? 'Browser modules need HTTP. Run python3 -m http.server 8000 in the project folder, then open localhost:8000/proof-lab.'
       : 'The workbench is ready. Check that engine/index.js and its imports are available, then reconnect.';
     $('capabilities-content').textContent = errorMessage(error);
     throw new Error(fileProtocol ? 'Serve this page over HTTP to load the math engine.' : `The local engine is unavailable. ${errorMessage(error)}`);
@@ -301,7 +303,7 @@ function emptyState(view) {
   const legend = node('div', 'empty-legend');
   for (const label of ['Clear results', 'Visible reasoning', 'Honest limits']) {
     const item = node('span');
-    item.append(node('b', '', '·'), document.createTextNode(label));
+    item.append(node('b', '', '✓'), document.createTextNode(label));
     legend.append(item);
   }
   root.append(legend);
@@ -519,7 +521,7 @@ function appendRouting(container, routing) {
     const attempts = node('ol', 'routing-attempts');
     routing.attempts.forEach((attempt) => {
       const item = node('li');
-      item.append(node('strong', '', `${asText(attempt.engine) || 'Engine'} · ${humanize(attempt.status) || 'Status unavailable'}`));
+      item.append(node('strong', '', `${asText(attempt.engine) || 'Engine'}: ${humanize(attempt.status) || 'Status unavailable'}`));
       if (attempt.reason) item.append(node('p', '', attempt.reason));
       attempts.append(item);
     });
@@ -597,14 +599,14 @@ function renderSolve(result, problem) {
   const root = node('div', 'result-body');
   const numerical = result.certificate?.assurance === 'numerical-formula-check';
   const meta = node('div', 'result-meta');
-  const resultBadge = result.status === 'solved' ? numerical && result.verified === true ? badge('Formula checked · numerical values approximate', 'verified') : verificationBadge(result.verified) : badge(humanize(result.status), result.status === 'invalid' ? 'invalid' : 'unresolved');
+  const resultBadge = result.status === 'solved' ? numerical && result.verified === true ? badge('Formula checked. Numerical values approximate.', 'verified') : verificationBadge(result.verified) : badge(humanize(result.status), result.status === 'invalid' ? 'invalid' : 'unresolved');
   if (numerical) resultBadge.classList.add('badge-formula');
   meta.append(node('span', 'topic-label', topicLabel(result.topic)), resultBadge);
   root.append(meta);
   appendNotationStatus(root, result);
   if (result.status === 'solved') {
     const answer = node('section', 'answer-card');
-    answer.append(node('h3', 'answer-label', result.verified === true ? 'Result' : 'Candidate result · not verified'), renderAnswer(result.answer, result.latex?.answer));
+    answer.append(node('h3', 'answer-label', result.verified === true ? 'Result' : 'Candidate result. Not verified.'), renderAnswer(result.answer, result.latex?.answer));
     root.append(answer);
     if (result.verified !== true) root.append(node('p', 'answer-note', 'The engine returned an answer without verification. Treat it as a candidate, not an established result.'));
   } else {
@@ -627,7 +629,7 @@ function renderSolve(result, problem) {
   appendInspector(root, result);
   return {
     element: root,
-    copy: `Problem: ${latexSource(problem, result.latex?.input)}\nStatus: ${result.status}\nLaTeX: ${result.latex?.valid === true ? 'verified' : 'not verified'}\nMathematical assurance: ${numerical ? 'Formula checked · numerical values approximate' : result.verified === true ? 'Verified by the engine' : 'Not verified'}\nAnswer: ${latexSource(result.answer, result.latex?.answer)}\nRestrictions: ${listValues(result.restrictions).map((value, index) => latexSource(value, result.latex?.restrictions?.[index])).join('; ') || 'None reported'}\n${copyMathSteps(result.steps, result.latex?.steps)}${result.error ? `\n${asText(result.error)}` : ''}`,
+    copy: `Problem: ${latexSource(problem, result.latex?.input)}\nStatus: ${result.status}\nLaTeX: ${result.latex?.valid === true ? 'verified' : 'not verified'}\nMathematical assurance: ${numerical ? 'Formula checked. Numerical values approximate.' : result.verified === true ? 'Verified by the engine' : 'Not verified'}\nAnswer: ${latexSource(result.answer, result.latex?.answer)}\nRestrictions: ${listValues(result.restrictions).map((value, index) => latexSource(value, result.latex?.restrictions?.[index])).join('; ') || 'None reported'}\n${copyMathSteps(result.steps, result.latex?.steps)}${result.error ? `\n${asText(result.error)}` : ''}`,
     announcement: result.status === 'solved' ? `Result ready. ${result.verified === true ? numerical ? 'Formula checked. Numerical values are approximate.' : 'Verified by the engine.' : 'The result is not verified.'}` : `Problem ${result.status}. ${result.error || ''}`,
   };
 }
@@ -636,7 +638,7 @@ function ghostNode(ghost, corrected = false) {
   const data = isObject(ghost) ? ghost : { after: asText(ghost) };
   const root = node('div', 'step-ghost');
   const label = node('div', 'ghost-label');
-  label.append(document.createTextNode('Ghost step '), node('span', '', corrected ? '· corrected continuation' : '· reconstructed reasoning'));
+  label.append(document.createTextNode('Ghost step: '), node('span', '', corrected ? 'corrected continuation' : 'reconstructed reasoning'));
   root.append(label);
   if (data.before !== undefined) root.append(mathNode('div', 'math-line math-before', data.before));
   root.append(mathNode('div', 'math-line', data.after ?? data.input ?? data.expression ?? ghost), verificationBadge(data.verified));
@@ -673,7 +675,7 @@ function renderCheck(result, problem, submittedSteps) {
     const item = node('li', `proof-step ${localOnly ? 'local-only' : status}`);
     item.append(node('span', 'step-marker', String(index + 1)));
     const stepHeading = node('div', 'step-heading');
-    stepHeading.append(node('h4', '', firstError === index ? `Step ${index + 1} · first error` : `Step ${index + 1}`), badge(localOnly ? 'Locally valid · follows earlier error' : status === 'valid' ? '✓ Valid' : humanize(status), localOnly ? 'unresolved' : status));
+    stepHeading.append(node('h4', '', firstError === index ? `Step ${index + 1}: first error` : `Step ${index + 1}`), badge(localOnly ? 'Locally valid. Follows earlier error.' : status === 'valid' ? '✓ Valid' : humanize(status), localOnly ? 'unresolved' : status));
     item.append(stepHeading);
     // Reconstructed checkpoints precede the submitted line they help explain.
     for (const ghost of array(step.ghostSteps)) {
@@ -694,7 +696,7 @@ function renderCheck(result, problem, submittedSteps) {
   if (array(result.correctedSteps).length) {
     const correction = node('section', 'corrected-ghost-section');
     const verified = result.correctedSteps.every((step) => step.verified === true);
-    correction.append(node('h3', 'ghost-heading', verified ? 'Verified corrected continuation' : 'Corrected continuation · not fully verified'));
+    correction.append(node('h3', 'ghost-heading', verified ? 'Verified corrected continuation' : 'Corrected continuation. Not fully verified.'));
     correction.append(node('p', 'subtle', 'These Ghost steps continue from the last valid point. They are a separate correction, not the work you submitted.'));
     result.correctedSteps.forEach((step) => correction.append(ghostNode(step, true)));
     root.append(correction);
@@ -767,7 +769,7 @@ function renderGenerated(result, options) {
     const reveal = node('details', 'generation-solution');
     reveal.append(node('summary', '', referenceOnly ? 'Reveal the reference scaffold' : verified ? 'Reveal the verified solution' : 'Reveal the generated solution'));
     if (referenceOnly) reveal.append(node('p', 'generation-assurance subtle', 'Reference steps are generation scaffolding. They have not been independently verified.'));
-    else if (verified) reveal.append(numerical ? badge('Formula checked · numerical values approximate', 'verified') : node('p', 'generation-assurance subtle', 'These solution steps passed the engine’s independent verification.'));
+    else if (verified) reveal.append(numerical ? badge('Formula checked. Numerical values approximate.', 'verified') : node('p', 'generation-assurance subtle', 'These solution steps passed the engine’s independent verification.'));
     if (numerical) reveal.querySelector('.badge')?.classList.add('badge-formula', 'generation-assurance');
     appendProof(reveal, referenceOnly ? solution.map((step) => isObject(step) ? { ...step, verified: false } : step) : solution, numerical, result.latex?.steps);
     root.append(reveal);
@@ -961,11 +963,15 @@ document.querySelectorAll('[data-graph-example]').forEach((button) => {
 toolViews.forEach((view) => {
   forms[view].addEventListener('input', () => markDirty(view));
 });
-$('generate-difficulty').addEventListener('input', () => {
-  const value = Number($('generate-difficulty').value).toFixed(3);
+function syncDifficultyControl() {
+  const control = $('generate-difficulty');
+  const value = Number(control.value).toFixed(3);
   $('difficulty-value').value = value;
-  $('generate-difficulty').setAttribute('aria-valuetext', `${value} out of 1.000`);
-});
+  control.setAttribute('aria-valuetext', `${value} out of 1.000`);
+  control.style.setProperty('--difficulty-progress', `${Number(value) * 100}%`);
+}
+$('generate-difficulty').addEventListener('input', syncDifficultyControl);
+syncDifficultyControl();
 $('random-seed').addEventListener('click', () => { $('generate-seed').value = String(randomSeed()); markDirty('generate'); });
 $('retry-engine').addEventListener('click', () => connectEngine().then(() => announce('Local engine connected.')).catch((error) => announce(errorMessage(error))));
 $('cancel-run').addEventListener('click', () => cancelRun());

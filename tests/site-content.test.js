@@ -6,13 +6,17 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const pages = ['index.html', 'features.html', 'learn.html', 'about.html', 'contact.html', 'legal.html', 'proof-lab.html'];
 const expectedNav = [
-  ['Home', 'index.html'],
-  ['Features', 'features.html'],
-  ['Learn', 'learn.html'],
-  ['About', 'about.html'],
-  ['Contact', 'contact.html'],
-  ['Start math', 'proof-lab.html'],
+  ['Home', '/'],
+  ['Features', '/features'],
+  ['Learn', '/learn'],
+  ['About', '/about'],
+  ['Contact', '/contact'],
+  ['Start math', '/proof-lab'],
 ];
+const pageRoutes = new Map([
+  ['index.html', '/'], ['features.html', '/features'], ['learn.html', '/learn'],
+  ['about.html', '/about'], ['contact.html', '/contact'],
+]);
 
 function read(page) { return readFileSync(resolve(root, page), 'utf8'); }
 function links(markup) {
@@ -31,13 +35,16 @@ for (const page of pages) {
     assert.ok(mobile, 'mobile navigation exists');
     assert.deepEqual(links(desktop), expectedNav);
     assert.deepEqual(links(mobile), expectedNav);
-    if (!['legal.html', 'proof-lab.html'].includes(page)) {
-      assert.match(desktop, new RegExp(`data-nav="${page}"`));
-      assert.match(mobile, new RegExp(`data-nav="${page}"`));
+    if (pageRoutes.has(page)) {
+      const route = pageRoutes.get(page).replace('/', '\\/');
+      assert.match(desktop, new RegExp(`data-nav="${route}"`));
+      assert.match(mobile, new RegExp(`data-nav="${route}"`));
     }
     assert.match(html, /<footer class="site-footer">/);
     assert.match(html, /Bring the math\. Show the proof\./);
-    assert.match(html, /<a class="btn btn-accent" href="proof-lab\.html">Start math<\/a>/);
+    assert.match(html, /<a class="btn btn-accent" href="\/proof-lab">Start math<\/a>/);
+    assert.doesNotMatch(html, /<a\b[^>]*href="[^"]+\.html(?:[#?"])/, 'public links use clean routes');
+    assert.doesNotMatch(html, /[—–·]/, 'public copy avoids dash and dot separators');
     assert.doesNotMatch(html, /\bphysics\b|five modes|math lab/i);
   });
 }
@@ -46,8 +53,10 @@ test('all local public-page links point to real pages and valid anchors', () => 
   for (const page of pages) {
     for (const [, target] of read(page).matchAll(/\bhref="([^"]+)"/g)) {
       if (/^(?:https?:|mailto:)/.test(target)) continue;
-      const [filename, fragment] = target.split('#');
-      const destination = filename.split('?')[0] || page;
+      const [pathname, fragment] = target.split('#');
+      const cleanPath = pathname.split('?')[0];
+      const destination = cleanPath === '' ? page : cleanPath === '/' ? 'index.html'
+        : cleanPath.startsWith('/') ? `${cleanPath.slice(1)}.html` : cleanPath;
       assert.ok(existsSync(resolve(root, destination)), `${page}: missing ${target}`);
       if (fragment) assert.match(read(destination), new RegExp(`\\bid="${fragment}"`), `${page}: missing #${fragment}`);
     }
@@ -56,11 +65,27 @@ test('all local public-page links point to real pages and valid anchors', () => 
 
 test('the former Math Lab URL forwards to Proof Lab', () => {
   const old = read('math-lab.html');
-  assert.match(old, /http-equiv="refresh" content="0; url=proof-lab\.html"/);
-  assert.match(old, /href="proof-lab\.html"/);
+  assert.match(old, /http-equiv="refresh" content="0; url=\/proof-lab"/);
+  assert.match(old, /href="\/proof-lab"/);
 });
 
 test('legacy demos forward into the current proof tool', () => {
-  assert.match(read('demo-stepgrader.html'), /http-equiv="refresh" content="0;url=proof-lab\.html#check"/);
-  assert.match(read('lab-projectile.html'), /http-equiv="refresh" content="0;url=proof-lab\.html"/);
+  assert.match(read('demo-stepgrader.html'), /http-equiv="refresh" content="0;url=\/proof-lab#check"/);
+  assert.match(read('lab-projectile.html'), /http-equiv="refresh" content="0;url=\/proof-lab"/);
+});
+
+test('home carousel uses three distinct backgrounds', () => {
+  const home = read('index.html');
+  assert.match(home, /images\/bg1\.png/);
+  assert.match(home, /images\/bg2\.svg/);
+  assert.match(home, /images\/bg3\.svg/);
+});
+
+test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', () => {
+  const lab = read('proof-lab.html');
+  const css = read('math-lab.css');
+  assert.doesNotMatch(lab, /Runs locally in your browser|No account\. No API keys\.|Local engine ready|Write naturally in LaTeX|A visual expression, with room to think/);
+  assert.match(css, /\.math-keypad \{ position: fixed;/);
+  assert.match(css, /\.math-keypad\.is-open/);
+  assert.match(css, /difficulty-slider::\-webkit-slider-runnable-track/);
 });

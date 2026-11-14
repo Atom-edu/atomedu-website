@@ -57,13 +57,13 @@ export function createGraph(container, options = {}) {
         <label class="graph-example-label">Try an example
           <select class="graph-examples" aria-label="Add a graph example">
             <option value="">Choose a curve…</option>
-            <option value="y=x^2">Parabola · y = x²</option>
-            <option value="y=sin(x)">Wave · y = sin(x)</option>
-            <option value="y=1/x">Reciprocal · y = 1/x</option>
-            <option value="x^2+y^2=9">Circle · x² + y² = 9</option>
-            <option value="y&lt;x^2">Inequality · y &lt; x²</option>
-            <option value="y=a*x^2+b*x+c">Parameters · ax² + bx + c</option>
-            <option value="(2,3)">Point · (2, 3)</option>
+            <option value="y=x^2">Parabola: y = x²</option>
+            <option value="y=sin(x)">Wave: y = sin(x)</option>
+            <option value="y=1/x">Reciprocal: y = 1/x</option>
+            <option value="x^2+y^2=9">Circle: x² + y² = 9</option>
+            <option value="y&lt;x^2">Inequality: y &lt; x²</option>
+            <option value="y=a*x^2+b*x+c">Parameters: ax² + bx + c</option>
+            <option value="(2,3)">Point: (2, 3)</option>
           </select>
         </label>
         <section class="graph-parameters" aria-label="Expression parameters" hidden></section>
@@ -81,10 +81,10 @@ export function createGraph(container, options = {}) {
       <div class="graph-plot-area">
         <div class="graph-stage">
           <canvas class="graph-canvas" tabindex="0" role="img" aria-label="Interactive numerical coordinate graph. Drag to pan, scroll or pinch to zoom. Plus and minus zoom, arrow keys pan, Home resets."></canvas>
-          <output class="graph-coordinate-readout" aria-label="Pointer coordinates">x: — &nbsp; y: —</output>
+          <output class="graph-coordinate-readout" aria-label="Pointer coordinates">x: n/a &nbsp; y: n/a</output>
           <div class="graph-trace" role="status" aria-live="polite" hidden></div>
         </div>
-        <div class="graph-plot-help"><span>Drag to pan · scroll / pinch to zoom · click a curve to trace</span><span>+ / − · arrows · Home</span></div>
+        <div class="graph-plot-help"><span>Drag to pan. Scroll or pinch to zoom. Click a curve to trace.</span><span>Use +, −, arrows, or Home.</span></div>
       </div>
     </div>
     <footer class="graph-disclaimer">Numerical approximation, not a proof. Shading and traces are sampled; undefined samples are omitted. Region edges, tiny features, and discontinuities may be unresolved.</footer>`;
@@ -165,7 +165,7 @@ export function createGraph(container, options = {}) {
       try { row.compiled = compileGraphExpression(row.expression, { readExpression: options.readExpression }); }
       catch (error) { row.error = error.message || 'This expression could not be graphed.'; }
     }
-    row.errorNode.textContent = row.error || (row.compiled?.kind === 'inequality' ? 'Approximate shading · undefined samples omitted; edges may have gaps' : row.compiled?.piecewise ? 'Piecewise · first matching branch; open endpoints excluded' : '');
+    row.errorNode.textContent = row.error || (row.compiled?.kind === 'inequality' ? 'Approximate shading. Undefined samples are omitted, so edges may have gaps.' : row.compiled?.piecewise ? 'Piecewise function. The first matching branch is used, and open endpoints are excluded.' : '');
     row.errorNode.classList.toggle('graph-expression-error', !!row.error);
     row.field.setAttribute('aria-invalid', row.error ? 'true' : 'false');
     row.element.classList.toggle('graph-row-hidden', !row.visible);
@@ -327,7 +327,7 @@ export function createGraph(container, options = {}) {
     }
     bg.restore();
     bg.fillStyle = '#737a73'; bg.font = '10px system-ui, sans-serif'; bg.textAlign = 'right'; bg.textBaseline = 'bottom';
-    bg.fillText('Numerical view · not a proof', width - 9, height - 7);
+    bg.fillText('Numerical view. Not a proof.', width - 9, height - 7);
   }
   function drawOverlay() {
     ctx.clearRect(0, 0, width, height); ctx.drawImage(background, 0, 0, width, height);
@@ -433,7 +433,7 @@ export function createGraph(container, options = {}) {
       }
       if (Number.isFinite(p.x) && Number.isFinite(p.y)) {
         trace = { expressionId: best.row.id, x: p.x, y: p.y };
-        traceOutput.textContent = `Trace ≈ (${format(p.x)}, ${format(p.y)}) · numerical`; traceOutput.hidden = false;
+        traceOutput.textContent = `Numerical trace ≈ (${format(p.x)}, ${format(p.y)})`; traceOutput.hidden = false;
       }
     }
     schedule(true, false);
@@ -490,7 +490,7 @@ export function createGraph(container, options = {}) {
   on(canvas, 'pointerup', event => endPointer(event));
   on(canvas, 'pointercancel', event => endPointer(event, true));
   on(canvas, 'lostpointercapture', event => endPointer(event, true));
-  on(canvas, 'pointerleave', () => { if (!pointers.size) { pointer = null; readout.textContent = 'x: —   y: —'; schedule(false, false); } });
+  on(canvas, 'pointerleave', () => { if (!pointers.size) { pointer = null; readout.textContent = 'x: n/a   y: n/a'; schedule(false, false); } });
   on(canvas, 'keydown', event => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     const dx = (viewport.xMax - viewport.xMin) * .1, dy = (viewport.yMax - viewport.yMin) * .1;

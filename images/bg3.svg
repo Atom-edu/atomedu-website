@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" role="img" aria-labelledby="title description">
+  <title id="title">Layered periodic function graph</title>
+  <desc id="description">A dark coordinate grid with three colorful periodic curves.</desc>
+  <defs>
+    <radialGradient id="background" cx="72%" cy="35%" r="90%">
+      <stop offset="0" stop-color="#31485a"/>
+      <stop offset=".55" stop-color="#182733"/>
+      <stop offset="1" stop-color="#0e171f"/>
+    </radialGradient>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M80 0H0V80" fill="none" stroke="#ffffff" stroke-opacity=".09"/>
+      <path d="M40 0V80M0 40H80" fill="none" stroke="#ffffff" stroke-opacity=".035"/>
+    </pattern>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1600" height="800" fill="url(#background)"/>
+  <rect width="1600" height="800" fill="url(#grid)"/>
+  <path d="M0 400H1600M800 0V800" fill="none" stroke="#f4f0e8" stroke-opacity=".5" stroke-width="2"/>
+  <path d="M0 400C100 170 200 170 300 400S500 630 600 400S800 170 900 400S1100 630 1200 400S1400 170 1500 400S1600 555 1600 555" fill="none" stroke="#f0805a" stroke-width="8" filter="url(#glow)"/>
+  <path d="M0 230C100 230 150 400 250 400S400 230 500 230S650 400 750 400S900 230 1000 230S1150 400 1250 400S1400 230 1500 230S1600 340 1600 340" fill="none" stroke="#67c7e7" stroke-width="7" filter="url(#glow)"/>
+  <path d="M0 560C175 515 275 455 400 400S650 285 800 400S1050 515 1200 400S1425 285 1600 250" fill="none" stroke="#dfb15f" stroke-width="6" filter="url(#glow)"/>
+  <g fill="#ffffff" fill-opacity=".72" font-family="Space Grotesk, Arial, sans-serif" font-size="28">
+    <text x="1515" y="382">x</text>
+    <text x="820" y="42">y</text>
+  </g>
+</svg>
