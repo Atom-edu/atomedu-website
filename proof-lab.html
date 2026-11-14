@@ -3,74 +3,75 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f5f2">
+  <meta name="theme-color" content="#1f2a36">
   <meta name="description" content="Proof Lab is a free math proof tool for solving supported problems, checking your steps, generating practice, and exploring graphs in your browser.">
   <title>Proof Lab | atomEDU</title>
   <link rel="icon" href="images/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=proof-lab-8">
+  <link rel="stylesheet" href="./styles.css?v=proof-lab-9">
   <link rel="stylesheet" href="./vendor/katex/katex.min.css">
-  <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-8">
-  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-8">
-  <script type="module" src="./math-lab.js?v=proof-lab-8"></script>
+  <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-9">
+  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-9">
+  <script defer src="./site-i18n.js?v=proof-lab-9"></script>
+  <script type="module" src="./math-lab.js?v=proof-lab-9"></script>
 </head>
-<body>
+<body class="lab-app">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="/">
-        <img class="mark" src="images/logo.svg" alt="">
-        <span class="word">atom<b>EDU</b></span>
-      </a>
-      <nav class="nav">
-        <a data-nav="/" href="/">Home</a>
-        <a data-nav="/features" href="/features">Features</a>
-        <a data-nav="/learn" href="/learn">Learn</a>
-        <a data-nav="/about" href="/about">About</a>
-        <a data-nav="/contact" href="/contact">Contact</a>
-        <a class="cta" href="/proof-lab">Start math</a>
-      </nav>
-      <button class="menu-btn" aria-label="Menu" type="button">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      </button>
-    </div>
-    <div class="mobile-nav" id="math-lab-mobile-nav">
-      <div class="inner">
-        <a data-nav="/" href="/">Home</a>
-        <a data-nav="/features" href="/features">Features</a>
-        <a data-nav="/learn" href="/learn">Learn</a>
-        <a data-nav="/about" href="/about">About</a>
-        <a data-nav="/contact" href="/contact">Contact</a>
-        <a class="cta" href="/proof-lab">Start math</a>
+  <header class="lab-topbar">
+    <a class="lab-topbar-brand" href="/" aria-label="atomEDU home">atom<b>EDU</b></a>
+    <div class="lab-topbar-actions">
+      <div class="lab-menu-wrap">
+        <button class="lab-topbar-button" id="tour-menu-button" type="button" aria-label="Help and tour" aria-haspopup="true" aria-expanded="false" aria-controls="tour-menu"><span class="lab-question-mark" aria-hidden="true">?</span><span class="lab-action-label">Take a Tour</span></button>
+        <div class="lab-popover lab-tour-menu" id="tour-menu" hidden>
+          <h2>Take a Tour</h2>
+          <p>Get familiar with solving, checking, and graphing.</p>
+          <div class="lab-tour-preview" aria-hidden="true"><span><b>ƒ</b> Solve</span><span><b>✓</b> Check work</span><span><b>✳</b> Generate</span><span><b>⌁</b> Graph</span></div>
+          <button class="lab-tour-start" id="tour-start" type="button">Start tour <span aria-hidden="true">→</span></button>
+          <div class="lab-tour-links"><button id="tour-coverage" type="button">Coverage and limits</button><button id="tour-keyboard" type="button">Math keyboard</button></div>
+        </div>
       </div>
+      <div class="lab-menu-wrap">
+        <button class="lab-topbar-button lab-language-trigger" id="language-menu-button" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false" aria-controls="language-menu">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-2.6 2.3-4 5.4-4 9s1.4 6.7 4 9m0-18c2.6 2.3 4 5.4 4 9s-1.4 6.7-4 9"/></svg>
+          <span class="lab-action-label">Language</span>
+        </button>
+        <div class="lab-popover lab-language-menu" id="language-menu" hidden>
+          <h2>Language</h2>
+          <button class="language-option" type="button" data-language="en" aria-pressed="true">English <span>English</span></button>
+          <button class="language-option" type="button" data-language="es" aria-pressed="false">Español <span>Spanish</span></button>
+        </div>
+      </div>
+      <a class="lab-back" href="/" aria-label="Back to site"><span aria-hidden="true">‹</span><span class="lab-back-label">Back to site</span></a>
     </div>
   </header>
 
   <main class="app-main" id="workspace">
-    <div class="workspace-heading">
-      <div><p class="eyebrow">THE WORKBENCH</p><h1 class="heading-display">Work through the math.</h1></div>
-      <div class="workspace-side"><button class="text-button" id="coverage-link" type="button">Coverage &amp; limits <span aria-hidden="true">ⓘ</span></button></div>
-    </div>
-
     <div class="engine-notice" id="engine-notice" hidden>
       <div><strong id="engine-notice-title">The math engine is unavailable.</strong><p id="engine-notice-message">Your inputs are ready to use once the engine is connected.</p></div>
       <button class="button button-small button-secondary" id="retry-engine" type="button">Reconnect</button>
     </div>
 
-    <div class="workspace-toolbar">
-      <div class="view-tabs" role="tablist" aria-label="Proof Lab tools">
+    <div class="workbench" id="workbench">
+      <div class="input-column" id="lab-input-column">
+        <div class="rail-toolbar" aria-label="Workspace controls">
+          <button type="button" id="rail-add" aria-label="New expression or step" title="New expression or step">+</button>
+          <button type="button" id="rail-undo" aria-label="Undo" title="Undo">↶</button>
+          <button type="button" id="rail-redo" aria-label="Redo" title="Redo">↷</button>
+          <button type="button" id="rail-clear" aria-label="Clear current input" title="Clear current input">×</button>
+          <button type="button" id="rail-collapse" aria-label="Collapse input panel" title="Collapse input panel">≪</button>
+        </div>
+        <div class="workspace-heading"><div><p class="eyebrow">PROOF LAB</p><h1>Work through the math.</h1></div><button class="text-button" id="coverage-link" type="button" aria-label="Coverage and limits">ⓘ</button></div>
+        <div class="workspace-toolbar">
+          <div class="view-tabs" role="tablist" aria-label="Proof Lab tools">
         <button class="view-tab" id="tab-solve" role="tab" aria-selected="true" aria-controls="view-solve" tabindex="0" data-view="solve"><span class="tab-icon" aria-hidden="true">ƒ</span>Solve</button>
         <button class="view-tab" id="tab-check" role="tab" aria-selected="false" aria-controls="view-check" tabindex="-1" data-view="check"><span class="tab-icon" aria-hidden="true">✓</span>Check work</button>
         <button class="view-tab" id="tab-generate" role="tab" aria-selected="false" aria-controls="view-generate" tabindex="-1" data-view="generate"><span class="tab-icon" aria-hidden="true">✳</span>Generate</button>
         <button class="view-tab" id="tab-graph" role="tab" aria-selected="false" aria-controls="view-graph" tabindex="-1" data-view="graph"><span class="tab-icon" aria-hidden="true">⌁</span>Graph</button>
-      </div>
-      <span class="keyboard-hint"><kbd id="shortcut-modifier">⌘</kbd><kbd>Enter</kbd> to run</span>
-    </div>
-
-    <div class="workbench" id="workbench">
-      <div class="input-column">
+          </div>
+          <span class="keyboard-hint"><kbd id="shortcut-modifier">⌘</kbd><kbd>Enter</kbd> to run</span>
+        </div>
         <section class="input-panel" id="view-solve" role="tabpanel" aria-labelledby="tab-solve">
           <div class="panel-heading"><span class="section-number">01</span><div><h2>Your problem</h2></div></div>
           <form id="solve-form">
@@ -130,6 +131,10 @@
           </form>
           <div class="practice-note"><span class="practice-symbol" aria-hidden="true">x²</span><h3>Try it in your own way.</h3><p>Send a generated problem to Check work to write your own solution, or open it in Solve to inspect the proof.</p></div>
         </section>
+        <section class="graph-editor" id="graph-editor" aria-label="Graph expressions" hidden>
+          <h2 class="sr-only">Graph expressions</h2>
+          <div id="graph-sidebar-host" class="atom-graph graph-editor-shell"></div>
+        </section>
       </div>
 
       <section class="result-panel" id="result-panel" aria-labelledby="result-heading" aria-busy="false">
@@ -137,14 +142,12 @@
         <div id="result-content"></div>
         <div class="result-loading" id="result-loading" hidden><span class="spinner" aria-hidden="true"></span><strong id="loading-title">Working through the problem…</strong><p>Waiting for the local engine.</p><button class="text-button" type="button" id="cancel-run">Cancel</button></div>
       </section>
-    </div>
-
-    <section class="graph-workspace" id="view-graph" role="tabpanel" aria-labelledby="tab-graph" hidden>
-      <div class="graph-workspace-heading"><div><p class="eyebrow">SEE THE RELATIONSHIPS</p><h2 class="heading-display">A bigger space to explore.</h2><p>Layer expressions, pan, zoom, and inspect the curves.</p></div><span class="graph-assurance">Numerical exploration. Separate from proof verification.</span></div>
+      <section class="graph-workspace" id="view-graph" role="tabpanel" aria-labelledby="tab-graph" hidden>
       <div id="graph-workspace-canvas" class="graph-workspace-canvas" aria-label="Interactive graphing workspace"></div>
-      <div class="graph-examples" aria-label="Graph examples"><span>Try a view</span><button type="button" class="example-button" data-graph-example="functions">Compare functions</button><button type="button" class="example-button" data-graph-example="circle">Circle &amp; line</button><button type="button" class="example-button" data-graph-example="waves">Trigonometry</button></div>
-      <p class="field-help">Click an expression to use the shared math pad. Graphing may support notation outside the solver’s rule families; consult Coverage for proof support.</p>
-    </section>
+      </section>
+    </div>
+    <button class="rail-expand" id="rail-expand" type="button" aria-label="Open input panel" hidden>≫</button>
+    <button class="keyboard-toggle" id="keyboard-toggle" type="button" aria-label="Open math keyboard" aria-controls="math-keypad" aria-expanded="false"><span aria-hidden="true">⌨</span><span aria-hidden="true">▴</span></button>
 
     <section class="math-keypad" id="math-keypad" aria-label="Math keyboard"></section>
 
@@ -159,40 +162,16 @@
       </div>
     </dialog>
   </main>
-  <footer class="site-footer">
-    <div class="footer-shell">
-      <div class="footer-card">
-        <div class="footer-banner">
-          <img class="bg" src="images/footer.svg" alt="">
-          <div class="shade"></div>
-          <div class="content">
-            <h2 class="heading-display">Bring the math. Show the proof.</h2>
-            <p>Solve a problem, check your own steps, or generate a new one. Proof Lab is free and runs in your browser.</p>
-            <div class="actions">
-              <a class="btn btn-accent" href="/proof-lab">Start math</a>
-              <a class="btn btn-light" href="/features">See the features</a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-cols">
-          <div>
-            <div class="brand" style="margin-bottom:0.3rem">
-              <img class="mark" src="images/logo.svg" alt="" style="width:32px;height:32px">
-              <span class="word" style="color:#f1ece4">atom<b>EDU</b></span>
-            </div>
-            <p class="about">A free math proof tool for working through problems, checking reasoning, and seeing where a step goes wrong.</p>
-          </div>
-          <div><h4>Product</h4><ul><li><a href="/proof-lab">Proof Lab</a></li><li><a href="/features">Features</a></li><li><a href="/learn">How it works</a></li></ul></div>
-          <div><h4>Company</h4><ul><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li></ul></div>
-          <div><h4>Legal</h4><ul><li><a href="/legal#privacy">Privacy</a></li><li><a href="/legal#terms">Terms</a></li><li><a href="/legal#attributions">Attributions</a></li></ul></div>
-        </div>
-        <div class="footer-bottom"><div><div class="footer-site">atom-edu.org</div><span>&copy; <span id="yr"></span> atomEDU. Free for students.</span></div><span>Maintained by Avuthu, Awasthi, and Sanikommu.</span></div>
-      </div>
-    </div>
-  </footer>
+  <dialog class="tour-dialog" id="tour-dialog" aria-labelledby="tour-title">
+    <div class="tour-dialog-head"><span class="tour-count" id="tour-count">1 of 4</span><button type="button" id="tour-close" aria-label="Close tour">×</button></div>
+    <div class="tour-illustration" id="tour-illustration" aria-hidden="true">ƒ(x)</div>
+    <h2 id="tour-title">Start with a problem</h2>
+    <p id="tour-description">Type in the math field or use the math pad to build an expression visually.</p>
+    <div class="tour-progress" id="tour-progress" aria-hidden="true"></div>
+    <div class="tour-actions"><button type="button" id="tour-previous">Back</button><button type="button" id="tour-next">Next</button></div>
+  </dialog>
   <p class="sr-only" id="live-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <noscript><div class="noscript-message">Proof Lab needs JavaScript to connect to the local math engine. Enable it and reload this page.</div></noscript>
-  <script src="site.js?v=proof-lab-8"></script>
-  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+  <script src="site.js?v=proof-lab-9"></script>
 </body>
 </html>

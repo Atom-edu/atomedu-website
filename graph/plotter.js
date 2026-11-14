@@ -36,12 +36,13 @@ export function createGraph(container, options = {}) {
   const doc = container.ownerDocument, win = doc.defaultView, prefix = `atom-graph-${++instanceNumber}`;
   const root = doc.createElement('section');
   root.className = `atom-graph${options.compact ? ' graph-compact' : ''}`;
-  root.setAttribute('aria-label', options.ariaLabel || 'Numerical graph workspace');
+  root.setAttribute('aria-label', options.ariaLabel || 'Graph workspace');
   if (Number.isFinite(options.height)) root.style.setProperty('--graph-height', `${clamp(options.height, 240, 1600)}px`);
   root.innerHTML = `
     <header class="graph-toolbar">
-      <div class="graph-heading"><strong>Graph</strong><span class="graph-numerical-badge">Numerical view</span></div>
+      <div class="graph-heading"><strong>Graph</strong></div>
       <div class="graph-actions">
+        <button type="button" data-graph-action="window" aria-label="Window settings" title="Window settings">⚙</button>
         <button type="button" data-graph-action="zoom-in" aria-label="Zoom in" title="Zoom in (+)">+</button>
         <button type="button" data-graph-action="zoom-out" aria-label="Zoom out" title="Zoom out (−)">−</button>
         <button type="button" data-graph-action="reset" title="Reset window (Home)">Reset</button>
@@ -54,18 +55,6 @@ export function createGraph(container, options = {}) {
         <div class="graph-list-heading"><span>Expressions</span><span class="graph-count"></span></div>
         <div class="graph-expression-list"></div>
         <button class="graph-add" type="button" data-graph-action="add">+ Add expression</button>
-        <label class="graph-example-label">Try an example
-          <select class="graph-examples" aria-label="Add a graph example">
-            <option value="">Choose a curve…</option>
-            <option value="y=x^2">Parabola: y = x²</option>
-            <option value="y=sin(x)">Wave: y = sin(x)</option>
-            <option value="y=1/x">Reciprocal: y = 1/x</option>
-            <option value="x^2+y^2=9">Circle: x² + y² = 9</option>
-            <option value="y&lt;x^2">Inequality: y &lt; x²</option>
-            <option value="y=a*x^2+b*x+c">Parameters: ax² + bx + c</option>
-            <option value="(2,3)">Point: (2, 3)</option>
-          </select>
-        </label>
         <section class="graph-parameters" aria-label="Expression parameters" hidden></section>
         <details class="graph-window">
           <summary>Window settings</summary>
@@ -76,23 +65,24 @@ export function createGraph(container, options = {}) {
             <p class="graph-window-error" role="status"></p>
           </form>
         </details>
-        <p class="graph-expression-help">Use y = f(x), x = g(y), an equation, inequality, or (x, y) point. Parameters a, b, c get sliders.</p>
       </aside>
       <div class="graph-plot-area">
         <div class="graph-stage">
-          <canvas class="graph-canvas" tabindex="0" role="img" aria-label="Interactive numerical coordinate graph. Drag to pan, scroll or pinch to zoom. Plus and minus zoom, arrow keys pan, Home resets."></canvas>
+          <canvas class="graph-canvas" tabindex="0" role="img" aria-label="Interactive coordinate graph. Drag to pan, scroll or pinch to zoom. Plus and minus zoom, arrow keys pan, Home resets."></canvas>
           <output class="graph-coordinate-readout" aria-label="Pointer coordinates">x: n/a &nbsp; y: n/a</output>
           <div class="graph-trace" role="status" aria-live="polite" hidden></div>
         </div>
         <div class="graph-plot-help"><span>Drag to pan. Scroll or pinch to zoom. Click a curve to trace.</span><span>Use +, −, arrows, or Home.</span></div>
       </div>
-    </div>
-    <footer class="graph-disclaimer">Numerical approximation, not a proof. Shading and traces are sampled; undefined samples are omitted. Region edges, tiny features, and discontinuities may be unresolved.</footer>`;
+    </div>`;
   container.append(root);
-  const $ = selector => root.querySelector(selector);
+  const sidebarHost = options.sidebarHost?.ownerDocument === doc ? options.sidebarHost : null;
+  const sidebar = root.querySelector('.graph-sidebar');
+  if (sidebarHost) sidebarHost.append(sidebar);
+  const $ = selector => root.querySelector(selector) || sidebarHost?.querySelector(selector);
   const list = $('.graph-expression-list'), stage = $('.graph-stage'), canvas = $('.graph-canvas');
   const ctx = canvas.getContext('2d'), background = doc.createElement('canvas'), bg = background.getContext('2d');
-  if (!ctx || !bg) { root.remove(); throw new Error('This browser does not provide a 2D canvas context.'); }
+  if (!ctx || !bg) { sidebar.remove(); root.remove(); throw new Error('This browser does not provide a 2D canvas context.'); }
   const readout = $('.graph-coordinate-readout'), traceOutput = $('.graph-trace'), parameterSection = $('.graph-parameters');
   const fields = {}, listeners = [], pointers = new Map(), geometries = new Map();
   let rows = [], rowNumber = 0, width = 800, height = 520, dpr = 1, frame = null, sized = false;
@@ -137,7 +127,6 @@ export function createGraph(container, options = {}) {
   function updateCount() {
     $('.graph-count').textContent = `${rows.length} / ${GRAPH_LIMITS.expressions}`;
     $('[data-graph-action="add"]').disabled = rows.length >= GRAPH_LIMITS.expressions;
-    $('.graph-examples').disabled = rows.length >= GRAPH_LIMITS.expressions;
   }
   function updateParameters() {
     const used = [...new Set(rows.flatMap(row => row.compiled?.parameters || []))].sort();
@@ -326,8 +315,6 @@ export function createGraph(container, options = {}) {
       }
     }
     bg.restore();
-    bg.fillStyle = '#737a73'; bg.font = '10px system-ui, sans-serif'; bg.textAlign = 'right'; bg.textBaseline = 'bottom';
-    bg.fillText('Numerical view. Not a proof.', width - 9, height - 7);
   }
   function drawOverlay() {
     ctx.clearRect(0, 0, width, height); ctx.drawImage(background, 0, 0, width, height);
@@ -409,7 +396,7 @@ export function createGraph(container, options = {}) {
   }
   function exportPNG() {
     if (sceneDirty) { drawScene(); sceneDirty = false; }
-    const link = doc.createElement('a'); link.download = 'atom-numerical-graph.png'; link.href = background.toDataURL('image/png');
+    const link = doc.createElement('a'); link.download = 'atom-graph.png'; link.href = background.toDataURL('image/png');
     link.hidden = true; doc.body.append(link); link.click(); link.remove();
   }
   function clearTrace() { trace = null; traceOutput.hidden = true; }
@@ -500,21 +487,18 @@ export function createGraph(container, options = {}) {
       Escape: () => { clearTrace(); schedule(true, false); } };
     if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
   });
-  on(root, 'click', event => {
+  const handleGraphAction = event => {
     const action = event.target.closest('[data-graph-action]')?.dataset.graphAction;
+    if (action === 'window') { options.onShowSidebar?.(); $('.graph-window').open = true; $('.graph-window summary').focus(); }
     if (action === 'zoom-in') zoom(1.3);
     if (action === 'zoom-out') zoom(1 / 1.3);
     if (action === 'reset') reset();
     if (action === 'fit') fit();
     if (action === 'export') exportPNG();
     if (action === 'add' && rows.length < GRAPH_LIMITS.expressions) { addExpression(''); rows.at(-1).field.focus(); }
-  });
-  on($('.graph-examples'), 'change', event => {
-    if (!event.target.value) return;
-    // Example source is internal plain text. Hosts may convert it to LaTeX.
-    const value = options.writeExpression ? options.writeExpression(event.target.value) : event.target.value;
-    addExpression(value); event.target.value = '';
-  });
+  };
+  on(root, 'click', handleGraphAction);
+  if (sidebarHost) on(sidebar, 'click', handleGraphAction);
   on(win, 'resize', resize);
   const observer = win.ResizeObserver ? new win.ResizeObserver(resize) : null; observer?.observe(stage);
   // A resolution media query also catches moving between monitors without a resize.
@@ -535,7 +519,7 @@ export function createGraph(container, options = {}) {
       if (destroyed) return;
       destroyed = true; if (frame !== null) win.cancelAnimationFrame(frame);
       observer?.disconnect(); resolutionQuery?.removeEventListener?.('change', resolutionChanged);
-      listeners.forEach(remove => remove()); rows.forEach(disposeRow); rows = []; pointers.clear(); geometries.clear(); root.remove();
+      listeners.forEach(remove => remove()); rows.forEach(disposeRow); rows = []; pointers.clear(); geometries.clear(); sidebar.remove(); root.remove();
     },
   };
 }

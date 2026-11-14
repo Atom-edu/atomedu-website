@@ -4,7 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const pages = ['index.html', 'features.html', 'learn.html', 'about.html', 'contact.html', 'legal.html', 'proof-lab.html'];
+const marketingPages = ['index.html', 'features.html', 'learn.html', 'about.html', 'contact.html', 'legal.html'];
+const pages = [...marketingPages, 'proof-lab.html'];
 const expectedNav = [
   ['Home', '/'],
   ['Features', '/features'],
@@ -26,7 +27,7 @@ function links(markup) {
   ]);
 }
 
-for (const page of pages) {
+for (const page of marketingPages) {
   test(`${page} shares the complete Proof Lab navigation and honest product copy`, () => {
     const html = read(page);
     const desktop = html.match(/<nav class="nav">([\s\S]*?)<\/nav>/)?.[1];
@@ -48,6 +49,20 @@ for (const page of pages) {
     assert.doesNotMatch(html, /\bphysics\b|five modes|math lab/i);
   });
 }
+
+test('Proof Lab has a dedicated dark app header and access back to the site', () => {
+  const html = read('proof-lab.html');
+  assert.match(html, /<header class="lab-topbar">/);
+  assert.match(html, /class="lab-topbar-brand" href="\/"/);
+  assert.match(html, /class="lab-back" href="\/"/);
+  assert.match(html, /id="language-menu-button"/);
+  assert.match(html, /data-language="en"/);
+  assert.match(html, /data-language="es"/);
+  assert.match(html, /id="tour-menu-button"/);
+  assert.match(html, /id="tour-dialog"/);
+  assert.match(html, /id="graph-sidebar-host"/);
+  assert.doesNotMatch(html, /<footer class="site-footer">/);
+});
 
 test('all local public-page links point to real pages and valid anchors', () => {
   for (const page of pages) {
@@ -86,14 +101,14 @@ test('home carousel uses three distinct backgrounds', () => {
   assert.match(home, /Cape Mallow by AJ Higgs, CC BY 4\.0, via Wikimedia Commons\. Accessed November 11 2026 by Awasthi\./);
 });
 
-test('home presents both corporate partners and the official VC Boom link', () => {
+test('home presents compact partner logos without the former VC Boom pill', () => {
   const home = read('index.html');
   assert.match(home, /Our featured partners/i);
   assert.match(home, /class="partner-logo-row"/);
   assert.match(home, /images\/vc-boom-partner-logo\.svg/);
   assert.match(home, /images\/medaestheticsos-partner-badge\.svg/);
   assert.match(home, /https:\/\/vcboom\.com\/\?promo=PARTNER-ATOMEDU/);
-  assert.match(home, /Official VC Boom partner/);
+  assert.doesNotMatch(home, /Official VC Boom partner/);
   assert.match(home, /class="wrap home-dual"/);
   assert.doesNotMatch(home, /No account, API key, or paid tier is needed to use Proof Lab/);
 });

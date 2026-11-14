@@ -632,3 +632,192 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
   .keypad-target { max-width: 128px; }
   .coverage-list { grid-template-columns: 1fr; }
 }
+
+/* Full-height Proof Lab workspace */
+.lab-app { --lab-header-height: 56px; --lab-rail-width: clamp(350px, 29vw, 450px); height: 100dvh; margin: 0; overflow: hidden; background: #fff; }
+.lab-app .skip-link:focus { top: 62px; }
+.lab-topbar { position: relative; z-index: 120; height: var(--lab-header-height); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: #1f2a36; color: #fff; box-shadow: 0 1px 5px #14202c32; }
+.lab-topbar-brand { position: absolute; left: 50%; transform: translateX(-50%); font-size: 21px; font-weight: 500; letter-spacing: -.035em; line-height: 1; color: #fff; }
+.lab-topbar-brand b { font-weight: 700; }
+.lab-back { display: inline-flex; align-items: center; gap: 7px; min-height: 37px; padding: 0 10px; border: 1px solid #ffffff47; border-radius: 7px; font-size: 12px; font-weight: 600; color: #fff; }
+.lab-back:hover, .lab-topbar-button:hover { background: #ffffff1d; }
+.lab-back > span:first-child { font-size: 25px; line-height: .7; }
+.lab-back-label { font-size: 12px; }
+.lab-topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.lab-menu-wrap { position: relative; }
+.lab-topbar-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 37px; padding: 0 10px; border: 1px solid #ffffff32; border-radius: 7px; background: transparent; color: #fff; font-size: 12px; font-weight: 600; }
+.lab-question-mark { display: grid; place-items: center; width: 19px; height: 19px; border: 1.5px solid currentColor; border-radius: 50%; font-size: 12px; }
+.lab-popover { position: absolute; top: calc(100% + 9px); right: 0; width: min(320px, calc(100vw - 20px)); z-index: 130; padding: 17px; border: 1px solid #dce1e6; border-radius: 12px; background: #fff; color: #1f2a36; box-shadow: 0 20px 60px #14202c35; }
+.lab-popover h2 { margin: 0 0 8px; font-size: 16px; }
+.lab-popover p { margin: 0 0 14px; color: #64707c; font-size: 12px; }
+.lab-tour-preview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 2px 0 14px; }
+.lab-tour-preview span { min-height: 59px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 5px 2px; border: 1px solid #e0e6ec; border-radius: 8px; background: #f9fbfd; font-size: 9px; text-align: center; }
+.lab-tour-preview b { color: #2d6ed0; font-size: 20px; font-weight: 500; }
+.lab-tour-start { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 11px 13px; border-radius: 8px; background: #1f2a36; color: white; font-size: 12px; font-weight: 700; }
+.lab-tour-links { display: grid; gap: 4px; margin-top: 12px; }
+.lab-tour-links button { padding: 9px 6px; border-radius: 6px; background: transparent; text-align: left; color: #44515e; font-size: 12px; }
+.lab-tour-links button:hover { background: #f1f4f6; }
+.lab-language-menu { width: 245px; }
+.language-option { display: flex; justify-content: space-between; width: 100%; padding: 10px 9px; border-radius: 7px; background: transparent; text-align: left; color: #263442; font-size: 12px; }
+.language-option:hover, .language-option[aria-pressed="true"] { background: #edf3fb; }
+.language-option[aria-pressed="true"]::before { content: '✓'; margin-right: 6px; color: #2e6bc5; }
+.language-option span { color: #7a8792; }
+.lab-app .app-main { max-width: none; width: 100%; height: calc(100dvh - var(--lab-header-height)); min-height: 400px; padding: 0; overflow: hidden; }
+.lab-app .workbench { display: grid; grid-template-columns: var(--lab-rail-width) minmax(0, 1fr); gap: 0; align-items: stretch; height: 100%; width: 100%; }
+.lab-app .workbench.rail-collapsed { grid-template-columns: 0 minmax(0, 1fr); }
+.lab-app .input-column { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: auto; background: #fff; border-right: 1px solid #dce0e5; scrollbar-width: thin; }
+.lab-app .workbench.rail-collapsed .input-column { overflow: hidden; border: 0; visibility: hidden; }
+.lab-app .workspace-heading { order: 1; display: flex; align-items: center; margin: 0; padding: 14px 18px 10px; gap: 10px; border-bottom: 1px solid #e8ebee; }
+.lab-app .workspace-heading .eyebrow { margin: 0 0 4px; font-size: 9px; color: #687b8e; letter-spacing: .11em; }
+.lab-app .workspace-heading h1 { margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 650; letter-spacing: -.02em; }
+.lab-app #coverage-link { margin-left: auto; padding: 4px; font-size: 20px; color: #637384; }
+.lab-app .workspace-toolbar { order: 2; display: block; min-width: 0; margin: 0; padding: 9px 12px; border-bottom: 1px solid #e8ebee; }
+.lab-app .view-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; min-width: 0; padding: 3px; border: 1px solid #dce2e8; border-radius: 9px; background: #f3f5f7; }
+.lab-app .view-tab { justify-content: center; min-width: 0; padding: 8px 2px; gap: 4px; border-radius: 6px; font-size: 11px; }
+.lab-app .view-tab[aria-selected="true"] { color: #1655a7; box-shadow: 0 1px 4px #14202c18; }
+.lab-app .view-tab[aria-selected="true"] .tab-icon { color: #2d6ed0; }
+.lab-app .keyboard-hint { display: none; }
+.rail-toolbar { order: 0; display: flex; align-items: center; gap: 3px; min-height: 46px; padding: 4px 12px; border-bottom: 1px solid #dce2e8; background: #f8fafb; }
+.rail-toolbar button { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 7px; background: transparent; color: #596979; font-size: 23px; line-height: 1; }
+.rail-toolbar button:hover { background: #e7edf3; color: #1f2a36; }
+.rail-toolbar #rail-add { margin-right: auto; font-size: 26px; font-weight: 300; }
+.rail-toolbar #rail-clear { font-size: 24px; }
+.rail-toolbar #rail-collapse { font-size: 17px; }
+.rail-expand { position: fixed; top: calc(var(--lab-header-height) + 9px); left: 10px; z-index: 50; width: 36px; height: 36px; border: 1px solid #d7dee5; border-radius: 8px; background: #fff; box-shadow: 0 3px 12px #14202c18; font-size: 17px; }
+.keyboard-toggle { position: fixed; left: 12px; bottom: 12px; z-index: 65; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 66px; height: 34px; padding: 0 10px; border: 1px solid #d7dee5; border-radius: 7px; background: #fff; color: #435463; box-shadow: 0 3px 12px #14202c1f; font-size: 18px; }
+.keyboard-toggle span:last-child { font-size: 11px; }
+.lab-app.math-keypad-open .keyboard-toggle { bottom: calc(var(--lab-pad-height, 245px) + 7px); }
+.lab-app .input-panel { order: 3; flex: 1 0 auto; max-height: none; overflow: visible; padding: 0 17px 22px; border: 0; border-radius: 0; background: #fff; box-shadow: none; }
+.lab-app .panel-heading { margin: 0 -17px 15px; padding: 12px 17px; border-bottom: 1px solid #e8ebee; }
+.lab-app .panel-heading h2 { font-size: 14px; }
+.lab-app .panel-heading p { font-size: 11px; }
+.lab-app .section-number { color: #7d8c9a; }
+.lab-app .field-label { font-size: 11px; }
+.lab-app math-field.visual-math-field { min-height: 65px; padding: 10px 8px; border-radius: 8px; background: #fff; font-size: 24px; }
+.lab-app math-field.visual-math-field.step-input { min-height: 50px; font-size: 20px !important; }
+.lab-app .field-help { color: #71808e; }
+.lab-app .run-button { background: #2d6ed0; border-radius: 8px; }
+.lab-app .run-button:hover { background: #205ba8; }
+.lab-app .examples-disclosure, .lab-app .panel-options, .lab-app .ghost-note { background: #f9fafb; border-color: #e0e5eb; }
+.lab-app .result-panel, .lab-app .graph-workspace { grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: #fff; box-shadow: none; overflow: auto; }
+.lab-app .result-toolbar { position: sticky; top: 0; z-index: 3; border-bottom: 1px solid #e5e9ed; background: #fff; }
+.lab-app .result-body { max-width: 900px; margin: 0 auto; padding: 24px clamp(18px, 4vw, 48px) 80px; }
+.lab-app .empty-state { min-height: calc(100dvh - var(--lab-header-height) - 65px); }
+.lab-app .graph-workspace-canvas, .lab-app .graph-workspace-canvas .atom-graph { width: 100%; height: 100%; min-height: 0; }
+.lab-app .graph-workspace-canvas .atom-graph { display: flex; flex-direction: column; border: 0; border-radius: 0; }
+.lab-app .graph-workspace-canvas .graph-toolbar { min-height: 48px; padding: 6px 13px; background: #fff; }
+.lab-app .graph-workspace-canvas .graph-body { display: block; flex: 1; min-height: 0; }
+.lab-app .graph-workspace-canvas .graph-plot-area { height: 100%; min-height: 0; }
+.lab-app .graph-workspace-canvas .graph-stage { flex: 1; min-height: 260px; height: 100%; }
+.lab-app .graph-workspace-canvas .graph-plot-help { min-height: 28px; }
+.lab-app .graph-editor { order: 3; flex: 1; min-height: 0; overflow-y: auto; }
+.lab-app #graph-sidebar-host { height: 100%; border: 0; border-radius: 0; }
+.lab-app #graph-sidebar-host .graph-sidebar { max-height: none; height: 100%; overflow-y: auto; padding: 12px 12px 22px; border: 0; background: #fff; }
+.lab-app #graph-sidebar-host .graph-expression-row { position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr) 29px; align-items: center; min-height: 62px; padding: 4px 6px; border: 1px solid #dce2e8; border-left: 4px solid var(--curve-color); border-radius: 8px; }
+.lab-app #graph-sidebar-host .graph-expression-controls { display: contents; }
+.lab-app #graph-sidebar-host .graph-visibility { grid-column: 1; grid-row: 1; justify-self: center; align-self: start; margin-top: 7px; }
+.lab-app #graph-sidebar-host .graph-color { grid-column: 1; grid-row: 1; justify-self: center; align-self: end; margin-bottom: 6px; }
+.lab-app #graph-sidebar-host .graph-expression-number { display: none; }
+.lab-app #graph-sidebar-host .graph-delete { grid-column: 3; grid-row: 1; justify-self: center; font-size: 23px; }
+.lab-app #graph-sidebar-host .graph-expression-field { grid-column: 2; grid-row: 1; margin: 0; padding: 5px 3px; border: 0; background: transparent; }
+.lab-app #graph-sidebar-host .graph-expression-message { grid-column: 1 / -1; margin: 0; padding: 0 7px; }
+.lab-app #graph-sidebar-host .graph-expression-list { gap: 8px; }
+.lab-app #graph-sidebar-host .graph-add { background: #eef4fb; color: #1d5aa6; border-color: #bbd2ee; }
+.lab-app #graph-sidebar-host .graph-expression-field { min-height: 52px; }
+.lab-app #graph-sidebar-host .graph-visibility { width: 16px; height: 16px; }
+.lab-app #graph-sidebar-host .graph-expression-number { color: #5d6d7c; }
+.lab-app #graph-sidebar-host .graph-window { margin-top: 19px; }
+.lab-app .coverage-fab { right: 17px; bottom: 16px; width: 39px; height: 39px; }
+.lab-app .coverage-dialog { max-height: min(88dvh, 730px); overflow: hidden; }
+.lab-app .coverage-dialog-card { display: flex; flex-direction: column; max-height: min(88dvh, 730px); }
+.lab-app .coverage-dialog-toolbar { flex: none; }
+.lab-app .coverage-dialog .coverage-panel { flex: 1; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; }
+.tour-dialog { width: min(430px, calc(100vw - 32px)); max-height: 85dvh; padding: 0; border: 1px solid #dae1e7; border-radius: 16px; background: #fff; color: #1f2a36; box-shadow: 0 30px 100px #14202c40; }
+.tour-dialog::backdrop { background: #14202c99; }
+.tour-dialog-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border-bottom: 1px solid #e7ecf0; }
+.tour-count { color: #6c7b88; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.tour-dialog-head button { width: 30px; height: 30px; border-radius: 50%; background: #eef1f4; font-size: 21px; }
+.tour-illustration { display: grid; place-items: center; height: 120px; margin: 22px 22px 16px; border-radius: 12px; background: repeating-linear-gradient(0deg, #eff3f7 0, #eff3f7 1px, transparent 1px, transparent 22px), repeating-linear-gradient(90deg, #eff3f7 0, #eff3f7 1px, #fff 1px, #fff 22px); color: #2d6ed0; font-family: Georgia, serif; font-size: 34px; font-style: italic; }
+.tour-dialog h2 { margin: 0 22px 8px; font-size: 21px; }
+.tour-dialog p { min-height: 55px; margin: 0 22px 15px; color: #667683; font-size: 13px; line-height: 1.6; }
+.tour-progress { display: flex; justify-content: center; gap: 6px; margin-bottom: 18px; }
+.tour-progress span { width: 7px; height: 7px; border-radius: 999px; background: #ced9e4; }
+.tour-progress span.active { width: 22px; background: #2d6ed0; }
+.tour-actions { display: flex; justify-content: space-between; padding: 14px 22px 20px; border-top: 1px solid #e7ecf0; }
+.tour-actions button { min-width: 80px; padding: 10px 15px; border-radius: 7px; background: #edf2f7; font-size: 12px; font-weight: 700; }
+.tour-actions #tour-next { background: #2d6ed0; color: #fff; }
+@media (max-width: 820px) {
+  .lab-app { --lab-rail-width: min(48vw, 370px); }
+  .lab-app .view-tab { font-size: 10px; }
+  .lab-app .tab-icon { display: none; }
+  .lab-action-label { display: none; }
+  .lab-topbar-brand { font-size: 19px; }
+  .lab-topbar-button { width: 36px; padding: 0; }
+}
+@media (max-width: 620px) {
+  .lab-app .app-main { height: calc(100dvh - var(--lab-header-height)); }
+  .lab-app .workbench { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(220px, 48%) minmax(250px, 52%); }
+  .lab-app .workbench.graph-mode { grid-template-rows: minmax(175px, 40%) minmax(260px, 60%); }
+  .lab-app .workbench.graph-mode .workspace-heading { display: none; }
+  .lab-app .input-column { grid-row: 1; grid-column: 1; border-right: 0; border-bottom: 1px solid #dce0e5; }
+  .lab-app .result-panel, .lab-app .graph-workspace { grid-column: 1; grid-row: 2; }
+  .lab-app .workbench.rail-collapsed { grid-template-columns: minmax(0, 1fr); grid-template-rows: 0 minmax(0, 1fr); }
+  .lab-app .workbench.rail-collapsed .result-panel, .lab-app .workbench.rail-collapsed .graph-workspace { grid-row: 2; }
+  .lab-app .workspace-heading { padding: 8px 12px; }
+  .lab-app .workspace-toolbar { padding: 5px 8px; }
+  .lab-app .input-panel { padding-left: 12px; padding-right: 12px; }
+  .lab-app .panel-heading { margin: 0 -12px 10px; padding: 8px 12px; }
+  .lab-app .graph-workspace-canvas .graph-toolbar { flex-wrap: nowrap; }
+  .lab-app .graph-workspace-canvas .graph-actions { gap: 2px; }
+  .lab-app .graph-workspace-canvas .graph-actions button { padding: 4px 6px; min-width: 28px; font-size: 10px; }
+  .lab-app .graph-workspace-canvas .graph-plot-help { display: none; }
+  .lab-app .coverage-fab { bottom: 10px; right: 10px; }
+  .lab-back { padding: 0 7px; font-size: 11px; }
+  .lab-back-label { display: none; }
+  .lab-back { width: 36px; justify-content: center; }
+  .lab-topbar { padding: 0 8px; }
+  .lab-topbar-actions { gap: 4px; }
+}
+.lab-app .math-keypad { left: 0; right: 0; max-height: 245px; padding: 9px 18px 8px; border-radius: 10px 10px 0 0; background: #e9edf0; box-shadow: 0 -5px 20px #14202c25; transition: none; }
+.lab-app.math-keypad-open { padding-bottom: 0; }
+.lab-app.math-keypad-open .app-main { height: calc(100dvh - var(--lab-header-height) - var(--lab-pad-height, 245px)); }
+.lab-app .keypad-heading { min-height: 29px; }
+.lab-app .keypad-heading h2 { font-size: 13px; }
+.lab-app .keypad-heading p { display: none; }
+.lab-app .keypad-heading-actions { gap: 5px; }
+.lab-app .keypad-target, .lab-app .keypad-done { min-height: 28px; padding: 4px 9px; }
+.lab-app .keypad-tabs { margin: 5px 0 7px; padding-bottom: 5px; }
+.lab-app .keypad-tab { padding: 4px 9px; font-size: 11px; }
+.lab-app .keypad-layout { grid-template-columns: minmax(0, 2.4fr) minmax(190px, 1fr) minmax(120px, .55fr); gap: 9px; }
+.lab-app .keypad-templates { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: 36px; gap: 4px; }
+.lab-app .keypad-numbers { grid-template-rows: repeat(4, 36px); padding-left: 9px; gap: 4px; }
+.lab-app .keypad-commands { grid-template-rows: repeat(3, 36px); gap: 4px; }
+.lab-app .math-key { min-height: 36px; max-height: 36px; padding: 3px; border-bottom-width: 1px; font-size: 16px; }
+.lab-app .math-key-command:nth-child(-n+3) { font-size: 19px; }
+.lab-app .keypad-commands .math-key:last-child { background: #2d6ed0; border-color: #2d6ed0; color: white; font-size: 11px; font-weight: 700; }
+.lab-app .keypad-commands .math-key:last-child:hover { background: #205ba8; }
+.lab-app .keypad-footnote { display: none; }
+.lab-app.math-keypad-open .coverage-fab { bottom: calc(var(--lab-pad-height, 245px) + 11px); }
+@media (max-width: 1050px) {
+  .lab-app .keypad-layout { grid-template-columns: minmax(0, 2fr) minmax(170px, 1fr); }
+  .lab-app .keypad-commands { grid-column: 1 / -1; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 32px; }
+  .lab-app .math-key-command { max-height: 32px; min-height: 32px; }
+  .lab-app .math-keypad { max-height: 275px; }
+  .lab-app.math-keypad-open .app-main { height: calc(100dvh - var(--lab-header-height) - var(--lab-pad-height, 275px)); }
+  .lab-app.math-keypad-open .coverage-fab { bottom: calc(var(--lab-pad-height, 275px) + 11px); }
+  .lab-app.math-keypad-open .keyboard-toggle { bottom: calc(var(--lab-pad-height, 275px) + 7px); }
+}
+@media (max-width: 620px) {
+  .lab-app .math-keypad { max-height: 42dvh; padding: 7px 9px 8px; }
+  .lab-app.math-keypad-open .workbench.graph-mode { grid-template-rows: minmax(215px, 50%) minmax(0, 50%); }
+  .lab-app.math-keypad-open .graph-workspace-canvas .graph-stage { min-height: 0; }
+  .lab-app.math-keypad-open .app-main { height: calc(100dvh - var(--lab-header-height) - var(--lab-pad-height, 42dvh)); }
+  .lab-app.math-keypad-open .coverage-fab { bottom: calc(var(--lab-pad-height, 42dvh) + 10px); }
+  .lab-app.math-keypad-open .keyboard-toggle { bottom: calc(var(--lab-pad-height, 42dvh) + 8px); }
+  .lab-app .keypad-layout { grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr); gap: 7px; }
+  .lab-app .keypad-templates { grid-column: 1 / -1; grid-auto-rows: 34px; }
+  .lab-app .keypad-numbers { padding-left: 0; border: 0; grid-template-rows: repeat(4, 34px); }
+  .lab-app .keypad-commands { grid-column: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, 34px); }
+  .lab-app .math-key { min-height: 34px; max-height: 34px; }
+  .lab-app .keypad-target { max-width: 140px; }
+}

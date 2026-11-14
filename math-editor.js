@@ -14,21 +14,28 @@ let keypadInteraction = false;
 let keypadElement = null;
 const focusListeners = new Set();
 
+function syncKeypadHeight() {
+  if (!keypadElement) return;
+  document.body.style.setProperty('--lab-pad-height', `${Math.ceil(keypadElement.getBoundingClientRect().height)}px`);
+}
+
 function keepFieldAboveKeypad(field) {
   if (!field?.isConnected || !keypadElement?.classList.contains('is-open')) return;
   const fieldRect = field.getBoundingClientRect();
   const keypadRect = keypadElement.getBoundingClientRect();
   const safeBottom = keypadRect.top - 20;
   if (fieldRect.bottom > safeBottom) {
-    window.scrollBy({ top: fieldRect.bottom - safeBottom, behavior: 'smooth' });
+    const scroller = field.closest('.graph-sidebar') || field.closest('.input-column');
+    (scroller || window).scrollBy({ top: fieldRect.bottom - safeBottom, behavior: 'smooth' });
   }
 }
 
-function openKeypad(field) {
+export function openKeypad(field) {
   if (!keypadElement || !field) return;
   keypadElement.classList.add('is-open');
   keypadElement.setAttribute('aria-hidden', 'false');
   document.body.classList.add('math-keypad-open');
+  syncKeypadHeight();
   requestAnimationFrame(() => requestAnimationFrame(() => keepFieldAboveKeypad(field)));
 }
 
@@ -171,13 +178,12 @@ const BASIC = [
   key('Absolute value', '\\left|#0\\right|', `\\left|${BOX}\\right|`),
   key('x', 'x'), key('y', 'y'), key('a', 'a'), key('b', 'b'), key('n', 'n'), key('t', 't'),
   key('Less than', '<'), key('Greater than', '>'), key('Less than or equal', '\\le'),
-  key('Greater than or equal', '\\ge'), key('Not equal', '\\ne'), key('Approximately equal', '\\approx'),
-  key('Pi', '\\pi'), key('Infinity', '\\infty'), key('Imaginary unit', 'i'),
-  key('Euler’s number', 'e'), key('Percent', '\\%'), key('Factorial', '!'),
+  key('Greater than or equal', '\\ge'), key('Pi', '\\pi'), key('Percent', '\\%'),
 ];
 const ALGEBRA = [
   BASIC[0], BASIC[2], BASIC[3], BASIC[1],
   key('Nth root', '\\sqrt[#?]{#0}', `\\sqrt[${BOX}]{${BOX}}`),
+  key('Factorial', '!'),
   key('Reciprocal', '\\frac{1}{#0}', `\\frac{1}{${BOX}}`),
   key('Subscript', '{#0}_{#?}', `${BOX}_{${BOX}}`),
   key('Function', 'f\\left(#0\\right)', `f\\left(${BOX}\\right)`),
@@ -219,6 +225,7 @@ const FUNCTIONS = [
   key('Degree', '^{\\circ}', '30^{\\circ}'), key('Theta', '\\theta'), key('Lambda', '\\lambda'),
 ];
 const SYMBOLS = [
+  key('Imaginary unit', 'i'), key('Euler’s number', 'e'),
   key('Pi', '\\pi'), key('Infinity', '\\infty'), key('Theta', '\\theta'), key('Alpha', '\\alpha'), key('Beta', '\\beta'), key('Delta', '\\Delta'),
   key('Right arrow', '\\to'), key('Left arrow', '\\leftarrow'), key('Implies', '\\Rightarrow'), key('Equivalent to', '\\Leftrightarrow'), key('Therefore', '\\therefore'), key('Because', '\\because'),
   key('Less than or equal', '\\le'), key('Greater than or equal', '\\ge'), key('Not equal', '\\ne'), key('Approximately equal', '\\approx'), key('Plus or minus', '\\pm'), key('Congruent', '\\cong'),
@@ -233,7 +240,7 @@ const NUMBERS = [
   key('0', '0'), key('Decimal point', '.'), key('Equals', '='), key('Add', '+'),
 ];
 
-export function createKeypad(container, { announce = () => {} } = {}) {
+export function createKeypad(container, { announce = () => {}, onEnter = () => {} } = {}) {
   keypadElement = container;
   container.setAttribute('aria-hidden', 'true');
   const heading = document.createElement('div');
@@ -316,6 +323,7 @@ export function createKeypad(container, { announce = () => {} } = {}) {
     // Preserve the math selection when a pointer taps the pad.
     button.addEventListener('pointerdown', (event) => event.preventDefault());
     button.addEventListener('click', () => {
+      if (data.action === 'enter') { onEnter(); return; }
       const field = getActiveMathField();
       if (!field) { announce('Choose a math expression first.'); return; }
       keypadInteraction = true;
@@ -371,6 +379,7 @@ export function createKeypad(container, { announce = () => {} } = {}) {
     { label: 'Next placeholder', command: 'moveToNextPlaceholder', text: 'Next box ⇥' },
     { label: 'Undo', command: 'undo', text: '↶ Undo' },
     { label: 'Redo', command: 'redo', text: '↷ Redo' },
+    { label: 'Enter', action: 'enter', text: '↵ Enter' },
   ].forEach((data) => commands.append(makeButton(data)));
   [templates, numberPad, commands].forEach((group) => {
     group.addEventListener('keydown', (event) => {
@@ -391,7 +400,11 @@ export function createKeypad(container, { announce = () => {} } = {}) {
   container.setAttribute('aria-labelledby', title.id);
   container.append(heading, tablist, layout, footnote);
   chooseTab(0);
+  const sizeObserver = window.ResizeObserver ? new ResizeObserver(syncKeypadHeight) : null;
+  sizeObserver?.observe(container);
+  syncKeypadHeight();
   return { destroy() {
+    sizeObserver?.disconnect();
     focusListeners.delete(updateTarget);
     document.removeEventListener('pointerdown', openFromFieldInteraction, true);
     document.removeEventListener('focusin', openFromFieldInteraction, true);

@@ -226,30 +226,15 @@ h3.sub-title { font-size: 1.25rem; margin: 0; font-weight: 600; }
 .maintainers { margin-top: 0.8rem; font-weight: 500; color: var(--ink); }
 
 /* featured partners */
-.partners-section { padding: clamp(4.5rem, 9vw, 7.5rem) 0; background: #fbfaf7; }
+.partners-section { padding: clamp(3.8rem, 7vw, 5.8rem) 0; background: #fbfaf7; }
 .partners-section .wrap { max-width: 78rem; }
-.partners-title { margin: 0; text-align: center; color: #171c25; font-size: clamp(2rem, 4.5vw, 3.35rem); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
-.partner-logo-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: clamp(3rem, 9vw, 9rem); margin-top: clamp(3.5rem, 7vw, 6rem); }
-.partner-logo-unit { min-width: 0; min-height: 11rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.3rem; }
-.partner-mark { width: 100%; min-height: 7rem; display: grid; place-items: center; }
-.partner-mark img { display: block; width: min(100%, 24rem); max-height: 7rem; object-fit: contain; }
-.partner-vcboom img { width: min(100%, 19rem); }
-.partner-med img { width: min(100%, 26rem); }
-.official-partner {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 1.2rem;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid #211d15;
-  background: #fff;
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #211d15;
-}
-.official-partner span { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; }
+.partners-title { margin: 0; text-align: center; color: #171c25; font-size: clamp(1.35rem, 2.2vw, 1.85rem); font-weight: 500; letter-spacing: .035em; text-transform: uppercase; }
+.partner-logo-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: clamp(2rem, 7vw, 6rem); margin: clamp(2rem, 4vw, 3rem) auto 0; max-width: 50rem; }
+.partner-logo-unit { min-width: 0; min-height: 6rem; display: grid; place-items: center; }
+.partner-mark { width: 100%; min-height: 5rem; display: grid; place-items: center; }
+.partner-mark img { display: block; width: min(100%, 15rem); max-height: 5rem; object-fit: contain; }
+.partner-vcboom img { width: min(100%, 13rem); }
+.partner-med img { width: min(100%, 15rem); }
 
 /* founders */
 .founder-grid {

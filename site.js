@@ -42,7 +42,7 @@
       d.classList.toggle('on', active);
       d.setAttribute('aria-current', active ? 'true' : 'false');
     });
-    if (creditEl) creditEl.textContent = credits[i];
+    if (creditEl) creditEl.textContent = window.atomI18n ? window.atomI18n.translate(credits[i]) : credits[i];
   }
   function next() { show(i + 1); }
   function prev() { show(i - 1); }
@@ -75,5 +75,6 @@
   });
 
   show(0);
+  if (window.atomI18n) window.atomI18n.subscribe(function () { show(i); });
   start();
 })();
