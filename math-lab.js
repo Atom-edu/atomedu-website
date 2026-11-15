@@ -1135,16 +1135,20 @@ document.addEventListener('pointerdown', (event) => {
 });
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closePopovers(); });
 
+const languageMenu = $('language-menu');
+const languageList = languageMenu.querySelector('.language-list');
+
 function syncLanguageOptions() {
   const active = window.atomI18n?.getLanguage?.() || 'en';
-  document.querySelectorAll('.language-option').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.language === active)));
+  languageList.querySelectorAll('.language-option').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.language === active)));
 }
-document.querySelectorAll('.language-option').forEach((button) => button.addEventListener('click', () => {
+languageList.addEventListener('click', (event) => {
+  const button = event.target.closest('.language-option');
+  if (!button) return;
   window.atomI18n?.setLanguage?.(button.dataset.language);
-  document.documentElement.lang = button.dataset.language;
   syncLanguageOptions();
   closePopovers();
-}));
+});
 window.atomI18n?.subscribe?.(syncLanguageOptions);
 syncLanguageOptions();
 

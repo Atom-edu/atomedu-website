@@ -22,7 +22,7 @@
 .judge-date-control > small { display: block; margin-top: .45rem; color: var(--muted); font-size: .74rem; }
 .judge-date-control > div, .judge-toolbar-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 .judge-date-control input { width: 190px; min-height: 48px; border: 1px solid #c9c7bf; border-radius: .55rem; background: #fff; color: var(--ink); padding: .6rem .8rem; font: inherit; }
-.judge-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; margin-top: 2rem; }
+.judge-summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1rem; margin-top: 2rem; }
 .judge-summary > div { display: grid; align-content: center; gap: .3rem; min-height: 100px; padding: 1.2rem; border: 1px solid #ded9cf; border-radius: .7rem; background: #fffdf9; }
 .judge-summary small { font-size: .65rem; color: var(--muted); font-weight: 700; letter-spacing: .14em; }
 .judge-summary strong { font-size: clamp(1rem, 2vw, 1.3rem); overflow-wrap: anywhere; }
@@ -36,6 +36,7 @@
 .judge-empty { grid-column: 1 / -1; padding: 2rem; color: var(--muted); border: 1px dashed #c9c2b7; border-radius: .8rem; }
 .judge-card { overflow: hidden; border: 1px solid #ded9cf; border-radius: .85rem; background: #fffdf9; display: flex; flex-direction: column; }
 .judge-card.is-winner { border-color: #c8926d; box-shadow: 0 0 0 2px #c8926d33; }
+.judge-card.is-runner-up { border-color: #8aa0b8; box-shadow: 0 0 0 2px #8aa0b833; }
 .judge-image { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #222a32; }
 .judge-image-placeholder { display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; padding: 1rem; background: #e9e5df; color: #6d6a61; font-size: .82rem; text-align: center; }
 .judge-card-body { padding: 1.15rem; display: flex; flex-direction: column; flex: 1; }
@@ -43,13 +44,19 @@
 .judge-card-top h3 { font-size: 1.1rem; margin: 0; overflow-wrap: anywhere; }
 .judge-card-top span { color: var(--accent-deep); font-size: .68rem; letter-spacing: .1em; font-weight: 700; white-space: nowrap; }
 .judge-card p { color: var(--muted); font-size: .77rem; margin: .55rem 0 1.2rem; }
+.score-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; margin: .2rem 0 1.2rem; }
+.score-form label { min-width: 0; color: var(--ink-soft); font-size: .7rem; font-weight: 700; }
+.score-form input { width: 100%; min-height: 38px; padding: .4rem; margin-top: .3rem; border: 1px solid #c9c2b7; border-radius: .4rem; background: #fff; color: var(--ink); }
+.score-form .score-total { grid-column: 1 / -1; color: var(--ink); font-size: .82rem; font-weight: 700; }
+.score-form button { grid-column: 1 / -1; min-height: 38px; border-radius: .4rem; background: #e9edf0; color: var(--ink); font-size: .78rem; font-weight: 700; }
+.score-form button:hover { background: #d9e1e7; }
 .judge-card-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: auto; }
 .judge-card-actions button { font-size: .78rem; padding: .5rem .65rem; border-radius: .45rem; font-weight: 700; border: 1px solid #c9c2b7; background: #fff; color: var(--ink); }
 .judge-card-actions button:hover { border-color: var(--accent); }
 .judge-card-actions .delete-entry { color: #a13b2e; margin-left: auto; }
 .judge-card-actions .select-winner { background: var(--ink); color: #fff; border-color: var(--ink); }
 .judge-card-actions .select-winner:hover { background: #0f1620; }
-@media (max-width: 900px) { .judge-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 900px) { .judge-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } .judge-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) {
   .judge-shell { width: min(100% - 2rem, 78rem); }
   .login-row { display: grid; }

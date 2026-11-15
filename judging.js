@@ -127,6 +127,7 @@
     $('summary-date').textContent = '-';
     $('summary-count').textContent = '-';
     $('summary-winner').textContent = '-';
+    $('summary-runner-up').textContent = '-';
     $('list-caption').textContent = message;
     $('submission-list').replaceChildren();
     const empty = document.createElement('p');
@@ -160,6 +161,8 @@
         throw new Error('The judging server returned an invalid submission.');
       }
     }
+    const allScored = submissions.length > 0 && submissions.every((entry) => Number.isInteger(entry.scores?.total));
+    const topScore = allScored ? Math.max(...submissions.map((entry) => entry.scores.total)) : null;
     revokeImages();
     imageController = new AbortController();
     const run = imageRun;
@@ -169,6 +172,8 @@
     $('summary-winner').toggleAttribute('data-i18n-ignore', typeof data.winnerName === 'string' && !!data.winnerName);
     $('summary-winner').textContent = typeof data.winnerName === 'string' && data.winnerName
       ? data.winnerName : winner ? winner.name : data.winnerId === null ? 'Not selected' : 'Status not provided';
+    $('summary-runner-up').toggleAttribute('data-i18n-ignore', !!data.runnerUpName);
+    $('summary-runner-up').textContent = data.runnerUpName || 'Not selected';
     $('list-caption').textContent = `${submissions.length} ${submissions.length === 1 ? 'entry' : 'entries'} for ${dateLabel(requestedDate)}`;
     const list = $('submission-list');
     list.replaceChildren();
@@ -183,7 +188,9 @@
       const card = document.createElement('article');
       card.className = 'judge-card';
       const isWinner = String(entry.id) === String(data.winnerId);
+      const isRunnerUp = String(entry.id) === String(data.runnerUpId);
       if (isWinner) card.classList.add('is-winner');
+      if (isRunnerUp) card.classList.add('is-runner-up');
       const image = document.createElement('img');
       image.className = 'judge-image';
       image.alt = `Submission by ${entry.name}`;
@@ -205,9 +212,52 @@
         const badge = document.createElement('span');
         badge.textContent = 'WINNER ✳';
         top.append(badge);
+      } else if (isRunnerUp) {
+        const badge = document.createElement('span');
+        badge.textContent = 'RUNNER-UP';
+        top.append(badge);
       }
       const meta = document.createElement('p');
       meta.textContent = `Submitted ${formatSubmittedDate(entry.submittedAt)}`;
+      const scoreForm = document.createElement('form');
+      scoreForm.className = 'score-form';
+      const scoreInputs = {};
+      for (const criterion of ['beauty', 'creativity', 'complexity']) {
+        const label = document.createElement('label');
+        label.textContent = `${criterion[0].toUpperCase()}${criterion.slice(1)} / 10`;
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '10';
+        input.step = '1';
+        input.required = true;
+        input.value = Number.isInteger(entry.scores?.[criterion]) ? String(entry.scores[criterion]) : '';
+        input.disabled = !!data.winnerId || !['judging', 'results_pending'].includes(phase);
+        label.append(input);
+        scoreForm.append(label);
+        scoreInputs[criterion] = input;
+      }
+      const total = document.createElement('span');
+      total.className = 'score-total';
+      total.textContent = Number.isInteger(entry.scores?.total) ? `Total: ${entry.scores.total} / 30` : 'Not scored yet';
+      scoreForm.append(total);
+      const scoreButton = document.createElement('button');
+      scoreButton.type = 'submit';
+      scoreButton.textContent = 'Save scores';
+      scoreButton.disabled = !!data.winnerId || !['judging', 'results_pending'].includes(phase);
+      scoreForm.append(scoreButton);
+      scoreForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!scoreForm.reportValidity()) return;
+        const scores = Object.fromEntries(Object.entries(scoreInputs).map(([key, input]) => [key, Number(input.value)]));
+        if (Object.values(scores).some((score) => !Number.isInteger(score) || score < 0 || score > 10)) {
+          setMessage($('dashboard-message'), 'Enter whole-number scores from 0 to 10 in all three categories.');
+          return;
+        }
+        changeEntry(`/judging/submissions/${encodeURIComponent(entry.id)}/scores`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(scores),
+        }, `Scores saved for ${entry.name}.`, (result) => result?.scores?.total === scores.beauty + scores.creativity + scores.complexity);
+      });
       const actions = document.createElement('div');
       actions.className = 'judge-card-actions';
       if (!isWinner) {
@@ -215,7 +265,12 @@
         select.type = 'button';
         select.className = 'select-winner';
         select.textContent = 'Select winner';
-        if (!['judging', 'results_pending'].includes(phase) || data.winnerId) { select.disabled = true; select.dataset.locked = 'true'; select.title = data.winnerId ? 'A winner has already been selected.' : 'Winner selection opens after entries close.'; }
+        if (!['judging', 'results_pending'].includes(phase) || data.winnerId || !allScored || entry.scores.total !== topScore) {
+          select.disabled = true;
+          select.dataset.locked = 'true';
+          select.title = data.winnerId ? 'A winner has already been selected.' : !allScored ? 'Score every entry first.'
+            : entry.scores.total !== topScore ? 'Only a top-scoring entry can win.' : 'Winner selection opens after entries close.';
+        }
         select.addEventListener('click', () => selectWinner(entry, requestedDate));
         actions.append(select);
       }
@@ -226,7 +281,7 @@
       remove.setAttribute('aria-label', `Delete submission by ${entry.name}`);
       remove.addEventListener('click', () => deleteEntry(entry, requestedDate));
       actions.append(remove);
-      body.append(top, meta, actions);
+      body.append(top, meta, scoreForm, actions);
       card.append(body);
       list.append(card);
     }
@@ -291,8 +346,8 @@
   }
 
   function selectWinner(entry, date) {
-    if (!window.confirm(`Select ${entry.name} as the winner for ${shortDate(date)}? Confirming one winner permanently deletes ALL other submissions for that contest date. This cannot be undone, and an existing winner cannot be replaced.`)) return;
-    changeEntry('/judging/winners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, date }) }, 'The winner was saved by the contest server.', (result) => result?.winner?.id === entry.id);
+    if (!window.confirm(`Confirm ${entry.name} as the top-scoring winner for ${shortDate(date)}? The next highest scorer becomes runner-up. Both entries are archived and all others are permanently deleted. This cannot be undone.`)) return;
+    changeEntry('/judging/winners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, date }) }, 'Winner and runner-up saved by the contest server.', (result) => result?.winner?.id === entry.id);
   }
 
   function deleteEntry(entry, date) {

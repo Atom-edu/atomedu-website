@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="art-contest.css?v=contest-2" />
+  <link rel="stylesheet" href="art-contest.css?v=contest-3" />
   <script src="contest-config.js?v=2026-11-15"></script>
-  <script src="art-contest.js" defer></script>
+  <script src="art-contest.js?v=contest-3" defer></script>
   <script src="site.js" defer></script>
-  <script src="site-i18n.js?v=contest-2" defer></script>
+  <script src="site-i18n.js?v=contest-3" defer></script>
 </head>
 <body class="contest-page">
   <header class="site-header">
@@ -43,7 +43,7 @@
           <div class="hero-actions"><a class="btn btn-accent" href="#enter">Enter the contest <span aria-hidden="true">↗</span></a><a class="hero-link" href="/proof-lab">Open Proof Lab <span aria-hidden="true">↗</span></a></div>
           <p class="hero-small">Entries and winners are managed by the contest server. No account needed.</p>
         </div>
-        <div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-sheet"><span class="sheet-sun"></span><span class="sheet-hill hill-one"></span><span class="sheet-hill hill-two"></span><span class="sheet-mark">a.</span></div><span class="hero-scribble">create<br />today<span class="scribble-star">✳</span></span><span class="art-stamp">01 / ∞</span></div>
+        <div class="hero-visual"><div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-sheet"><span class="sheet-sun"></span><span class="sheet-hill hill-one"></span><span class="sheet-hill hill-two"></span><span class="sheet-mark">a.</span></div><span class="hero-scribble">create<br />today<span class="scribble-star">✳</span></span><span class="art-stamp">01 / ∞</span></div><div class="runner-card" id="runner-card"><p class="runner-label">RUNNER-UP</p><div class="runner-image-wrap"><img id="runner-image" alt="" hidden /><div id="runner-placeholder">The next runner-up artwork will appear here.</div></div><p class="runner-name" id="runner-name">Awaiting a runner-up</p><p class="runner-date" id="runner-date"></p></div></div>
       </div>
     </section>
 
@@ -71,13 +71,13 @@
 
                 <div class="consent-group">
                   <label class="consent"><input id="terms-accepted" type="checkbox" required /><span>I am at least 13, have permission from a parent or guardian if I am under 18, and accept the <a href="#rules">contest rules and terms</a>.</span></label>
-                  <label class="consent"><input id="display-consent" type="checkbox" required /><span>I give atomEDU permission to publish my winning image and display name on this site and in the winner archive if my entry is selected.</span></label>
+                  <label class="consent"><input id="display-consent" type="checkbox" required /><span>I give atomEDU permission to publish my image and display name on this site and in the art archive if my entry is chosen as winner or runner-up.</span></label>
                 </div>
                 <p class="form-message" id="form-message" role="alert" hidden></p>
                 <button class="btn btn-accent review-button" type="submit">Review my entry <span aria-hidden="true">→</span></button>
               </fieldset>
             </form>
-            <div class="review-panel" id="review-panel" hidden><p class="review-eyebrow">ONE LAST LOOK</p><h3 class="heading-display">Ready to share?</h3><div class="review-art"><img id="review-image" alt="Artwork selected for submission" /><div><strong id="review-name"></strong><span id="review-filename"></span></div></div><p>Your entry is only sent when you choose <strong>Confirm and submit</strong>. Only original art made in atomEDU’s graph is eligible. Your winning image and display name may be published if selected.</p><div class="review-actions"><button class="btn btn-accent" id="confirm-submit" type="button">Confirm and submit</button><button class="btn btn-ghost" id="edit-entry" type="button">Edit entry</button></div><p class="form-message" id="review-message" role="alert" hidden></p></div>
+            <div class="review-panel" id="review-panel" hidden><p class="review-eyebrow">ONE LAST LOOK</p><h3 class="heading-display">Ready to share?</h3><div class="review-art"><img id="review-image" alt="Artwork selected for submission" /><div><strong id="review-name"></strong><span id="review-filename"></span></div></div><p>Your entry is only sent when you choose <strong>Confirm and submit</strong>. Only original art made in atomEDU’s graph is eligible. Your image and display name may be published if selected as winner or runner-up.</p><div class="review-actions"><button class="btn btn-accent" id="confirm-submit" type="button">Confirm and submit</button><button class="btn btn-ghost" id="edit-entry" type="button">Edit entry</button></div><p class="form-message" id="review-message" role="alert" hidden></p></div>
           </div>
           <aside class="entry-aside"><p class="section-index">MAKE IT IN PROOF LAB</p><h3 class="heading-display">Graph it. Save it. Upload it.</h3><p>Only artwork created in atomEDU’s Graph view is eligible. A Desmos graph or image made in another app will be disqualified.</p><div class="proof-flow" role="img" aria-label="Illustration of the Proof Lab Graph view: click its PNG save control, then upload that saved image here"><div class="proof-mini"><div class="proof-mini-top"><span>Proof Lab / Graph</span><span class="proof-mini-dots">•••</span></div><div class="proof-mini-grid"><svg viewBox="0 0 180 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 82 Q24 72 42 55 T85 63 T130 35 T180 20" fill="none" stroke="#bf5a2e" stroke-width="4" stroke-linecap="round"/></svg></div><div class="proof-mini-toolbar"><span>Graph view</span><span class="proof-png-control"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg> PNG</span></div></div><div class="proof-flow-arrow"><span>Save PNG</span><b aria-hidden="true">→</b></div><div class="proof-upload"><span aria-hidden="true">↑</span><strong>Upload</strong></div></div><div class="aside-facts"><div><span>01</span><p><a href="/proof-lab">Open Proof Lab</a> and choose Graph.</p></div><div><span>02</span><p>Create your graph art, then use the PNG save control.</p></div><div><span>03</span><p>Upload that saved file here and confirm your entry.</p></div></div></aside>
         </div>
@@ -86,7 +86,7 @@
       <section class="rules-section" id="rules" aria-labelledby="rules-title">
         <div class="section-heading"><div><p class="section-index">03 / THE FINE PRINT</p><h2 class="heading-display" id="rules-title">Contest rules &amp; terms</h2></div></div>
         <div class="criteria-panel" aria-labelledby="criteria-title">
-          <div class="criteria-intro"><p class="section-index">THE JUDGING GUIDE</p><h3 class="heading-display" id="criteria-title">How we choose a winner</h3><p>We rate eligible art out of 10 in each category. Our owners compare their ratings, talk it through as a group, and choose one daily winner together.</p></div>
+          <div class="criteria-intro"><p class="section-index">THE JUDGING GUIDE</p><h3 class="heading-display" id="criteria-title">How we choose a winner</h3><p>We score eligible art out of 10 in each category, for up to 30 points. The highest-scoring entry is the daily winner. If there is another eligible entry, the second-highest scorer is the runner-up. Our owners review the scores together and settle ties.</p></div>
           <div class="criteria-grid">
             <div><span>UP TO 10 POINTS</span><h4>Beauty</h4><p>How visually appealing and well put together the artwork is.</p></div>
             <div><span>UP TO 10 POINTS</span><h4>Creativity</h4><p>How original and imaginative the idea is.</p></div>
@@ -99,8 +99,8 @@
           <div><span class="rule-number">03</span><h3>Protect people’s privacy</h3><p>Do not include photos, faces, or other personal imagery. Do not put contact details, identifying information, or private information in the artwork or your display name.</p></div>
           <div><span class="rule-number">04</span><h3>Keep it appropriate</h3><p>No inappropriate or NSFW content, including hateful, violent, sexually explicit, illegal, or harassing material. Such entries may be removed and may lead to a temporary or permanent ban from this and future contest rounds.</p></div>
           <div><span class="rule-number">05</span><h3>Age and permission</h3><p>You must be at least 13 to enter. If you are under 18, you must have permission from a parent or guardian. We do not ask for your birth date. The first checkbox confirms these requirements and your agreement to the rules.</p></div>
-          <div><span class="rule-number">06</span><h3>Ownership and display</h3><p>You keep ownership of your work. You allow atomEDU’s owners to review your entry. Your separate display consent lets us publish your winning image and display name on this site and in the archive if selected.</p></div>
-          <div><span class="rule-number">07</span><h3>Judges and decisions</h3><p>atomEDU’s owners judge eligible entries. Their winner decisions are final, with no appeals. Entering does not guarantee a feature or prize. The winning entry is archived; other submissions for that day are removed after a winner is confirmed.</p></div>
+          <div><span class="rule-number">06</span><h3>Ownership and display</h3><p>You keep ownership of your work. You allow atomEDU’s owners to review your entry. Your separate display consent lets us publish your image and display name on this site and in the archive if selected as winner or runner-up.</p></div>
+          <div><span class="rule-number">07</span><h3>Judges and decisions</h3><p>atomEDU’s owners judge eligible entries. We add the Beauty, Creativity, and Complexity scores for each entry. The top scorer wins; the second-highest scorer is runner-up when there is a second entry. If scores tie, our owners decide the winner among tied leaders; the next scorer follows submission order. Their decisions are final, with no appeals. Entering does not guarantee a feature or prize. We archive the featured entries and remove the other submissions for that day after confirmation.</p></div>
         </div>
       </section>
 
@@ -111,7 +111,7 @@
         <p class="timing-note">Judging normally runs from 7:00 to 8:30 PM CT. A result may rarely be delayed until 9:30 PM CT. The next round opens at 9:30 PM CT. A winner appears only after atomEDU’s owners confirm one.</p>
       </section>
 
-      <section class="archive-section" id="archive" aria-labelledby="archive-title"><div class="section-heading"><div><p class="section-index">05 / THE ARCHIVE</p><h2 class="heading-display" id="archive-title">Past spotlights</h2></div><span class="section-aside">Good ideas deserve a second look.</span></div><div class="archive-grid" id="archive-grid" aria-live="polite"><p class="archive-empty">Loading the winner archive…</p></div></section>
+      <section class="archive-section" id="archive" aria-labelledby="archive-title"><div class="section-heading"><div><p class="section-index">05 / THE ARCHIVE</p><h2 class="heading-display" id="archive-title">Past spotlights</h2></div><span class="section-aside">Daily winners and runners-up.</span></div><div class="archive-grid" id="archive-grid" aria-live="polite"><p class="archive-empty">Loading the art archive…</p></div></section>
     </div>
   </main>
 

@@ -13,9 +13,9 @@
   <link rel="stylesheet" href="./styles.css?v=proof-lab-17">
   <link rel="stylesheet" href="./vendor/katex/katex.min.css">
   <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-19">
-  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-18">
-  <script defer src="./site-i18n.js?v=proof-lab-19"></script>
-  <script type="module" src="./math-lab.js?v=proof-lab-19"></script>
+  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-20">
+  <script defer src="./site-i18n.js?v=proof-lab-20"></script>
+  <script type="module" src="./math-lab.js?v=proof-lab-20"></script>
 </head>
 <body class="lab-app">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -42,8 +42,10 @@
         </button>
         <div class="lab-popover lab-language-menu" id="language-menu" hidden>
           <h2>Language</h2>
-          <button class="language-option" type="button" data-language="en" aria-pressed="true">English <span>English</span></button>
-          <button class="language-option" type="button" data-language="es" aria-pressed="false">Español <span>Spanish</span></button>
+          <div class="language-list" data-i18n-ignore>
+            <button class="language-option" type="button" data-language="en" aria-pressed="true"><span class="language-name" lang="en">English</span></button>
+            <button class="language-option" type="button" data-language="es" aria-pressed="false"><span class="language-name" lang="es">Español</span></button>
+          </div>
         </div>
       </div>
     </div>

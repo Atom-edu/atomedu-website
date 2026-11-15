@@ -145,38 +145,59 @@
     $('winner-date').textContent = dayLabel(winner.date) || 'Selected daily winner';
   }
 
-  function renderArchive(archive, latestWinner) {
+  function renderRunnerUp(runnerUp) {
+    const image = $('runner-image');
+    const placeholder = $('runner-placeholder');
+    const url = safeImageUrl(runnerUp?.imageUrl);
+    image.hidden = !url;
+    placeholder.hidden = !!url;
+    if (url) {
+      image.src = url;
+      image.alt = `Runner-up artwork by ${runnerUp.name || 'an artist'}`;
+      image.onerror = () => { image.hidden = true; placeholder.hidden = false; };
+    } else {
+      image.removeAttribute('src');
+      placeholder.textContent = runnerUp ? 'Runner-up artwork is unavailable.' : 'The next runner-up artwork will appear here.';
+    }
+    $('runner-name').toggleAttribute('data-i18n-ignore', !!runnerUp?.name);
+    $('runner-name').textContent = runnerUp?.name || 'Awaiting a runner-up';
+    $('runner-date').textContent = runnerUp ? dayLabel(runnerUp.date) || '' : '';
+  }
+
+  function renderArchive(archive) {
     const grid = $('archive-grid');
     grid.replaceChildren();
     const entries = Array.isArray(archive) ? archive : [];
     let count = 0;
     for (const winner of entries) {
-      if (latestWinner?.id && winner?.id === latestWinner.id) continue;
-      const url = safeImageUrl(winner?.imageUrl);
-      if (!url) continue;
-      const card = document.createElement('article');
-      card.className = 'archive-item';
-      const image = document.createElement('img');
-      image.src = url;
-      image.alt = `Artwork by ${winner.name || 'a contest winner'}`;
-      image.loading = 'lazy';
-      const info = document.createElement('div');
-      const name = document.createElement('strong');
-      name.setAttribute('data-i18n-ignore', '');
-      const date = document.createElement('span');
-      name.textContent = winner.name || 'Contest winner';
-      date.textContent = dayLabel(winner.date) || 'Daily winner';
-      info.append(name, date);
-      card.append(image, info);
-      grid.append(card);
-      count++;
+      for (const [entry, rank] of [[winner, 'Daily winner'], [winner?.runnerUp, 'Runner-up']]) {
+        const url = safeImageUrl(entry?.imageUrl);
+        if (!url) continue;
+        const card = document.createElement('article');
+        card.className = 'archive-item';
+        const image = document.createElement('img');
+        image.src = url;
+        image.alt = `${rank} artwork by ${entry.name || 'an artist'}`;
+        image.loading = 'lazy';
+        const info = document.createElement('div');
+        const label = document.createElement('span');
+        label.className = 'archive-rank';
+        label.textContent = rank;
+        const name = document.createElement('strong');
+        name.setAttribute('data-i18n-ignore', '');
+        const date = document.createElement('span');
+        name.textContent = entry.name || 'Contest artist';
+        date.textContent = dayLabel(entry.date) || '';
+        info.append(label, name, date);
+        card.append(image, info);
+        grid.append(card);
+        count++;
+      }
     }
     if (!count) {
       const empty = document.createElement('p');
       empty.className = 'archive-empty';
-      empty.textContent = entries.some((winner) => winner?.id !== latestWinner?.id)
-        ? 'Past winner images are unavailable right now.'
-        : 'No past winners have been published yet. Check back soon.';
+      empty.textContent = entries.length ? 'Archived images are unavailable right now.' : 'No art has been published yet. Check back soon.';
       grid.append(empty);
     }
   }
@@ -201,7 +222,8 @@
       state = data;
       renderSchedule(data);
       renderWinner(data.latestWinner);
-      renderArchive(data.archive, data.latestWinner);
+      renderRunnerUp(data.latestRunnerUp || data.latestWinner?.runnerUp || null);
+      renderArchive(data.archive);
       const deadline = dateFromUtc(data.deadlineUtc);
       const entriesOpen = data.phase === 'open' && (!deadline || deadline.getTime() > Date.now());
       if (entriesOpen) {
@@ -224,7 +246,8 @@
       $('winner-image').hidden = true;
       $('winner-image').removeAttribute('src');
       $('winner-placeholder').hidden = false;
-      $('archive-grid').innerHTML = '<p class="archive-empty">The winner archive is unavailable right now.</p>';
+      renderRunnerUp(null);
+      $('archive-grid').innerHTML = '<p class="archive-empty">The art archive is unavailable right now.</p>';
       setStatus('error', 'Contest submissions are not available yet', error.message || 'Please try again later.');
     }
   }

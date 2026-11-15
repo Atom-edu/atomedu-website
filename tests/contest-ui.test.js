@@ -15,7 +15,10 @@ test('contest begins with the winner and explains graph export, schedule, consen
   assert.match(page, /Desmos graphs, art from other software/);
   for (const criterion of ['Beauty', 'Creativity', 'Complexity']) assert.match(page, new RegExp(`<h4>${criterion}</h4>`));
   assert.equal((page.match(/UP TO 10 POINTS/g) || []).length, 3);
-  assert.match(page, /choose one daily winner together/);
+  assert.match(page, /second-highest scorer is the runner-up/);
+  assert.match(page, /id="runner-image"/);
+  assert.match(page, /id="runner-name"/);
+  assert.match(read('art-contest.js'), /renderRunnerUp/);
   assert.match(page, /id="terms-accepted"/);
   assert.match(page, /id="display-consent"/);
   assert.match(page, /Confirm and submit/);
@@ -37,10 +40,11 @@ test('judging stays server-backed and neither public page embeds an admin passwo
   assert.ok(page.indexOf('contest-config.js') < page.indexOf('judging.js'));
   assert.match(judgeScript, /Bearer/);
   assert.match(judgeScript, /createObjectURL/);
-  assert.match(page, /Beauty, Creativity, and Complexity: score each out of 10/);
+  assert.match(page, /Score Beauty, Creativity, and Complexity from 0 to 10/);
+  assert.match(judgeScript, /Save scores/);
   assert.match(judgeScript, /month: 'short', day: 'numeric' \}\)\.format\(date\)/);
   assert.doesNotMatch(judgeScript.match(/function formatSubmittedDate\(value\) \{[\s\S]*?\n  \}/)?.[0] || '', /hour:|minute:|timeZoneName:/);
-  assert.match(judgeScript, /permanently deletes ALL other submissions/);
+  assert.match(judgeScript, /Both entries are archived and all others are permanently deleted/);
   assert.doesNotMatch(page + judgeScript, /[—–·]/);
   assert.doesNotMatch(publicScript + judgeScript + page, /(?:password\s*[:=]\s*['"]admin['"]|Basic\s+YWRtaW4)/i);
   assert.match(read('contest-config.js'), /ATOM_CONTEST_API_BASE = 'https:\/\/atom-contest-api\.archimedes-api1\.workers\.dev\/api\/art-contest'/);

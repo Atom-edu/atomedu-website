@@ -4,7 +4,7 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + 1024 * 1024;
 const MAX_JSON_BYTES = 4096;
 const TOKEN_SECONDS = 8 * 60 * 60;
-const TERMS_VERSION = '2026-11-14';
+const TERMS_VERSION = '2026-11-15';
 const encoder = new TextEncoder();
 const chicagoClock = new Intl.DateTimeFormat('en-CA', {
   timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit',
@@ -221,16 +221,33 @@ function publicWinner(row, origin) {
     imageUrl: `${origin}${BASE}/images/${row.submission_id}`, selectedAt: row.selected_at };
 }
 
+function publicRunnerUp(row, origin) {
+  if (!row.runner_up_submission_id || row.runner_up_display_consent !== 1) return null;
+  return { id: row.runner_up_submission_id, date: row.contest_date, name: row.runner_up_name,
+    imageUrl: `${origin}${BASE}/images/${row.runner_up_submission_id}`, selectedAt: row.selected_at };
+}
+
 function publicSubmission(row, origin) {
   return { id: row.id, date: row.contest_date, name: row.name,
-    imageUrl: `${origin}${BASE}/judging/images/${row.id}`, submittedAt: row.created_at };
+    imageUrl: `${origin}${BASE}/judging/images/${row.id}`, submittedAt: row.created_at,
+    scores: row.beauty_score === null ? null : {
+      beauty: row.beauty_score, creativity: row.creativity_score, complexity: row.complexity_score,
+      total: row.beauty_score + row.creativity_score + row.complexity_score,
+    } };
 }
 
 async function state(env, now, origin) {
   const schedule = contestSchedule(now);
-  const { results } = await env.DB.prepare('SELECT contest_date, submission_id, name, selected_at FROM winners WHERE display_consent = 1 ORDER BY contest_date DESC').all();
-  const archive = results.map(row => publicWinner(row, origin));
-  return { ...schedule, latestWinner: archive[0] || null, archive };
+  const { results } = await env.DB.prepare(`SELECT contest_date, submission_id, name, selected_at,
+    runner_up_submission_id, runner_up_name, runner_up_display_consent
+    FROM winners WHERE display_consent = 1 ORDER BY contest_date DESC`).all();
+  const archive = results.map(row => {
+    const winner = publicWinner(row, origin);
+    const runnerUp = publicRunnerUp(row, origin);
+    return { ...winner, runnerUp };
+  });
+  return { ...schedule, latestWinner: results[0] ? publicWinner(results[0], origin) : null,
+    latestRunnerUp: results[0] ? publicRunnerUp(results[0], origin) : null, archive };
 }
 
 async function submit(request, env, now, currentTime) {
@@ -316,6 +333,13 @@ async function drainCleanup(env, limit = 100) {
   const { results } = await env.DB.prepare('SELECT image_key FROM image_cleanup ORDER BY created_at LIMIT ?').bind(limit).all();
   for (const row of results) {
     try {
+      const retained = await env.DB.prepare(`SELECT 1 FROM winners
+        WHERE image_key = ? OR runner_up_image_key = ? LIMIT 1`)
+        .bind(row.image_key, row.image_key).first();
+      if (retained) {
+        await env.DB.prepare('DELETE FROM image_cleanup WHERE image_key = ?').bind(row.image_key).run();
+        continue;
+      }
       await env.IMAGES.delete(row.image_key);
       await env.DB.prepare('DELETE FROM image_cleanup WHERE image_key = ?').bind(row.image_key).run();
     } catch (error) {
@@ -349,6 +373,34 @@ async function deleteSubmission(env, id) {
   return { deleted: true };
 }
 
+async function scoreSubmission(env, id, scores, currentTime) {
+  const scoredAt = currentTime();
+  const schedule = contestSchedule(scoredAt);
+  if (!['judging', 'results_pending'].includes(schedule.phase)) {
+    throw new ApiError(409, 'judging_closed', 'Scoring is only available 19:00–21:30 Chicago time for today');
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    throw new ApiError(400, 'invalid_id', 'Invalid submission ID');
+  }
+  if (!scores || typeof scores !== 'object' || Array.isArray(scores)
+    || Object.keys(scores).sort().join(',') !== 'beauty,complexity,creativity'
+    || !['beauty', 'creativity', 'complexity'].every(key => Number.isInteger(scores[key]) && scores[key] >= 0 && scores[key] <= 10)) {
+    throw new ApiError(400, 'invalid_scores', 'Beauty, creativity, and complexity must be integers from 0 to 10');
+  }
+  const result = await env.DB.prepare(`UPDATE submissions SET beauty_score = ?, creativity_score = ?, complexity_score = ?
+    WHERE id = ? AND contest_date = ? AND NOT EXISTS
+      (SELECT 1 FROM winners WHERE contest_date = ?)`)
+    .bind(scores.beauty, scores.creativity, scores.complexity, id, schedule.contestDate, schedule.contestDate).run();
+  if (result.meta.changes !== 1) {
+    if (await env.DB.prepare('SELECT 1 FROM winners WHERE contest_date = ?').bind(schedule.contestDate).first()) {
+      throw new ApiError(409, 'winner_exists', 'Results are already final for this date');
+    }
+    throw new ApiError(404, 'submission_not_found', 'Submission not found for this date');
+  }
+  return { id, date: schedule.contestDate, scores: { ...scores,
+    total: scores.beauty + scores.creativity + scores.complexity } };
+}
+
 async function selectWinner(env, id, date, currentTime, origin) {
   const selectedAt = currentTime();
   const schedule = contestSchedule(selectedAt);
@@ -359,21 +411,47 @@ async function selectWinner(env, id, date, currentTime, origin) {
   if (await env.DB.prepare('SELECT submission_id FROM winners WHERE contest_date = ?').bind(date).first()) {
     throw new ApiError(409, 'winner_exists', 'A winner already exists for this date');
   }
-  const candidate = await env.DB.prepare('SELECT id AS submission_id, contest_date, name FROM submissions WHERE id = ? AND contest_date = ? AND display_consent = 1')
+  const candidate = await env.DB.prepare(`SELECT id AS submission_id, contest_date, name,
+    beauty_score + creativity_score + complexity_score AS total
+    FROM submissions WHERE id = ? AND contest_date = ? AND display_consent = 1`)
     .bind(id, date).first();
   if (!candidate) throw new ApiError(404, 'submission_not_found', 'Submission not found for this date');
+  const unscored = await env.DB.prepare(`SELECT 1 FROM submissions WHERE contest_date = ?
+    AND (beauty_score IS NULL OR creativity_score IS NULL OR complexity_score IS NULL) LIMIT 1`).bind(date).first();
+  if (unscored) throw new ApiError(409, 'scores_incomplete', 'Score every submission before selecting a winner');
+  const highest = await env.DB.prepare(`SELECT MAX(beauty_score + creativity_score + complexity_score) AS total
+    FROM submissions WHERE contest_date = ?`).bind(date).first();
+  if (candidate.total !== highest.total) throw new ApiError(409, 'lower_score', 'Winner must have the highest total score');
   let results;
   try {
     results = await env.DB.batch([
       env.DB.prepare(`INSERT INTO winners
-        (contest_date, submission_id, name, image_key, image_type, selected_at, terms_version, terms_accepted_at, display_consent)
-        SELECT contest_date, id, name, image_key, image_type, ?, terms_version, terms_accepted_at, display_consent
-        FROM submissions WHERE id = ? AND contest_date = ? AND display_consent = 1`)
-        .bind(selectedAt.toISOString(), id, date),
+        (contest_date, submission_id, name, image_key, image_type, selected_at, terms_version,
+         terms_accepted_at, display_consent, runner_up_submission_id, runner_up_name,
+         runner_up_image_key, runner_up_image_type, runner_up_terms_version,
+         runner_up_terms_accepted_at, runner_up_display_consent)
+        SELECT chosen.contest_date, chosen.id, chosen.name, chosen.image_key, chosen.image_type, ?,
+          chosen.terms_version, chosen.terms_accepted_at, chosen.display_consent,
+          second.id, second.name, second.image_key, second.image_type, second.terms_version,
+          second.terms_accepted_at, second.display_consent
+        FROM submissions AS chosen
+        LEFT JOIN submissions AS second ON second.id = (
+          SELECT id FROM submissions WHERE contest_date = ? AND id <> chosen.id AND display_consent = 1
+          ORDER BY beauty_score + creativity_score + complexity_score DESC, created_at ASC, id ASC LIMIT 1)
+        WHERE chosen.id = ? AND chosen.contest_date = ? AND chosen.display_consent = 1
+          AND chosen.beauty_score IS NOT NULL AND chosen.creativity_score IS NOT NULL
+          AND chosen.complexity_score IS NOT NULL
+          AND chosen.beauty_score + chosen.creativity_score + chosen.complexity_score =
+            (SELECT MAX(beauty_score + creativity_score + complexity_score) FROM submissions WHERE contest_date = ?)
+          AND NOT EXISTS (SELECT 1 FROM submissions WHERE contest_date = ?
+            AND (beauty_score IS NULL OR creativity_score IS NULL OR complexity_score IS NULL))
+          AND NOT EXISTS (SELECT 1 FROM winners WHERE contest_date = ?)`)
+        .bind(selectedAt.toISOString(), date, id, date, date, date, date),
       env.DB.prepare(`INSERT OR IGNORE INTO image_cleanup (image_key, created_at)
         SELECT image_key, ? FROM submissions WHERE contest_date = ? AND id <> ?
+        AND id <> COALESCE((SELECT runner_up_submission_id FROM winners WHERE contest_date = ?), '')
         AND EXISTS (SELECT 1 FROM winners WHERE contest_date = ? AND submission_id = ?)`)
-        .bind(selectedAt.toISOString(), date, id, date, id),
+        .bind(selectedAt.toISOString(), date, id, date, date, id),
       env.DB.prepare(`DELETE FROM submissions WHERE contest_date = ?
         AND EXISTS (SELECT 1 FROM winners WHERE contest_date = ? AND submission_id = ?)`)
         .bind(date, date, id),
@@ -382,10 +460,13 @@ async function selectWinner(env, id, date, currentTime, origin) {
     if (/UNIQUE constraint failed/i.test(String(error))) throw new ApiError(409, 'winner_exists', 'A winner already exists for this date');
     throw error;
   }
-  if (results[0].meta.changes !== 1) throw new ApiError(404, 'submission_not_found', 'Submission not found for this date');
+  if (results[0].meta.changes !== 1) throw new ApiError(409, 'selection_changed', 'Scores or submissions changed; review and retry');
   try { await drainCleanup(env); }
   catch (error) { console.error(JSON.stringify({ event: 'image_cleanup_query_failed', message: String(error) })); }
-  return publicWinner({ ...candidate, selected_at: selectedAt.toISOString() }, origin);
+  const selected = await env.DB.prepare(`SELECT contest_date, submission_id, name, selected_at,
+    runner_up_submission_id, runner_up_name, runner_up_display_consent FROM winners WHERE contest_date = ?`)
+    .bind(date).first();
+  return { winner: publicWinner(selected, origin), runnerUp: publicRunnerUp(selected, origin) };
 }
 
 export async function handleRequest(request, env, now = new Date(), currentTime = () => new Date()) {
@@ -398,7 +479,7 @@ export async function handleRequest(request, env, now = new Date(), currentTime 
     if (path !== BASE && !path.startsWith(`${BASE}/`)) throw new ApiError(404, 'not_found', 'Not found');
     if (request.method === 'OPTIONS') {
       checkOrigin(request, env);
-      return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '600' } });
     }
     if (request.method !== 'GET') checkOrigin(request, env);
@@ -409,17 +490,24 @@ export async function handleRequest(request, env, now = new Date(), currentTime 
     if (request.method === 'GET' && subpath === '/judging/submissions') {
       await requireAdmin(request, env, now);
       const contestDate = contestSchedule(now).contestDate;
-      const { results } = await env.DB.prepare('SELECT id, contest_date, name, created_at FROM submissions WHERE contest_date = ? ORDER BY created_at ASC').bind(contestDate).all();
-      const winner = await env.DB.prepare('SELECT submission_id, name FROM winners WHERE contest_date = ?').bind(contestDate).first();
+      const { results } = await env.DB.prepare(`SELECT id, contest_date, name, created_at,
+        beauty_score, creativity_score, complexity_score FROM submissions
+        WHERE contest_date = ? ORDER BY created_at ASC`).bind(contestDate).all();
+      const winner = await env.DB.prepare(`SELECT submission_id, name, runner_up_submission_id, runner_up_name
+        FROM winners WHERE contest_date = ?`).bind(contestDate).first();
       return response({ submissions: results.map(row => publicSubmission(row, origin)),
-        winnerId: winner?.submission_id || null, winnerName: winner?.name || null }, 200, headers);
+        winnerId: winner?.submission_id || null, winnerName: winner?.name || null,
+        runnerUpId: winner?.runner_up_submission_id || null,
+        runnerUpName: winner?.runner_up_name || null }, 200, headers);
     }
     const adminImage = /^\/judging\/images\/([0-9a-f-]+)$/i.exec(subpath);
     if (request.method === 'GET' && adminImage) {
       await requireAdmin(request, env, now);
       const row = await env.DB.prepare(`SELECT image_key, image_type FROM submissions WHERE id = ?
-        UNION ALL SELECT image_key, image_type FROM winners WHERE submission_id = ? LIMIT 1`)
-        .bind(adminImage[1], adminImage[1]).first();
+        UNION ALL SELECT image_key, image_type FROM winners WHERE submission_id = ?
+        UNION ALL SELECT runner_up_image_key AS image_key, runner_up_image_type AS image_type
+        FROM winners WHERE runner_up_submission_id = ? LIMIT 1`)
+        .bind(adminImage[1], adminImage[1], adminImage[1]).first();
       if (!row) throw new ApiError(404, 'submission_not_found', 'Submission not found');
       const image = await imageResponse(env, row.image_key, row.image_type);
       for (const [key, value] of Object.entries(headers)) image.headers.set(key, value);
@@ -430,17 +518,26 @@ export async function handleRequest(request, env, now = new Date(), currentTime 
       await requireAdmin(request, env, now);
       return response(await deleteSubmission(env, adminDelete[1]), 200, headers);
     }
+    const adminScore = /^\/judging\/submissions\/([0-9a-f-]+)\/scores$/i.exec(subpath);
+    if (request.method === 'PUT' && adminScore) {
+      await requireAdmin(request, env, now);
+      return response(await scoreSubmission(env, adminScore[1], await jsonBody(request), currentTime), 200, headers);
+    }
     if (request.method === 'POST' && subpath === '/judging/winners') {
       await requireAdmin(request, env, now);
       const { id, date } = await jsonBody(request);
       if (typeof id !== 'string' || typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new ApiError(400, 'invalid_winner', 'Expected id and date (YYYY-MM-DD)');
       }
-      return response({ winner: await selectWinner(env, id, date, currentTime, origin) }, 201, headers);
+      return response(await selectWinner(env, id, date, currentTime, origin), 201, headers);
     }
     const winnerImage = /^\/images\/([0-9a-f-]+)$/i.exec(subpath);
     if (request.method === 'GET' && winnerImage) {
-      const row = await env.DB.prepare('SELECT image_key, image_type FROM winners WHERE submission_id = ? AND display_consent = 1').bind(winnerImage[1]).first();
+      const row = await env.DB.prepare(`SELECT image_key, image_type FROM winners
+        WHERE submission_id = ? AND display_consent = 1
+        UNION ALL SELECT runner_up_image_key AS image_key, runner_up_image_type AS image_type
+        FROM winners WHERE runner_up_submission_id = ? AND runner_up_display_consent = 1 LIMIT 1`)
+        .bind(winnerImage[1], winnerImage[1]).first();
       if (!row) throw new ApiError(404, 'winner_not_found', 'Winner not found');
       const image = await imageResponse(env, row.image_key, row.image_type);
       for (const [key, value] of Object.entries(headers)) image.headers.set(key, value);

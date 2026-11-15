@@ -657,11 +657,13 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-tour-links { display: grid; gap: 4px; margin-top: 12px; }
 .lab-tour-links button { padding: 9px 6px; border-radius: 6px; background: transparent; text-align: left; color: #44515e; font-size: 12px; }
 .lab-tour-links button:hover { background: #f1f4f6; }
-.lab-language-menu { width: 245px; }
-.language-option { display: flex; justify-content: space-between; width: 100%; padding: 10px 9px; border-radius: 7px; background: transparent; text-align: left; color: #263442; font-size: 12px; }
+.lab-language-menu { width: min(220px, calc(100vw - 20px)); padding: 14px; }
+.language-list { display: grid; gap: 2px; }
+.language-option { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 35px; padding: 7px 10px; border-radius: 7px; background: transparent; text-align: start; color: #263442; font-size: 13px; }
 .language-option:hover, .language-option[aria-pressed="true"] { background: #edf3fb; }
-.language-option[aria-pressed="true"]::before { content: '✓'; margin-right: 6px; color: #2e6bc5; }
-.language-option span { color: #7a8792; }
+.language-option:focus-visible { outline: 2px solid #2e6bc5; outline-offset: -2px; }
+.language-option .language-name { flex: 1; color: inherit; }
+.language-option[aria-pressed="true"]::after { content: '\2713'; color: #2e6bc5; font-weight: 700; }
 .lab-app .app-main { max-width: none; width: 100%; height: calc(100dvh - var(--lab-header-height)); min-height: 400px; padding: 0; overflow: hidden; }
 .lab-app .workbench { display: grid; grid-template-columns: var(--lab-rail-width) minmax(0, 1fr); gap: 0; align-items: stretch; height: 100%; width: 100%; }
 .lab-app .workbench.rail-collapsed { grid-template-columns: 0 minmax(0, 1fr); }

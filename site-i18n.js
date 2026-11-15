@@ -1793,8 +1793,50 @@
     'Fonts': 'Fuentes tipográficas',
     'Poiret One, Space Grotesk, and Fraunces, served by Google Fonts under the SIL Open Font License.': 'Poiret One, Space Grotesk y Fraunces, servidas por Google Fonts bajo la licencia SIL Open Font License.',
     'Illustrations': 'Ilustraciones',
-    'The atomEDU logo and the footer artwork are original to atomEDU.': 'El logotipo de atomEDU y las ilustraciones del pie de página son obras originales de atomEDU.'
+    'The atomEDU logo and the footer artwork are original to atomEDU.': 'El logotipo de atomEDU y las ilustraciones del pie de página son obras originales de atomEDU.',
+
+    // Updated contest, judging, archive, and privacy copy. Keep the earlier
+    // keys above for content that can still be produced by older cached pages.
+    'RUNNER-UP': 'FINALISTA',
+    'Runner-up': 'Finalista',
+    'Daily winners and runners-up.': 'Ganadores diarios y finalistas.',
+    'The next runner-up artwork will appear here.': 'La próxima obra finalista aparecerá aquí.',
+    'Awaiting a runner-up': 'Esperando a la primera obra finalista',
+    'Runner-up artwork is unavailable.': 'La obra finalista no está disponible.',
+    'an artist': 'un artista',
+    'Contest artist': 'Artista del concurso',
+    'Loading the art archive…': 'Cargando el archivo de arte…',
+    'Archived images are unavailable right now.': 'Las imágenes archivadas no están disponibles en este momento.',
+    'No art has been published yet. Check back soon.': 'Todavía no se han publicado obras. Vuelve pronto.',
+    'The art archive is unavailable right now.': 'El archivo de arte no está disponible en este momento.',
+    'I give atomEDU permission to publish my image and display name on this site and in the art archive if my entry is chosen as winner or runner-up.': 'Autorizo a atomEDU a publicar mi imagen y mi nombre visible en este sitio y en el archivo de arte si mi participación resulta ganadora o finalista.',
+    '. Only original art made in atomEDU’s graph is eligible. Your image and display name may be published if selected as winner or runner-up.': '. Solo se admiten obras originales creadas en la gráfica de atomEDU. Si tu obra resulta ganadora o finalista, podrían publicarse tu imagen y tu nombre visible.',
+    'You keep ownership of your work. You allow atomEDU’s owners to review your entry. Your separate display consent lets us publish your image and display name on this site and in the archive if selected as winner or runner-up.': 'Conservas la propiedad de tu obra. Permites que los propietarios de atomEDU revisen tu participación. Tu consentimiento independiente para la publicación nos permite publicar tu imagen y tu nombre visible en este sitio y en el archivo si tu obra resulta ganadora o finalista.',
+    'We score eligible art out of 10 in each category, for up to 30 points. The highest-scoring entry is the daily winner. The second-highest scorer is the runner-up. Our owners review the scores together and settle ties.': 'Calificamos las obras que cumplen las reglas sobre 10 en cada categoría, hasta un máximo de 30 puntos. La participación con más puntos gana el concurso diario. La segunda con más puntos queda finalista. Los propietarios revisan juntos las puntuaciones y resuelven los empates.',
+    'We score eligible art out of 10 in each category, for up to 30 points. The highest-scoring entry is the daily winner. If there is another eligible entry, the second-highest scorer is the runner-up. Our owners review the scores together and settle ties.': 'Calificamos las obras que cumplen las reglas sobre 10 en cada categoría, hasta un máximo de 30 puntos. La participación con más puntos gana el concurso diario. Si hay otra participación que cumple las reglas, la segunda con más puntos queda finalista. Los propietarios revisan juntos las puntuaciones y resuelven los empates.',
+    'atomEDU’s owners judge eligible entries. We add the Beauty, Creativity, and Complexity scores for each entry. The top scorer wins; the second-highest scorer is runner-up. If scores tie, our owners decide the order together. Their decisions are final, with no appeals. Entering does not guarantee a feature or prize. We archive both featured entries and remove the other submissions for that day after confirmation.': 'Los propietarios de atomEDU evalúan las participaciones que cumplen las reglas. Sumamos las puntuaciones de Belleza, Creatividad y Complejidad de cada participación. Gana la de mayor puntuación; la segunda queda finalista. Si hay un empate, los propietarios deciden juntos el orden. Sus decisiones son definitivas y no admiten apelación. Participar no garantiza que tu obra aparezca destacada ni que recibas un premio. Archivamos las dos participaciones destacadas y eliminamos las demás de ese día tras la confirmación.',
+    'atomEDU’s owners judge eligible entries. We add the Beauty, Creativity, and Complexity scores for each entry. The top scorer wins; the second-highest scorer is runner-up when there is a second entry. If scores tie, our owners decide the winner among tied leaders; the next scorer follows submission order. Their decisions are final, with no appeals. Entering does not guarantee a feature or prize. We archive the featured entries and remove the other submissions for that day after confirmation.': 'Los propietarios de atomEDU evalúan las participaciones que cumplen las reglas. Sumamos las puntuaciones de Belleza, Creatividad y Complejidad de cada participación. Gana la de mayor puntuación; si hay otra participación, la segunda queda finalista. Si hay un empate, los propietarios eligen al ganador entre quienes comparten la puntuación más alta; el siguiente puesto sigue el orden de envío. Sus decisiones son definitivas y no admiten apelación. Participar no garantiza que tu obra aparezca destacada ni que recibas un premio. Archivamos las participaciones destacadas y eliminamos las demás de ese día tras la confirmación.',
+    'Score Beauty, Creativity, and Complexity from 0 to 10 for each entry. Save every score before choosing the highest scorer. The second-highest scorer becomes runner-up. The owners settle ties together.': 'Califica Belleza, Creatividad y Complejidad de 0 a 10 en cada participación. Guarda todas las puntuaciones antes de elegir a la participación con más puntos. La segunda queda finalista. Los propietarios resuelven juntos los empates.',
+    'Beauty / 10': 'Belleza / 10',
+    'Creativity / 10': 'Creatividad / 10',
+    'Complexity / 10': 'Complejidad / 10',
+    'Not scored yet': 'Aún sin puntuar',
+    'Save scores': 'Guardar puntuaciones',
+    'Score every entry first.': 'Puntúa todas las participaciones primero.',
+    'Only a top-scoring entry can win.': 'Solo puede ganar una participación con la puntuación más alta.',
+    'Enter whole-number scores from 0 to 10 in all three categories.': 'Introduce puntuaciones enteras de 0 a 10 en las tres categorías.',
+    'Winner and runner-up saved by the contest server.': 'El servidor del concurso guardó al ganador y al finalista.',
+    'Beauty, creativity, and complexity must be integers from 0 to 10': 'Belleza, creatividad y complejidad deben ser números enteros del 0 al 10',
+    'Score every submission before selecting a winner': 'Puntúa todas las participaciones antes de seleccionar al ganador',
+    'Winner must have the highest total score': 'El ganador debe tener la puntuación total más alta',
+    'Scores or submissions changed; review and retry': 'Las puntuaciones o participaciones han cambiado; revísalas y vuelve a intentarlo',
+    "When a daily winner and runner-up are confirmed, all other entries for that day are removed from the contest list. We delete their stored images and retry if storage is temporarily unavailable. The winner and runner-up images and display names may remain in the public art archive. Do not include your full name, contact details, a person's face, or other private information in an entry. The contest is for people aged 13 or older. If you are under 18, get permission from a parent or guardian before entering. To request removal of a featured entry or ask about your submission, contact": 'Cuando se confirman un ganador diario y un finalista, las demás participaciones de ese día se eliminan de la lista del concurso. Borramos sus imágenes almacenadas y volvemos a intentarlo si el almacenamiento no está disponible temporalmente. Las imágenes y los nombres visibles del ganador y del finalista pueden permanecer en el archivo público de arte. No incluyas tu nombre completo, datos de contacto, el rostro de una persona ni otros datos privados en una participación. El concurso es para personas de 13 años o más. Si eres menor de 18 años, pide permiso a tu padre, madre o tutor antes de participar. Para solicitar la retirada de una obra destacada o preguntar por tu participación, escribe a'
   };
+
+  var languageOptions = [
+    { code: 'en', name: 'English', complete: true },
+    { code: 'es', name: 'Español', complete: true }
+  ];
 
   var englishBySpanish = {};
   Object.keys(spanish).forEach(function (source) {
@@ -1802,8 +1844,7 @@
     if (!Object.prototype.hasOwnProperty.call(englishBySpanish, result)) englishBySpanish[result] = source;
     else englishBySpanish[result] = null;
   });
-
-  function validLanguage(value) { return value === 'en' || value === 'es'; }
+  function validLanguage(value) { return languageOptions.some(function (option) { return option.code === value; }); }
   var queryLanguage = new URLSearchParams(location.search).get('lang');
   var storedLanguage;
   try { storedLanguage = localStorage.getItem(STORAGE_KEY); } catch (_) { /* storage may be disabled */ }
@@ -1872,6 +1913,12 @@
     var match;
     var contestDate = translateContestDate(core);
     if (contestDate) return contestDate;
+    if ((match = /^(Runner-up|Daily winner) artwork by (.+)$/.exec(core)))
+      return 'Obra ' + (match[1] === 'Runner-up' ? 'finalista' : 'ganadora') + ' de ' + match[2];
+    if ((match = /^Total: (\d+) \/ 30$/.exec(core))) return 'Total: ' + match[1] + ' / 30';
+    if ((match = /^Scores saved for (.+)\.$/.exec(core))) return 'Puntuaciones guardadas para ' + match[1] + '.';
+    if ((match = /^Confirm (.+) as the top-scoring winner for (\d{2}\/\d{2}\/\d{4})\? The next highest scorer becomes runner-up\. Both entries are archived and all others are permanently deleted\. This cannot be undone\.$/.exec(core)))
+      return '¿Confirmar a ' + match[1] + ' como ganador por mayor puntuación del ' + match[2] + '? La siguiente participación con más puntos queda finalista. Ambas se archivan y las demás se eliminan permanentemente. Esta acción no se puede deshacer.';
     if ((match = /^(Entries close|Next opening): (.+)$/.exec(core)) && translateContestDate(match[2]))
       return (match[1] === 'Entries close' ? 'Cierre de participaciones: ' : 'Próxima apertura: ') + translateContestDate(match[2]);
     if ((match = /^UTC: (.+?)(?:; Your time: (.+))?$/.exec(core)) && translateContestDate(match[1]) && (!match[2] || translateContestDate(match[2])))
@@ -1889,7 +1936,7 @@
       return match[1] + ' ' + (match[2] === 'entry' ? 'participación' : 'participaciones') + ' del ' + translateContestDate(match[3]);
     if ((match = /^The judging API only provides the live contest date, (.+)\. Choose that date or select Sync live date\.$/.exec(core)) && translateContestDate(match[1]))
       return 'La API de evaluación solo permite consultar la fecha actual del concurso, ' + translateContestDate(match[1]) + '. Elige esa fecha o selecciona Sincronizar fecha actual.';
-    if ((match = /^(The winner was saved by the contest server\.|The submission was deleted by the contest server\.) The list could not be refreshed; select Sync live date\.$/.exec(core)))
+    if ((match = /^(The winner was saved by the contest server\.|Winner and runner-up saved by the contest server\.|The submission was deleted by the contest server\.) The list could not be refreshed; select Sync live date\.$/.exec(core)))
       return spanish[match[1]] + ' No se pudo actualizar la lista; selecciona Sincronizar fecha actual.';
     if ((match = /^The contest server could not complete this request \((\d{3})\)\. Please try again\.$/.exec(core)))
       return 'El servidor del concurso no pudo completar esta solicitud (' + match[1] + '). Vuelve a intentarlo.';
@@ -2033,6 +2080,8 @@
     return text.slice(0, text.indexOf(core)) + source + text.slice(text.indexOf(core) + core.length);
   }
 
+  function isKnownTranslation(source, current) { return current === source || current === translateSpanish(source); }
+
   function isBlocked(element) { return !element || !!element.closest(blocked); }
 
   function translateMathCopy(root) {
@@ -2066,9 +2115,9 @@
     if (node.parentElement.id === 'summary-winner' && Array.from(document.querySelectorAll('.judge-card h3')).some(function (name) { return name.textContent === node.nodeValue; })) return;
     var source = originals.get(node);
     if (source === undefined) source = dynamic ? englishSource(node.nodeValue) : node.nodeValue;
-    else if (node.nodeValue !== source && node.nodeValue !== translateSpanish(source)) source = dynamic ? englishSource(node.nodeValue) : node.nodeValue;
+    else if (!isKnownTranslation(source, node.nodeValue)) source = dynamic ? englishSource(node.nodeValue) : node.nodeValue;
     originals.set(node, source);
-    var result = language === 'es' ? translate(source) : source;
+    var result = translate(source);
     if (node.nodeValue !== result) node.nodeValue = result;
   }
 
@@ -2083,9 +2132,9 @@
       if (!el.hasAttribute(name)) { delete sources[name]; return; }
       var current = el.getAttribute(name);
       var source = sources[name];
-      if (source === undefined || (current !== source && current !== translateSpanish(source))) source = dynamic ? englishSource(current) : current;
+      if (source === undefined || !isKnownTranslation(source, current)) source = dynamic ? englishSource(current) : current;
       sources[name] = source;
-      var result = language === 'es' ? translate(source) : source;
+      var result = translate(source);
       if (current !== result) el.setAttribute(name, result);
     });
     originals.set(el, sources);
@@ -2110,9 +2159,10 @@
 
   function translatePage() {
     document.documentElement.lang = language;
+    document.documentElement.dir = 'ltr';
     if (!supportedPage || !document.body) return;
-    document.title = language === 'es' ? translate(titleEnglish) : titleEnglish;
-    if (description) description.setAttribute('content', language === 'es' ? translate(descriptionEnglish) : descriptionEnglish);
+    document.title = translate(titleEnglish);
+    if (description) description.setAttribute('content', translate(descriptionEnglish));
     translateTree(document.body);
   }
 
@@ -2135,6 +2185,7 @@
   window.atomI18n = {
     setLanguage: setLanguage,
     getLanguage: function () { return language; },
+    languages: languageOptions.map(function (option) { return Object.assign({}, option); }),
     translate: translate,
     subscribe: function (callback) {
       if (typeof callback !== 'function') return function () {};

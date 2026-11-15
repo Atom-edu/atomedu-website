@@ -14,6 +14,7 @@ const DELAY = new Date('2026-07-11T01:31:00Z'); // 20:31 CDT
 function makeEnv() {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync(new URL('../contest-api/migrations/0001_initial.sql', import.meta.url), 'utf8'));
+  sqlite.exec(readFileSync(new URL('../contest-api/migrations/0002_runner_up.sql', import.meta.url), 'utf8'));
   const DB = {
     prepare(sql) {
       const statement = {
@@ -78,6 +79,39 @@ async function login(env, now = JUDGING) {
   return (await res.json()).token;
 }
 
+async function score(env, token, id, beauty, creativity, complexity, now = JUDGING) {
+  return call(env, `/judging/submissions/${id}/scores`, {
+    method: 'PUT', token, body: { beauty, creativity, complexity },
+  }, now);
+}
+
+test('runner-up migration preserves existing submissions and historical winners', () => {
+  const sqlite = new DatabaseSync(':memory:');
+  sqlite.exec(readFileSync(new URL('../contest-api/migrations/0001_initial.sql', import.meta.url), 'utf8'));
+  const entrantId = crypto.randomUUID();
+  const winnerId = crypto.randomUUID();
+  sqlite.prepare(`INSERT INTO submissions
+    (id, contest_date, name, image_key, image_type, created_at, terms_version,
+     terms_accepted_at, display_consent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`)
+    .run(entrantId, '2026-07-10', 'Existing entrant', 'entries/2026-07-10/existing',
+      'image/gif', OPEN.toISOString(), '2026-11-14', OPEN.toISOString());
+  sqlite.prepare(`INSERT INTO winners
+    (contest_date, submission_id, name, image_key, image_type, selected_at,
+     terms_version, terms_accepted_at, display_consent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`)
+    .run('2026-07-09', winnerId, 'Existing winner', 'entries/2026-07-09/winner',
+      'image/gif', JUDGING.toISOString(), '2026-11-14', OPEN.toISOString());
+  sqlite.exec(readFileSync(new URL('../contest-api/migrations/0002_runner_up.sql', import.meta.url), 'utf8'));
+  assert.deepEqual({ ...sqlite.prepare(`SELECT name, image_key, beauty_score, creativity_score, complexity_score
+    FROM submissions WHERE id = ?`).get(entrantId) }, {
+    name: 'Existing entrant', image_key: 'entries/2026-07-10/existing',
+    beauty_score: null, creativity_score: null, complexity_score: null,
+  });
+  assert.deepEqual({ ...sqlite.prepare(`SELECT name, image_key, runner_up_submission_id
+    FROM winners WHERE submission_id = ?`).get(winnerId) }, {
+    name: 'Existing winner', image_key: 'entries/2026-07-09/winner', runner_up_submission_id: null,
+  });
+});
+
 test('Central schedule honors DST and phase boundaries', () => {
   assert.deepEqual(contestSchedule(new Date('2026-03-08T23:59:00Z')), {
     phase: 'open', contestDate: '2026-03-08',
@@ -98,7 +132,8 @@ test('login uses signed expiring bearer tokens, explicit CORS, and rate limits',
   const listed = await call(env, '/judging/submissions', { token }, JUDGING);
   assert.equal(listed.status, 200);
   assert.equal(listed.headers.get('Access-Control-Allow-Origin'), ORIGIN);
-  assert.deepEqual(await listed.json(), { submissions: [], winnerId: null, winnerName: null });
+  assert.deepEqual(await listed.json(), { submissions: [], winnerId: null, winnerName: null,
+    runnerUpId: null, runnerUpName: null });
   assert.equal((await call(env, '/judging/submissions', { token: `${token}x` }, JUDGING)).status, 401);
   assert.equal((await call(env, '/judging/submissions', { token }, new Date(JUDGING.getTime() + 8 * 3600_000))).status, 401);
   assert.equal((await call(env, '/judging/submissions', {}, JUDGING)).status, 401);
@@ -131,7 +166,7 @@ test('uploads enforce consent, magic bytes, size, and private entrant images', a
   const { id, contestDate } = await submitted.json();
   assert.equal(contestDate, '2026-07-10');
   const consent = sqlite.prepare('SELECT terms_version, terms_accepted_at, display_consent FROM submissions WHERE id = ?').get(id);
-  assert.equal(consent.terms_version, '2026-11-14');
+  assert.equal(consent.terms_version, '2026-11-15');
   assert.equal(consent.terms_accepted_at, OPEN.toISOString());
   assert.equal(consent.display_consent, 1);
   assert.equal(objects.size, 1);
@@ -140,6 +175,7 @@ test('uploads enforce consent, magic bytes, size, and private entrant images', a
   const token = await login(env);
   const listing = await (await call(env, '/judging/submissions', { token }, OPEN)).json();
   assert.equal(listing.submissions[0].imageUrl, `${BASE}/judging/images/${id}`);
+  assert.equal(listing.submissions[0].scores, null);
   const privateImage = await call(env, `/judging/images/${id}`, { token }, OPEN);
   assert.equal(privateImage.status, 200);
   assert.deepEqual(new Uint8Array(await privateImage.arrayBuffer()), GIF);
@@ -165,7 +201,7 @@ test('failed submission queues an orphaned private image when immediate deletion
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM image_cleanup').get().count, 0);
 });
 
-test('judge confirms one winner in delay window; archive is immediate and losers are removed', async () => {
+test('judge selects scored winner and runner-up atomically; archive and both images remain available', async () => {
   const { env, sqlite, objects } = makeEnv();
   const first = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
   const second = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
@@ -173,33 +209,170 @@ test('judge confirms one winner in delay window; archive is immediate and losers
   const before = await (await call(env, '/state', {}, DELAY)).json();
   assert.equal(before.phase, 'results_pending');
   assert.equal(before.latestWinner, null);
+  assert.equal(before.latestRunnerUp, null);
+  assert.equal((await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: first.id, date: first.contestDate } }, DELAY)).status, 409);
+  assert.equal((await score(env, token, first.id, 10, 9, 8, DELAY)).status, 200);
+  assert.equal((await score(env, token, second.id, 7, 8, 9, DELAY)).status, 200);
   const chosen = await call(env, '/judging/winners', {
     method: 'POST', token, body: { id: first.id, date: first.contestDate },
   }, DELAY);
   assert.equal(chosen.status, 201);
-  const { winner } = await chosen.json();
+  const { winner, runnerUp } = await chosen.json();
   assert.equal(winner.id, first.id);
   assert.equal(winner.imageUrl, `${BASE}/images/${first.id}`);
+  assert.equal(runnerUp.id, second.id);
+  assert.equal(runnerUp.imageUrl, `${BASE}/images/${second.id}`);
   const after = await (await call(env, '/state', {}, DELAY)).json();
   assert.deepEqual(after.latestWinner, winner);
-  assert.deepEqual(after.archive, [winner]);
+  assert.deepEqual(after.latestRunnerUp, runnerUp);
+  assert.deepEqual(after.archive, [{ ...winner, runnerUp }]);
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 0);
   assert.equal(sqlite.prepare('SELECT display_consent FROM winners').get().display_consent, 1);
-  assert.equal(sqlite.prepare('SELECT terms_version FROM winners').get().terms_version, '2026-11-14');
+  assert.equal(sqlite.prepare('SELECT terms_version FROM winners').get().terms_version, '2026-11-15');
   const judged = await (await call(env, '/judging/submissions', { token }, DELAY)).json();
-  assert.deepEqual(judged, { submissions: [], winnerId: first.id, winnerName: 'A painter' });
-  assert.equal(objects.size, 1);
+  assert.deepEqual(judged, { submissions: [], winnerId: first.id, winnerName: 'A painter',
+    runnerUpId: second.id, runnerUpName: 'A painter' });
+  assert.equal(objects.size, 2);
   const publicImage = await call(env, `/images/${first.id}`, {}, DELAY);
   assert.equal(publicImage.status, 200);
   assert.deepEqual(new Uint8Array(await publicImage.arrayBuffer()), GIF);
   assert.equal((await call(env, `/judging/images/${first.id}`, { token }, DELAY)).status, 200);
-  assert.equal((await call(env, `/images/${second.id}`, {}, DELAY)).status, 404);
+  assert.equal((await call(env, `/images/${second.id}`, {}, DELAY)).status, 200);
+  assert.equal((await call(env, `/judging/images/${second.id}`, { token }, DELAY)).status, 200);
   assert.equal((await call(env, '/judging/winners', {
     method: 'POST', token, body: { id: second.id, date: second.contestDate },
   }, DELAY)).status, 409);
   assert.equal((await call(env, '/judging/winners', {
     method: 'POST', token, body: { id: second.id, date: second.contestDate },
   }, new Date('2026-07-11T02:30:00Z'))).status, 409);
+});
+
+test('scores require authentication, valid integers, and a complete slate before finalization', async () => {
+  const { env, sqlite, objects } = makeEnv();
+  const first = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const second = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const token = await login(env);
+  assert.equal((await score(env, undefined, first.id, 5, 5, 5)).status, 401);
+  for (const values of [[-1, 5, 5], [11, 5, 5], [5.5, 5, 5], ['5', 5, 5]]) {
+    assert.equal((await score(env, token, first.id, ...values)).status, 400);
+  }
+  assert.equal((await score(env, token, first.id, 7, 8, 9, OPEN)).status, 409);
+  const scored = await score(env, token, first.id, 7, 8, 9);
+  assert.deepEqual(await scored.json(), { id: first.id, date: first.contestDate,
+    scores: { beauty: 7, creativity: 8, complexity: 9, total: 24 } });
+  const listed = await (await call(env, '/judging/submissions', { token }, JUDGING)).json();
+  assert.deepEqual(listed.submissions.map(entry => entry.scores), [
+    { beauty: 7, creativity: 8, complexity: 9, total: 24 }, null,
+  ]);
+  const incomplete = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: first.id, date: first.contestDate } }, JUDGING);
+  assert.equal(incomplete.status, 409);
+  assert.equal((await incomplete.json()).error.code, 'scores_incomplete');
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 0);
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 2);
+  assert.equal(objects.size, 2);
+  assert.equal((await score(env, token, second.id, 9, 9, 9)).status, 200);
+  const lower = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: first.id, date: first.contestDate } }, JUDGING);
+  assert.equal(lower.status, 409);
+  assert.equal((await lower.json()).error.code, 'lower_score');
+  assert.equal((await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: second.id, date: second.contestDate } }, JUDGING)).status, 201);
+  assert.equal((await score(env, token, first.id, 10, 10, 10)).status, 409);
+});
+
+test('owner can choose a tied leader and runner-up ties use submission order', async () => {
+  const { env } = makeEnv();
+  const entries = [];
+  for (let i = 0; i < 4; i++) {
+    entries.push(await (await call(env, '/submissions', { method: 'POST', body: form() })).json());
+  }
+  const token = await login(env);
+  for (const entry of entries) assert.equal((await score(env, token, entry.id, 8, 8, 8)).status, 200);
+  const selected = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: entries[2].id, date: entries[2].contestDate } }, JUDGING);
+  assert.equal(selected.status, 201);
+  const { winner, runnerUp } = await selected.json();
+  assert.equal(winner.id, entries[2].id);
+  // All submissions share a timestamp, so the UUID is the deterministic tie breaker.
+  assert.equal(runnerUp.id, entries.filter(entry => entry.id !== entries[2].id)
+    .map(entry => entry.id).sort()[0]);
+});
+
+test('one scored submission has no runner-up; pre-migration winners remain readable', async () => {
+  const { env, sqlite, objects } = makeEnv();
+  sqlite.prepare(`INSERT INTO winners
+    (contest_date, submission_id, name, image_key, image_type, selected_at,
+     terms_version, terms_accepted_at, display_consent)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`).run(
+    '2026-07-09', crypto.randomUUID(), 'Historical winner', 'entries/old/winner', 'image/gif',
+    '2026-07-10T01:00:00.000Z', '2026-11-14', '2026-07-09T23:00:00.000Z');
+  const only = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const token = await login(env);
+  assert.equal((await score(env, token, only.id, 0, 0, 0)).status, 200);
+  const selected = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: only.id, date: only.contestDate } }, JUDGING);
+  assert.equal(selected.status, 201);
+  assert.equal((await selected.json()).runnerUp, null);
+  const state = await (await call(env, '/state', {}, JUDGING)).json();
+  assert.equal(state.latestRunnerUp, null);
+  assert.equal(state.archive.length, 2);
+  assert.equal(state.archive[1].name, 'Historical winner');
+  assert.equal(state.archive[1].runnerUp, null);
+  await runMaintenance(env, new Date('2026-07-12T03:00:00Z'));
+  assert.equal(objects.size, 1);
+  assert.equal((await call(env, `/images/${only.id}`, {}, JUDGING)).status, 200);
+});
+
+test('a cleanup write failure rolls back selection without deleting entries or images', async () => {
+  const { env, sqlite, objects } = makeEnv();
+  const entries = [];
+  for (let i = 0; i < 3; i++) {
+    entries.push(await (await call(env, '/submissions', { method: 'POST', body: form() })).json());
+  }
+  const token = await login(env);
+  for (let i = 0; i < entries.length; i++) {
+    assert.equal((await score(env, token, entries[i].id, 10 - i, 10 - i, 10 - i)).status, 200);
+  }
+  sqlite.exec(`CREATE TRIGGER fail_cleanup BEFORE INSERT ON image_cleanup
+    BEGIN SELECT RAISE(ABORT, 'simulated cleanup write failure'); END`);
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    assert.equal((await call(env, '/judging/winners', { method: 'POST', token,
+      body: { id: entries[0].id, date: entries[0].contestDate } }, JUDGING)).status, 500);
+  } finally {
+    console.error = originalError;
+  }
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 0);
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 3);
+  assert.equal(objects.size, 3);
+  sqlite.exec('DROP TRIGGER fail_cleanup');
+  assert.equal((await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: entries[0].id, date: entries[0].contestDate } }, JUDGING)).status, 201);
+  assert.equal(objects.size, 2);
+});
+
+test('cleanup never removes an archived winner or runner-up image', async () => {
+  const { env, sqlite, objects } = makeEnv();
+  const first = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const second = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const token = await login(env);
+  assert.equal((await score(env, token, first.id, 10, 10, 10)).status, 200);
+  assert.equal((await score(env, token, second.id, 9, 9, 9)).status, 200);
+  assert.equal((await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: first.id, date: first.contestDate } }, JUDGING)).status, 201);
+  const keys = sqlite.prepare('SELECT image_key, runner_up_image_key FROM winners').get();
+  sqlite.prepare('INSERT INTO image_cleanup (image_key, created_at) VALUES (?, ?)')
+    .run(keys.image_key, JUDGING.toISOString());
+  sqlite.prepare('INSERT INTO image_cleanup (image_key, created_at) VALUES (?, ?)')
+    .run(keys.runner_up_image_key, JUDGING.toISOString());
+  await runMaintenance(env, DELAY);
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM image_cleanup').get().n, 0);
+  assert.equal(objects.size, 2);
+  assert.equal((await call(env, `/images/${first.id}`, {}, DELAY)).status, 200);
+  assert.equal((await call(env, `/images/${second.id}`, {}, DELAY)).status, 200);
 });
 
 test('judge deletion removes the private image and D1 row', async () => {
@@ -217,8 +390,12 @@ test('judge deletion removes the private image and D1 row', async () => {
 test('cleanup retries failed R2 deletion and expires entries with no winner', async () => {
   const { env, sqlite, objects } = makeEnv();
   const first = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
-  await call(env, '/submissions', { method: 'POST', body: form() });
+  const second = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
+  const third = await (await call(env, '/submissions', { method: 'POST', body: form() })).json();
   const token = await login(env);
+  assert.equal((await score(env, token, first.id, 10, 10, 10)).status, 200);
+  assert.equal((await score(env, token, second.id, 9, 9, 9)).status, 200);
+  assert.equal((await score(env, token, third.id, 1, 1, 1)).status, 200);
   const originalDelete = env.IMAGES.delete;
   let failOnce = true;
   env.IMAGES.delete = async key => {
@@ -236,17 +413,17 @@ test('cleanup retries failed R2 deletion and expires entries with no winner', as
     console.error = originalError;
   }
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM image_cleanup').get().n, 1);
-  assert.equal(objects.size, 2);
+  assert.equal(objects.size, 3);
   await runMaintenance(env, DELAY);
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM image_cleanup').get().n, 0);
-  assert.equal(objects.size, 1);
+  assert.equal(objects.size, 2);
 
   const noWinner = await (await call(env, '/submissions', { method: 'POST', body: form() },
     new Date('2026-07-11T03:00:00Z'))).json();
   assert.equal(noWinner.contestDate, '2026-07-11');
   await runMaintenance(env, new Date('2026-07-12T03:00:00Z'));
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 0);
-  assert.equal(objects.size, 1);
+  assert.equal(objects.size, 2);
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 1);
 });
 
