@@ -20,6 +20,9 @@
   let imageRun = 0;
   let imageController = null;
   const imageObjects = new Set();
+  let currentEntries = [];
+  let currentPhase = '';
+  let preview = null;
 
   function centralToday() {
     const parts = new Intl.DateTimeFormat('en-US', { timeZone: CENTRAL, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
@@ -88,6 +91,8 @@
   function setBusy(value) {
     busy = value;
     for (const id of ['login-button', 'load-date', 'refresh-judging', 'sign-out']) $(id).disabled = value;
+    $('submit-scores').disabled = value;
+    $('confirm-results').disabled = value;
     $('submission-list').querySelectorAll('button').forEach((button) => { button.disabled = value || button.dataset.locked === 'true'; });
   }
 
@@ -123,7 +128,11 @@
   }
 
   function clearEntries(message) {
+    closePreview();
     revokeImages();
+    currentEntries = [];
+    currentPhase = '';
+    $('judge-submit-bar').hidden = true;
     $('summary-date').textContent = '-';
     $('summary-count').textContent = '-';
     $('summary-winner').textContent = '-';
@@ -162,7 +171,9 @@
       }
     }
     const allScored = submissions.length > 0 && submissions.every((entry) => Number.isInteger(entry.scores?.total));
-    const topScore = allScored ? Math.max(...submissions.map((entry) => entry.scores.total)) : null;
+    currentEntries = submissions;
+    currentPhase = phase;
+    $('judge-submit-bar').hidden = !allScored || !!data.winnerId || !['judging', 'results_pending'].includes(phase);
     revokeImages();
     imageController = new AbortController();
     const run = imageRun;
@@ -221,6 +232,7 @@
       meta.textContent = `Submitted ${formatSubmittedDate(entry.submittedAt)}`;
       const scoreForm = document.createElement('form');
       scoreForm.className = 'score-form';
+      scoreForm.addEventListener('input', () => { $('judge-submit-bar').hidden = true; });
       const scoreInputs = {};
       for (const criterion of ['beauty', 'creativity', 'complexity']) {
         const label = document.createElement('label');
@@ -260,20 +272,6 @@
       });
       const actions = document.createElement('div');
       actions.className = 'judge-card-actions';
-      if (!isWinner) {
-        const select = document.createElement('button');
-        select.type = 'button';
-        select.className = 'select-winner';
-        select.textContent = 'Select winner';
-        if (!['judging', 'results_pending'].includes(phase) || data.winnerId || !allScored || entry.scores.total !== topScore) {
-          select.disabled = true;
-          select.dataset.locked = 'true';
-          select.title = data.winnerId ? 'A winner has already been selected.' : !allScored ? 'Score every entry first.'
-            : entry.scores.total !== topScore ? 'Only a top-scoring entry can win.' : 'Winner selection opens after entries close.';
-        }
-        select.addEventListener('click', () => selectWinner(entry, requestedDate));
-        actions.append(select);
-      }
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'delete-entry';
@@ -345,9 +343,98 @@
     return `${month}/${day}/${year}`;
   }
 
-  function selectWinner(entry, date) {
-    if (!window.confirm(`Confirm ${entry.name} as the top-scoring winner for ${shortDate(date)}? The next highest scorer becomes runner-up. Both entries are archived and all others are permanently deleted. This cannot be undone.`)) return;
-    changeEntry('/judging/winners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id, date }) }, 'Winner and runner-up saved by the contest server.', (result) => result?.winner?.id === entry.id);
+  function scoreSnapshot(entries) {
+    return JSON.stringify(entries.map(({ id, scores }) => [id, scores?.beauty, scores?.creativity, scores?.complexity])
+      .sort((left, right) => left[0].localeCompare(right[0])));
+  }
+
+  function rankEntries(entries) {
+    return [...entries].sort((left, right) => right.scores.total - left.scores.total
+      || String(left.submittedAt).localeCompare(String(right.submittedAt))
+      || left.id.localeCompare(right.id));
+  }
+
+  function closePreview() {
+    preview = null;
+    if ($('results-dialog').open) $('results-dialog').close();
+    for (const id of ['preview-winner-image', 'preview-runner-image']) {
+      $(id).hidden = true;
+      $(id).removeAttribute('src');
+    }
+  }
+
+  async function openPreview() {
+    if (busy || !token || $('judge-submit-bar').hidden || !['judging', 'results_pending'].includes(currentPhase)) return;
+    setBusy(true);
+    try {
+      const data = await request('/judging/submissions', {}, true);
+      if (data.winnerId || scoreSnapshot(data.submissions) !== scoreSnapshot(currentEntries)) {
+        setBusy(false);
+        await loadEntries(true);
+        setMessage($('dashboard-message'), 'The scores or entries changed. Review the updated list before submitting.');
+        return;
+      }
+      if (!data.submissions.length || data.submissions.some((entry) => !Number.isInteger(entry.scores?.total))) {
+        throw new Error('Save scores for every entry before submitting.');
+      }
+      const [winner, runnerUp] = rankEntries(data.submissions);
+      preview = { date: $('contest-date').value, winner, runnerUp, snapshot: scoreSnapshot(data.submissions) };
+      $('results-date').textContent = dateLabel(preview.date);
+      $('preview-winner-name').textContent = winner.name;
+      $('preview-winner-name').setAttribute('data-i18n-ignore', '');
+      $('preview-winner-score').textContent = `${winner.scores.total} / 30 points`;
+      $('preview-runner-card').hidden = !runnerUp;
+      if (runnerUp) {
+        $('preview-runner-name').textContent = runnerUp.name;
+        $('preview-runner-name').setAttribute('data-i18n-ignore', '');
+        $('preview-runner-score').textContent = `${runnerUp.scores.total} / 30 points`;
+      }
+      setMessage($('results-message'), '');
+      $('results-dialog').showModal();
+      if (imageController) {
+        const run = imageRun;
+        loadPrivateImage(winner.imageUrl, $('preview-winner-image'), $('preview-winner-placeholder'), run, imageController.signal);
+        if (runnerUp) loadPrivateImage(runnerUp.imageUrl, $('preview-runner-image'), $('preview-runner-placeholder'), run, imageController.signal);
+      }
+    } catch (error) {
+      if (error.unauthorized) signOut(error.message);
+      else setMessage($('dashboard-message'), error.message || 'Could not review results.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function publishResults() {
+    if (!preview || busy) return;
+    setBusy(true);
+    setMessage($('results-message'), 'Checking the final scores...', 'info');
+    const selected = preview;
+    try {
+      const latest = await request('/judging/submissions', {}, true);
+      if (latest.winnerId || scoreSnapshot(latest.submissions) !== selected.snapshot) {
+        closePreview();
+        setBusy(false);
+        await loadEntries(true);
+        setMessage($('dashboard-message'), 'The scores or entries changed. Review the updated list before confirming.');
+        return;
+      }
+      setMessage($('results-message'), 'Publishing the confirmed results...', 'info');
+      const result = await request('/judging/winners', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selected.winner.id, date: selected.date, expectedRunnerUpId: selected.runnerUp?.id || null }) }, true);
+      closePreview();
+      setBusy(false);
+      await loadEntries(true);
+      if (result?.winner?.id !== selected.winner.id || (result?.runnerUp?.id || null) !== (selected.runnerUp?.id || null)) {
+        setMessage($('dashboard-message'), 'Results were published, but the final places differ from the preview. Review the live archive.');
+      } else {
+        setMessage($('dashboard-message'), 'Winner and runner-up published. Other submissions were removed.', 'success');
+      }
+    } catch (error) {
+      if (error.unauthorized) signOut(error.message);
+      else setMessage($('results-message'), error.message || 'Results could not be published. Nothing was released.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function deleteEntry(entry, date) {
@@ -391,6 +478,10 @@
   });
   $('load-date').addEventListener('click', () => loadEntries(false));
   $('refresh-judging').addEventListener('click', () => loadEntries(true));
+  $('submit-scores').addEventListener('click', openPreview);
+  $('confirm-results').addEventListener('click', publishResults);
+  $('cancel-results').addEventListener('click', closePreview);
+  $('results-dialog').addEventListener('close', () => { preview = null; });
   $('sign-out').addEventListener('click', () => signOut('Signed out of this page.'));
-  window.addEventListener('pagehide', () => { token = ''; revokeImages(); });
+  window.addEventListener('pagehide', () => { token = ''; closePreview(); revokeImages(); });
 })();

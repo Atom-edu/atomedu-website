@@ -157,7 +157,6 @@
       image.onerror = () => { image.hidden = true; placeholder.hidden = false; };
     } else {
       image.removeAttribute('src');
-      placeholder.textContent = runnerUp ? 'Runner-up artwork is unavailable.' : 'The next runner-up artwork will appear here.';
     }
     $('runner-name').toggleAttribute('data-i18n-ignore', !!runnerUp?.name);
     $('runner-name').textContent = runnerUp?.name || 'Awaiting a runner-up';

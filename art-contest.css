@@ -23,17 +23,17 @@
 .hero-small { color: #9da6b3; font-size: .78rem; margin: 2rem 0 0; }
 .hero-art { width: 100%; min-height: 490px; position: relative; display: grid; place-items: center; isolation: isolate; }
 .hero-visual { min-width: 0; padding: 1.2rem 0 2.2rem; }
-.runner-card { width: min(100%, 390px); margin: -1rem auto 0; padding: .9rem; border: 1px solid #ffffff4d; border-radius: .8rem; background: #f8f6f2; color: #26303b; box-shadow: 0 18px 38px #0003; position: relative; z-index: 2; }
-.runner-label { margin: 0 0 .55rem; color: #80523f; font-size: .7rem; font-weight: 800; letter-spacing: .15em; }
-.runner-image-wrap { height: 180px; overflow: hidden; border-radius: .45rem; background: #e7e9e8; }
-.runner-image-wrap img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.runner-image-wrap > div { display: grid; place-items: center; height: 100%; padding: 1rem; color: #647078; text-align: center; font-size: .84rem; }
-.runner-name { margin: .7rem 0 .1rem; font-weight: 700; overflow-wrap: anywhere; }
-.runner-date { margin: 0; color: #626a70; font-size: .78rem; }
+.runner-feature { position: relative; z-index: 1; width: min(72%, 360px); transform: rotate(-7deg); }
+.runner-label { margin: 0 0 .3rem; color: #eebfa3; font-size: .7rem; font-weight: 800; letter-spacing: .15em; }
+.runner-caption { padding: 1.2rem .2rem 0; color: #f8f5f2; text-align: left; }
+.runner-name { margin: 0; font-size: clamp(1.25rem, 2.5vw, 1.8rem); font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.runner-date { margin: .3rem 0 0; color: #c5cbd6; font-size: .8rem; }
 .art-orbit { position: absolute; border: 1px solid #ffffff20; border-radius: 50%; transform: rotate(-19deg); }
 .orbit-one { width: 84%; aspect-ratio: 1; }
 .orbit-two { width: 116%; aspect-ratio: 1; }
-.art-sheet { position: relative; width: min(72%, 360px); aspect-ratio: 4 / 5; overflow: hidden; background: #d0d9d1; border: 12px solid #f7f2e8; box-shadow: 22px 26px 0 #ffffff18, 0 30px 70px #0006; transform: rotate(-7deg); }
+.art-sheet { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #d0d9d1; border: 12px solid #f7f2e8; box-shadow: 22px 26px 0 #ffffff18, 0 30px 70px #0006; }
+.art-sheet > img { display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #232c36; }
+.sheet-scene { position: absolute; inset: 0; overflow: hidden; background: #443b66; }
 .sheet-sun { position: absolute; width: 34%; aspect-ratio: 1; top: 14%; right: 12%; border-radius: 50%; background: #eeba80; }
 .sheet-hill { position: absolute; display: block; width: 115%; height: 66%; border-radius: 50% 50% 0 0; }
 .hill-one { background: #b28ba0; left: -45%; top: 45%; transform: rotate(16deg); }
@@ -185,7 +185,8 @@
   .hero-copy { padding: 4rem 0 1.5rem; }
   .hero-copy h2 { font-size: clamp(3.1rem, 12vw, 5rem); }
   .hero-art { min-height: 300px; max-width: 430px; margin: auto; }
-  .art-sheet { width: 56%; border-width: 8px; }
+  .runner-feature { width: 56%; }
+  .art-sheet { border-width: 8px; }
   .hero-scribble { left: 8%; }
   .section-heading { display: block; }
   .section-aside { display: block; margin-top: .6rem; }

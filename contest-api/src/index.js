@@ -401,7 +401,7 @@ async function scoreSubmission(env, id, scores, currentTime) {
     total: scores.beauty + scores.creativity + scores.complexity } };
 }
 
-async function selectWinner(env, id, date, currentTime, origin) {
+async function selectWinner(env, id, date, currentTime, origin, expectedRunnerUpId, enforcePreview) {
   const selectedAt = currentTime();
   const schedule = contestSchedule(selectedAt);
   if (!['judging', 'results_pending'].includes(schedule.phase) || date !== schedule.contestDate) {
@@ -445,8 +445,10 @@ async function selectWinner(env, id, date, currentTime, origin) {
             (SELECT MAX(beauty_score + creativity_score + complexity_score) FROM submissions WHERE contest_date = ?)
           AND NOT EXISTS (SELECT 1 FROM submissions WHERE contest_date = ?
             AND (beauty_score IS NULL OR creativity_score IS NULL OR complexity_score IS NULL))
+          AND (? = 0 OR COALESCE(second.id, '') = ?)
           AND NOT EXISTS (SELECT 1 FROM winners WHERE contest_date = ?)`)
-        .bind(selectedAt.toISOString(), date, id, date, date, date, date),
+        .bind(selectedAt.toISOString(), date, id, date, date, date,
+          enforcePreview ? 1 : 0, expectedRunnerUpId || '', date),
       env.DB.prepare(`INSERT OR IGNORE INTO image_cleanup (image_key, created_at)
         SELECT image_key, ? FROM submissions WHERE contest_date = ? AND id <> ?
         AND id <> COALESCE((SELECT runner_up_submission_id FROM winners WHERE contest_date = ?), '')
@@ -525,11 +527,17 @@ export async function handleRequest(request, env, now = new Date(), currentTime 
     }
     if (request.method === 'POST' && subpath === '/judging/winners') {
       await requireAdmin(request, env, now);
-      const { id, date } = await jsonBody(request);
+      const body = await jsonBody(request);
+      const { id, date, expectedRunnerUpId } = body;
       if (typeof id !== 'string' || typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new ApiError(400, 'invalid_winner', 'Expected id and date (YYYY-MM-DD)');
       }
-      return response(await selectWinner(env, id, date, currentTime, origin), 201, headers);
+      if (Object.hasOwn(body, 'expectedRunnerUpId') && expectedRunnerUpId !== null
+        && (typeof expectedRunnerUpId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(expectedRunnerUpId))) {
+        throw new ApiError(400, 'invalid_runner_up', 'Expected runner-up ID or null');
+      }
+      return response(await selectWinner(env, id, date, currentTime, origin,
+        expectedRunnerUpId, Object.hasOwn(body, 'expectedRunnerUpId')), 201, headers);
     }
     const winnerImage = /^\/images\/([0-9a-f-]+)$/i.exec(subpath);
     if (request.method === 'GET' && winnerImage) {

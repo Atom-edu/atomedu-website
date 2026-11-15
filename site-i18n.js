@@ -1830,6 +1830,31 @@
     'Score every submission before selecting a winner': 'Puntúa todas las participaciones antes de seleccionar al ganador',
     'Winner must have the highest total score': 'El ganador debe tener la puntuación total más alta',
     'Scores or submissions changed; review and retry': 'Las puntuaciones o participaciones han cambiado; revísalas y vuelve a intentarlo',
+    'Official release | Friday, November 20, 2026': 'Lanzamiento oficial | viernes, 20 de noviembre de 2026',
+    'The official atomEDU release is almost here.': 'El lanzamiento oficial de atomEDU está muy cerca.',
+    'On November 20, we are officially releasing Proof Lab. Bring a problem, show your work, and find the step where your reasoning changes.': 'El 20 de noviembre lanzaremos oficialmente Proof Lab. Trae un problema, muestra tus pasos y encuentra dónde cambia tu razonamiento.',
+    'We score eligible art out of 10 in each category, for up to 30 points. The highest-scoring entry is the daily winner. If there is another eligible entry, the second-highest scorer is the runner-up. Our owners review every score before publishing the results.': 'Calificamos las obras que cumplen las reglas sobre 10 en cada categoría, hasta un máximo de 30 puntos. La participación con más puntos gana el concurso diario. Si hay otra participación válida, la segunda con más puntos queda finalista. Nuestros propietarios revisan todas las puntuaciones antes de publicar los resultados.',
+    'atomEDU’s owners judge eligible entries. We add the Beauty, Creativity, and Complexity scores for each entry. The top scorer wins; the second-highest scorer is runner-up when there is a second entry. Ties are settled by submission order, with the earlier entry ranked first. The owners review and confirm the results. Their decisions are final, with no appeals. Entering does not guarantee a feature or prize. We archive the featured entries and remove the other submissions for that day only after confirmation.': 'Los propietarios de atomEDU evalúan las participaciones válidas. Sumamos las puntuaciones de Belleza, Creatividad y Complejidad de cada obra. Gana la de mayor puntuación; si hay otra, la segunda queda finalista. Los empates se resuelven por orden de envío: la participación anterior queda primero. Los propietarios revisan y confirman los resultados. Sus decisiones son definitivas y no admiten apelación. Participar no garantiza aparecer en la página ni recibir un premio. Archivamos las obras destacadas y eliminamos las demás de ese día solo después de la confirmación.',
+    'Score every entry, review the top two, and confirm the daily results.': 'Puntúa cada obra, revisa las dos primeras y confirma los resultados diarios.',
+    'Score Beauty, Creativity, and Complexity from 0 to 10 for each entry. Save all scores, then review the top two before publishing. Ties are ranked by submission order.': 'Puntúa Belleza, Creatividad y Complejidad de 0 a 10 para cada obra. Guarda todas las puntuaciones y revisa las dos primeras antes de publicar. Los empates se ordenan por fecha de envío.',
+    'All entries are scored. Results stay private until you confirm.': 'Todas las obras están puntuadas. Los resultados siguen privados hasta que los confirmes.',
+    'Submit scores': 'Enviar puntuaciones',
+    'FINAL REVIEW': 'REVISIÓN FINAL',
+    'Confirm daily results': 'Confirma los resultados diarios',
+    'Nothing is public yet. Confirming will publish the winner and runner-up, archive both images, and permanently delete every other submission for this date.': 'Nada se ha publicado todavía. Al confirmar, se publicarán el ganador y el finalista, se archivarán ambas imágenes y se eliminarán permanentemente las demás obras de esta fecha.',
+    'DAILY WINNER': 'GANADOR DIARIO',
+    'Loading image...': 'Cargando imagen...',
+    'Go back': 'Volver',
+    'Confirm submission': 'Confirmar resultados',
+    'The scores or entries changed. Review the updated list before submitting.': 'Las puntuaciones o las obras han cambiado. Revisa la lista actualizada antes de enviar.',
+    'The scores or entries changed. Review the updated list before confirming.': 'Las puntuaciones o las obras han cambiado. Revisa la lista actualizada antes de confirmar.',
+    'Save scores for every entry before submitting.': 'Guarda las puntuaciones de todas las obras antes de enviar.',
+    'Could not review results.': 'No se pudieron revisar los resultados.',
+    'Checking the final scores...': 'Comprobando las puntuaciones finales...',
+    'Publishing the confirmed results...': 'Publicando los resultados confirmados...',
+    'Winner and runner-up published. Other submissions were removed.': 'Se publicaron el ganador y el finalista. Se eliminaron las demás obras.',
+    'Results were published, but the final places differ from the preview. Review the live archive.': 'Se publicaron los resultados, pero las posiciones finales difieren de la vista previa. Revisa el archivo en vivo.',
+    'Results could not be published. Nothing was released.': 'No se pudieron publicar los resultados. No se ha difundido nada.',
     "When a daily winner and runner-up are confirmed, all other entries for that day are removed from the contest list. We delete their stored images and retry if storage is temporarily unavailable. The winner and runner-up images and display names may remain in the public art archive. Do not include your full name, contact details, a person's face, or other private information in an entry. The contest is for people aged 13 or older. If you are under 18, get permission from a parent or guardian before entering. To request removal of a featured entry or ask about your submission, contact": 'Cuando se confirman un ganador diario y un finalista, las demás participaciones de ese día se eliminan de la lista del concurso. Borramos sus imágenes almacenadas y volvemos a intentarlo si el almacenamiento no está disponible temporalmente. Las imágenes y los nombres visibles del ganador y del finalista pueden permanecer en el archivo público de arte. No incluyas tu nombre completo, datos de contacto, el rostro de una persona ni otros datos privados en una participación. El concurso es para personas de 13 años o más. Si eres menor de 18 años, pide permiso a tu padre, madre o tutor antes de participar. Para solicitar la retirada de una obra destacada o preguntar por tu participación, escribe a'
   };
 
@@ -1916,6 +1941,7 @@
     if ((match = /^(Runner-up|Daily winner) artwork by (.+)$/.exec(core)))
       return 'Obra ' + (match[1] === 'Runner-up' ? 'finalista' : 'ganadora') + ' de ' + match[2];
     if ((match = /^Total: (\d+) \/ 30$/.exec(core))) return 'Total: ' + match[1] + ' / 30';
+    if ((match = /^(\d+) \/ 30 points$/.exec(core))) return match[1] + ' / 30 puntos';
     if ((match = /^Scores saved for (.+)\.$/.exec(core))) return 'Puntuaciones guardadas para ' + match[1] + '.';
     if ((match = /^Confirm (.+) as the top-scoring winner for (\d{2}\/\d{2}\/\d{4})\? The next highest scorer becomes runner-up\. Both entries are archived and all others are permanently deleted\. This cannot be undone\.$/.exec(core)))
       return '¿Confirmar a ' + match[1] + ' como ganador por mayor puntuación del ' + match[2] + '? La siguiente participación con más puntos queda finalista. Ambas se archivan y las demás se eliminan permanentemente. Esta acción no se puede deshacer.';

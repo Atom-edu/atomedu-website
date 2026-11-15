@@ -18,6 +18,8 @@ test('contest begins with the winner and explains graph export, schedule, consen
   assert.match(page, /second-highest scorer is the runner-up/);
   assert.match(page, /id="runner-image"/);
   assert.match(page, /id="runner-name"/);
+  assert.ok(page.indexOf('id="runner-image"') > page.indexOf('class="art-sheet"'));
+  assert.doesNotMatch(page, /class="runner-card"/);
   assert.match(read('art-contest.js'), /renderRunnerUp/);
   assert.match(page, /id="terms-accepted"/);
   assert.match(page, /id="display-consent"/);
@@ -44,7 +46,13 @@ test('judging stays server-backed and neither public page embeds an admin passwo
   assert.match(judgeScript, /Save scores/);
   assert.match(judgeScript, /month: 'short', day: 'numeric' \}\)\.format\(date\)/);
   assert.doesNotMatch(judgeScript.match(/function formatSubmittedDate\(value\) \{[\s\S]*?\n  \}/)?.[0] || '', /hour:|minute:|timeZoneName:/);
-  assert.match(judgeScript, /Both entries are archived and all others are permanently deleted/);
+  assert.match(page, /id="submit-scores"/);
+  assert.match(page, /id="results-dialog"/);
+  assert.match(page, /id="preview-winner-image"/);
+  assert.match(page, /id="preview-runner-image"/);
+  assert.match(page, /Confirm submission/);
+  assert.doesNotMatch(page + judgeScript, /Select winner/);
+  assert.match(judgeScript, /expectedRunnerUpId/);
   assert.doesNotMatch(page + judgeScript, /[—–·]/);
   assert.doesNotMatch(publicScript + judgeScript + page, /(?:password\s*[:=]\s*['"]admin['"]|Basic\s+YWRtaW4)/i);
   assert.match(read('contest-config.js'), /ATOM_CONTEST_API_BASE = 'https:\/\/atom-contest-api\.archimedes-api1\.workers\.dev\/api\/art-contest'/);

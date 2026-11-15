@@ -300,6 +300,30 @@ test('owner can choose a tied leader and runner-up ties use submission order', a
     .map(entry => entry.id).sort()[0]);
 });
 
+test('confirmation rejects a runner-up that changed after the private preview without publishing or deleting', async () => {
+  const { env, sqlite, objects } = makeEnv();
+  const entries = [];
+  for (let i = 0; i < 3; i++) entries.push(await (await call(env, '/submissions', { method: 'POST', body: form() })).json());
+  const token = await login(env);
+  assert.equal((await score(env, token, entries[0].id, 10, 10, 10)).status, 200);
+  assert.equal((await score(env, token, entries[1].id, 8, 8, 8)).status, 200);
+  assert.equal((await score(env, token, entries[2].id, 6, 6, 6)).status, 200);
+  assert.equal((await score(env, token, entries[2].id, 9, 9, 9)).status, 200);
+  const stale = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: entries[0].id, date: entries[0].contestDate, expectedRunnerUpId: entries[1].id } }, JUDGING);
+  assert.equal(stale.status, 409);
+  assert.equal((await stale.json()).error.code, 'selection_changed');
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 0);
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 3);
+  assert.equal(objects.size, 3);
+  const confirmed = await call(env, '/judging/winners', { method: 'POST', token,
+    body: { id: entries[0].id, date: entries[0].contestDate, expectedRunnerUpId: entries[2].id } }, JUDGING);
+  assert.equal(confirmed.status, 201);
+  assert.equal((await confirmed.json()).runnerUp.id, entries[2].id);
+  assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 0);
+  assert.equal(objects.size, 2);
+});
+
 test('one scored submission has no runner-up; pre-migration winners remain readable', async () => {
   const { env, sqlite, objects } = makeEnv();
   sqlite.prepare(`INSERT INTO winners
@@ -312,7 +336,7 @@ test('one scored submission has no runner-up; pre-migration winners remain reada
   const token = await login(env);
   assert.equal((await score(env, token, only.id, 0, 0, 0)).status, 200);
   const selected = await call(env, '/judging/winners', { method: 'POST', token,
-    body: { id: only.id, date: only.contestDate } }, JUDGING);
+    body: { id: only.id, date: only.contestDate, expectedRunnerUpId: null } }, JUDGING);
   assert.equal(selected.status, 201);
   assert.equal((await selected.json()).runnerUp, null);
   const state = await (await call(env, '/state', {}, JUDGING)).json();

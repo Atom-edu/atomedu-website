@@ -120,6 +120,8 @@ test('legacy demos forward into the current proof tool', () => {
 
 test('home carousel uses three distinct backgrounds', () => {
   const home = read('index.html');
+  assert.match(home, /Official release \| Friday, November 20, 2026/);
+  assert.match(home, /The official atomEDU release is almost here\./);
   assert.match(home, /images\/bg1\.png/);
   assert.match(home, /images\/bg2\.jpg/);
   assert.match(home, /images\/bg3\.jpg/);
