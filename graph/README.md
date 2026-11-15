@@ -1,15 +1,15 @@
 # Local graph workspace
 
-The graph is an owned numerical canvas renderer. It requires no Desmos service, account, key, subscription, or remote runtime. Its visual math fields and fonts are served locally with the rest of Math Lab. A deployed site still needs ordinary static hosting; the code does not impose a per-use service fee.
+The graph is an owned numerical canvas renderer. It requires no Desmos service, account, key, subscription, or remote runtime. Its visual math fields and fonts are served locally with Proof Lab. A deployed site still needs ordinary static hosting; the code does not impose a per-use service fee.
 
 ## Connect immediately
 
-Open [the graph workspace](http://127.0.0.1:8080/math-lab.html#graph) after `npm start`.
+Open [the graph workspace](http://127.0.0.1:8080/proof-lab#graph) after `npm start`.
 
 To embed the entire local workbench on another page served from the same site:
 
 ```html
-<iframe src="/math-lab.html#graph" title="Math graph workspace"
+<iframe src="/proof-lab#graph" title="Math graph workspace"
         style="width:100%;height:900px;border:0"></iframe>
 ```
 
@@ -48,6 +48,9 @@ Serve the entire vendor, graph, engine, and editor paths shown above. Copying ju
 - Pointer drag to pan, anchored wheel zoom, touch pinch, and zoom/reset/fit buttons
 - Keyboard arrows to pan, plus/minus to zoom, and Home to reset
 - Coordinate readout, click-to-trace, editable window bounds, and PNG export
+- Browser-only image import below Window settings: adaptively samples source colors into up to 640 rectangular regions, each represented by an editable pair of mathematical inequalities. Quick, Balanced, and Fine trade detail for time; the global graph limit is 768 expressions. Images are not uploaded to a server by this feature.
+
+Image import is a color-and-shape approximation, not a photorealistic tracing system. A complex photo may look like a mosaic. The imported formulas are the source of the rendered regions; clicking a formula replaces its lightweight preview with a visual math editor. Keep rights to any source image you use, and check the separate art-contest rules before submitting exported work.
 
 The factory returns `addExpression`, `setExpressions`, `getState`, `setViewport`, `zoom`, `reset`, `resize`, and `destroy`. Call `resize()` after revealing a graph that was mounted in a hidden tab, and `destroy()` when removing a graph permanently.
 

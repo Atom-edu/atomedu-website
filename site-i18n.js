@@ -493,6 +493,37 @@
     'Expression parameters': 'Parámetros de las expresiones',
     'Parameters': 'Parámetros',
     'Window settings': 'Configuración de la ventana',
+    'Image import': 'Importar imagen',
+    'Turn an image into colored regions made from editable mathematical inequalities. Simple shapes look crisp; photos become an approximation. Use images you have rights to.': 'Convierte una imagen en regiones de color definidas por desigualdades matemáticas editables. Las formas sencillas se ven nítidas; las fotos se aproximan. Usa imágenes sobre las que tengas derechos.',
+    'Choose or drop an image': 'Elige o arrastra una imagen',
+    'PNG, JPG, WebP, or GIF. Up to 8 MiB.': 'PNG, JPG, WebP o GIF. Hasta 8 MiB.',
+    'No image selected.': 'No hay ninguna imagen seleccionada.',
+    'Detail': 'Detalle',
+    'Quick': 'Rápido',
+    'Balanced': 'Equilibrado',
+    'Fine': 'Detallado',
+    'Draw with math': 'Dibujar con matemáticas',
+    'Drawing the image with math': 'Dibujando la imagen con matemáticas',
+    'Drawing with math': 'Dibujando con matemáticas',
+    'Reading your image…': 'Leyendo tu imagen…',
+    'Est. a few seconds': 'Tiempo estimado: unos segundos',
+    'Cancel': 'Cancelar',
+    'Scanning colors and shapes…': 'Analizando colores y formas…',
+    'Your graph art is ready.': 'Tu arte gráfico está listo.',
+    'Complete': 'Completado',
+    'Choose an image first.': 'Elige una imagen primero.',
+    'Choose a PNG, JPG, WebP, or GIF image.': 'Elige una imagen PNG, JPG, WebP o GIF.',
+    'The image must be smaller than 8 MiB.': 'La imagen debe ser menor de 8 MiB.',
+    'Ready to draw. This replaces the current graph expressions.': 'Lista para dibujar. Esto reemplazará las expresiones actuales de la gráfica.',
+    'Image import cancelled. Your previous graph was restored.': 'Importación cancelada. Se restauró la gráfica anterior.',
+    'This image could not be decoded.': 'No se pudo leer esta imagen.',
+    'The image contents do not match the selected file format.': 'El contenido de la imagen no coincide con el formato elegido.',
+    'Use an image up to 4096 × 4096 pixels.': 'Usa una imagen de hasta 4096 × 4096 píxeles.',
+    'This browser cannot scan image colors.': 'Este navegador no puede analizar los colores de la imagen.',
+    'This image did not produce graph regions.': 'Esta imagen no produjo regiones para la gráfica.',
+    'Imported graph expression. Click to edit': 'Expresión importada de la gráfica. Haz clic para editar',
+    'Click to edit this mathematical region': 'Haz clic para editar esta región matemática',
+    'Image region bounds must be finite and have positive width.': 'Los límites de la región deben ser finitos y tener una anchura positiva.',
     'Equal axis units': 'Unidades iguales en los ejes',
     'Apply window': 'Aplicar ventana',
     'Interactive numerical coordinate graph. Drag to pan, scroll or pinch to zoom. Plus and minus zoom, arrow keys pan, Home resets.': 'Gráfica numérica interactiva de coordenadas. Arrastra para desplazarte; usa la rueda o pellizca para ampliar. Las teclas más y menos cambian el zoom, las flechas desplazan y la tecla Inicio restablece.',
@@ -1932,6 +1963,16 @@
       return 'El motor local no está disponible. ' + translateSpanish(match[1]);
     if ((match = /^Problem (invalid|unsupported|unresolved)\. (.+)$/.exec(core)))
       return 'Problema ' + (spanish[match[1][0].toUpperCase() + match[1].slice(1)] || match[1]) + '. ' + translateSpanish(match[2]);
+    if ((match = /^Writing (\d+) mathematical regions…$/.exec(core)))
+      return 'Escribiendo ' + match[1] + ' regiones matemáticas…';
+    if ((match = /^Writing region (\d+) of (\d+)…$/.exec(core)))
+      return 'Escribiendo la región ' + match[1] + ' de ' + match[2] + '…';
+    if ((match = /^Est\. (\d+) seconds remaining$/.exec(core)))
+      return 'Tiempo estimado: ' + match[1] + ' segundos restantes';
+    if ((match = /^Created (\d+) editable math regions\. Adjust their colors or formulas in the expression list\.$/.exec(core)))
+      return 'Se crearon ' + match[1] + ' regiones matemáticas editables. Ajusta sus colores o fórmulas en la lista de expresiones.';
+    if ((match = /^Supply at most (\d+) valid graph expressions\.$/.exec(core)))
+      return 'Proporciona como máximo ' + match[1] + ' expresiones válidas para la gráfica.';
     return undefined;
   }
 
@@ -1990,6 +2031,7 @@
     // The contest scripts put selected file names in these hosts. A file named
     // like a translated UI word must retain the exact submitted name.
     if (node.parentElement.matches('#preview-file-name, #review-filename')) return;
+    if (node.parentElement.matches('.graph-image-name') && /\(\d+(?:\.\d+)? MiB\)$/.test(node.nodeValue.trim())) return;
     if (node.parentElement.id === 'upload-name' && document.getElementById('art-image')?.files?.length) return;
     // The judging response can supply a winner name through winnerId even when
     // winnerName is absent. Its matching card is already in the finished DOM.

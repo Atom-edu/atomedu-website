@@ -712,7 +712,7 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app .graph-workspace-canvas .graph-plot-help { min-height: 28px; }
 .lab-app .graph-editor { order: 3; flex: 1; min-height: 0; overflow-y: auto; }
 .lab-app #graph-sidebar-host { height: 100%; border: 0; border-radius: 0; }
-.lab-app #graph-sidebar-host .graph-sidebar { max-height: none; height: 100%; overflow-y: auto; padding: 12px 12px 22px; border: 0; background: #fff; }
+.lab-app #graph-sidebar-host .graph-sidebar { max-height: none; height: 100%; overflow-y: auto; padding: 12px 12px 88px; border: 0; background: #fff; }
 .lab-app #graph-sidebar-host .graph-expression-row { position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr) 29px; align-items: center; min-height: 62px; padding: 4px 6px; border: 1px solid #dce2e8; border-left: 4px solid var(--curve-color); border-radius: 8px; }
 .lab-app #graph-sidebar-host .graph-expression-controls { display: contents; }
 .lab-app #graph-sidebar-host .graph-visibility { grid-column: 1; grid-row: 1; justify-self: center; align-self: start; margin-top: 7px; }

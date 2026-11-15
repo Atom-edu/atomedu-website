@@ -9,7 +9,9 @@
  * Editor values/callbacks are strings (LaTeX with a supplied editor/reader).
  * readExpression may also return {kind:'piecewise', variable:'x'|'y', pieces:
  * [{expression: internalString, condition: comparisonString|'otherwise'}]}.
- * setExpressions accepts strings or { expression, id?, color?, visible? }.
+ * setExpressions accepts strings or { expression, id?, color?, visible?, imported? }.
+ * Imported regions use lightweight LaTeX previews and become visual math
+ * editors when clicked; the formula remains the authoritative geometry.
  * getExpressions returns detached entries suitable for setExpressions; the
  * trailing blank editor is UI-only and never appears in state/history.
  * getState/onChange return detached JSON-safe state: expressions (with error/kind),
@@ -25,7 +27,7 @@ import {
   DEFAULT_PARAMETERS, GRAPH_LIMITS, validateViewport,
   niceStep, getTicks, worldToScreen, screenToWorld, zoomViewport, panViewport,
   equalizeViewport, compileGraphExpression, sampleExplicit, contourSegments,
-} from './model.js?v=proof-lab-17';
+} from './model.js?v=proof-lab-18';
 
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
 const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });
@@ -70,6 +72,29 @@ export function createGraph(container, options = {}) {
             <p class="graph-window-error" role="status"></p>
           </form>
         </details>
+        <details class="graph-image-import">
+          <summary>Image import</summary>
+          <div class="graph-image-panel">
+            <p>Turn an image into colored regions made from editable mathematical inequalities. Simple shapes look crisp; photos become an approximation. Use images you have rights to.</p>
+            <label class="graph-image-drop">
+              <span class="graph-image-drop-icon" aria-hidden="true">⇧</span>
+              <strong>Choose or drop an image</strong>
+              <small>PNG, JPG, WebP, or GIF. Up to 8 MiB.</small>
+              <input class="graph-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif">
+            </label>
+            <p class="graph-image-name" aria-live="polite">No image selected.</p>
+            <img class="graph-image-preview" alt="Selected image preview" hidden>
+            <label class="graph-image-quality-label">Detail
+              <select class="graph-image-quality">
+                <option value="192">Quick</option>
+                <option value="384" selected>Balanced</option>
+                <option value="640">Fine</option>
+              </select>
+            </label>
+            <button type="button" class="graph-image-convert">Draw with math</button>
+            <p class="graph-image-status" role="status" aria-live="polite"></p>
+          </div>
+        </details>
       </aside>
       <div class="graph-plot-area">
         <div class="graph-stage">
@@ -92,18 +117,20 @@ export function createGraph(container, options = {}) {
   const fields = {}, listeners = [], pointers = new Map(), geometries = new Map();
   let rows = [], draftRow = null, rowNumber = 0, width = 800, height = 520, dpr = 1, frame = null, sized = false;
   let destroyed = false, sceneDirty = true, pendingChange = false, pointer = null, drag = null, pinch = null, trace = null;
+  let bulkLoading = false, selectedImage = null, importOverlay = null, imageImportBusy = false;
   let equalAspect = options.equalAspect !== false;
   let viewport = validateViewport(options.viewport || PLOTTER_DEFAULT_VIEWPORT);
   const homeViewport = { ...viewport }, parameters = { ...DEFAULT_PARAMETERS };
   for (const name of ['a', 'b', 'c']) if (Number.isFinite(options.parameters?.[name])) parameters[name] = clamp(options.parameters[name], -100, 100);
   $('.graph-equal').checked = equalAspect;
   $('[data-graph-action="export"]').hidden = options.showExport === false;
+  $('.graph-image-import').hidden = options.compact === true || options.showImageImport === false;
   const on = (target, name, handler, config) => { target.addEventListener(name, handler, config); listeners.push(() => target.removeEventListener(name, handler, config)); };
   const state = () => ({
-    expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, error: row.error, kind: row.compiled?.kind || null })),
+    expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, imported: row.imported, error: row.error, kind: row.compiled?.kind || null })),
     viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, trace: trace ? { ...trace } : null,
   });
-  const getExpressions = () => rows.map(({ id, expression, color, visible }) => ({ id, expression, color, visible }));
+  const getExpressions = () => rows.map(({ id, expression, color, visible, imported }) => ({ id, expression, color, visible, imported }));
   function schedule(change = false, scene = true) {
     if (destroyed) return;
     sceneDirty ||= scene; pendingChange ||= change;
@@ -137,6 +164,133 @@ export function createGraph(container, options = {}) {
       validateViewport(next); equalAspect = $('.graph-equal').checked; setView(next, { equalize: true }); syncWindow();
       $('.graph-window-error').textContent = '';
     } catch (error) { $('.graph-window-error').textContent = error.message; }
+  });
+
+  const imageFile = $('.graph-image-file'), imageDrop = $('.graph-image-drop');
+  const imageName = $('.graph-image-name'), imagePreview = $('.graph-image-preview');
+  const imageQuality = $('.graph-image-quality'), imageConvert = $('.graph-image-convert');
+  const imageStatus = $('.graph-image-status');
+  let imagePreviewUrl = null, imageAbort = null;
+  function selectImage(file) {
+    if (imageImportBusy) return;
+    if (imagePreviewUrl) { URL.revokeObjectURL(imagePreviewUrl); imagePreviewUrl = null; }
+    selectedImage = null; imagePreview.hidden = true; imagePreview.removeAttribute('src');
+    if (!file) { imageName.textContent = 'No image selected.'; return; }
+    const type = file.type || (/\.jpe?g$/i.test(file.name) ? 'image/jpeg' : /\.png$/i.test(file.name) ? 'image/png'
+      : /\.webp$/i.test(file.name) ? 'image/webp' : /\.gif$/i.test(file.name) ? 'image/gif' : '');
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(type)) {
+      imageStatus.textContent = 'Choose a PNG, JPG, WebP, or GIF image.'; return;
+    }
+    if (!file.size || file.size > 8 * 1024 * 1024) {
+      imageStatus.textContent = 'The image must be smaller than 8 MiB.'; return;
+    }
+    selectedImage = file;
+    imageName.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MiB)';
+    imageStatus.textContent = 'Ready to draw. This replaces the current graph expressions.';
+    imagePreviewUrl = URL.createObjectURL(file);
+    imagePreview.src = imagePreviewUrl; imagePreview.hidden = false;
+  }
+  on(imageFile, 'change', () => selectImage(imageFile.files?.[0]));
+  on(imageDrop, 'dragover', event => { event.preventDefault(); imageDrop.classList.add('is-dragging'); });
+  on(imageDrop, 'dragleave', () => imageDrop.classList.remove('is-dragging'));
+  on(imageDrop, 'drop', event => {
+    event.preventDefault(); imageDrop.classList.remove('is-dragging');
+    if (imageImportBusy) return;
+    selectImage(event.dataTransfer?.files?.[0]);
+  });
+  function showImportOverlay() {
+    const overlay = doc.createElement('div');
+    overlay.className = 'graph-import-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Drawing the image with math');
+    overlay.innerHTML = '<div class="graph-import-card"><span class="graph-import-spinner" aria-hidden="true"></span><h2>Drawing with math</h2><p class="graph-import-phase">Reading your image…</p><div class="graph-import-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div><p class="graph-import-eta">Est. a few seconds</p><button type="button" class="graph-import-cancel">Cancel</button></div>';
+    doc.body.append(overlay); importOverlay = overlay;
+    root.setAttribute('aria-busy', 'true');
+    imageAbort = new AbortController();
+    overlay.querySelector('.graph-import-cancel').addEventListener('click', () => imageAbort.abort());
+    overlay.querySelector('.graph-import-cancel').focus();
+    return overlay;
+  }
+  async function decodeImage(file) {
+    if (typeof win.createImageBitmap === 'function') return win.createImageBitmap(file);
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file), image = new win.Image();
+      image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+      image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('This image could not be decoded.')); };
+      image.src = url;
+    });
+  }
+  on(imageConvert, 'click', async () => {
+    if (imageImportBusy) return;
+    if (!selectedImage) { imageStatus.textContent = 'Choose an image first.'; return; }
+    imageImportBusy = true; imageFile.disabled = imageQuality.disabled = imageConvert.disabled = true;
+    const overlay = showImportOverlay(), started = win.performance.now();
+    const phase = overlay.querySelector('.graph-import-phase');
+    const track = overlay.querySelector('.graph-import-track');
+    const eta = overlay.querySelector('.graph-import-eta');
+    const progress = (amount, label) => {
+      const percent = Math.max(0, Math.min(100, Math.round(amount)));
+      phase.textContent = label; track.setAttribute('aria-valuenow', String(percent));
+      track.firstElementChild.style.width = percent + '%';
+      const elapsed = win.performance.now() - started;
+      const remaining = percent > 5 && percent < 100 ? Math.ceil(elapsed * (100 - percent) / percent / 1000)
+        : Math.ceil(Number(imageQuality.value) / 55);
+      eta.textContent = percent === 100 ? 'Complete' : 'Est. ' + Math.max(1, remaining) + ' seconds remaining';
+    };
+    progress(1, 'Reading your image…');
+    let bitmap = null;
+    try {
+      await new Promise(resolve => win.setTimeout(resolve, 0));
+      const signature = new Uint8Array(await selectedImage.slice(0, 12).arrayBuffer());
+      const header = String.fromCharCode(...signature);
+      const type = selectedImage.type || (/\.jpe?g$/i.test(selectedImage.name) ? 'image/jpeg' : /\.png$/i.test(selectedImage.name) ? 'image/png'
+        : /\.webp$/i.test(selectedImage.name) ? 'image/webp' : /\.gif$/i.test(selectedImage.name) ? 'image/gif' : '');
+      const valid = type === 'image/png' && header.startsWith('\x89PNG\r\n\x1a\n')
+        || type === 'image/jpeg' && signature[0] === 255 && signature[1] === 216 && signature[2] === 255
+        || type === 'image/webp' && header.startsWith('RIFF') && header.slice(8, 12) === 'WEBP'
+        || type === 'image/gif' && (header.startsWith('GIF87a') || header.startsWith('GIF89a'));
+      if (!valid) throw new Error('The image contents do not match the selected file format.');
+      bitmap = await decodeImage(selectedImage);
+      if (imageAbort.signal.aborted) throw new DOMException('Image import cancelled.', 'AbortError');
+      if (bitmap.width * bitmap.height > 16_000_000 || bitmap.width > 4096 || bitmap.height > 4096) {
+        throw new Error('Use an image up to 4096 × 4096 pixels.');
+      }
+      progress(12, 'Scanning colors and shapes…');
+      const edge = Number(imageQuality.value) >= 640 ? 96 : Number(imageQuality.value) >= 384 ? 72 : 52;
+      const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
+      const sample = doc.createElement('canvas');
+      sample.width = Math.max(1, Math.round(bitmap.width * scale));
+      sample.height = Math.max(1, Math.round(bitmap.height * scale));
+      const sampleContext = sample.getContext('2d', { willReadFrequently: true });
+      if (!sampleContext) throw new Error('This browser cannot scan image colors.');
+      sampleContext.fillStyle = '#fff'; sampleContext.fillRect(0, 0, sample.width, sample.height);
+      sampleContext.imageSmoothingQuality = 'high';
+      sampleContext.drawImage(bitmap, 0, 0, sample.width, sample.height);
+      bitmap.close?.(); bitmap = null;
+      await new Promise(resolve => win.setTimeout(resolve, 0));
+      const { imageToGraphRegions } = await import('./image-import.js');
+      const converted = imageToGraphRegions(sampleContext.getImageData(0, 0, sample.width, sample.height),
+        { maxRegions: Number(imageQuality.value) });
+      if (!converted.expressions.length) throw new Error('This image did not produce graph regions.');
+      if (imageAbort.signal.aborted) throw new DOMException('Image import cancelled.', 'AbortError');
+      progress(30, 'Writing ' + converted.expressions.length + ' mathematical regions…');
+      await setExpressionsInBatches(converted.expressions.map(entry => ({ ...entry, imported: true })),
+        (done, total) => progress(30 + 65 * done / total, 'Writing region ' + done + ' of ' + total + '…'),
+        imageAbort.signal);
+      setView(equalAspect ? equalizeFromY(homeViewport) : homeViewport);
+      progress(100, 'Your graph art is ready.');
+      imageStatus.textContent = 'Created ' + converted.expressions.length + ' editable math regions. Adjust their colors or formulas in the expression list.';
+    } catch (error) {
+      imageStatus.textContent = error.name === 'AbortError' ? 'Image import cancelled. Your previous graph was restored.'
+        : (error.message || 'Could not import this image.');
+    } finally {
+      bitmap?.close?.();
+      overlay.remove(); importOverlay = null; imageAbort = null;
+      root.removeAttribute('aria-busy');
+      imageImportBusy = false; imageFile.disabled = imageQuality.disabled = imageConvert.disabled = false;
+      if (!destroyed) imageConvert.focus();
+    }
   });
 
   function updateCount() {
@@ -175,7 +329,7 @@ export function createGraph(container, options = {}) {
     row.element.classList.toggle('graph-row-invalid', !!row.error);
     row.field.setAttribute('aria-invalid', row.error ? 'true' : 'false');
     row.element.classList.toggle('graph-row-hidden', !row.visible);
-    updateParameters(); clearTrace(); schedule(!row.draft);
+    if (!bulkLoading) { updateParameters(); clearTrace(); schedule(!row.draft); }
   }
   function renumberRows() {
     rows.forEach((row, index) => { row.number.textContent = String(index + 1); });
@@ -196,7 +350,7 @@ export function createGraph(container, options = {}) {
     const element = doc.createElement('div'); element.className = `graph-expression-row${draft ? ' graph-row-draft' : ''}`;
     const id = typeof config.id === 'string' && config.id && !rows.some(row => row.id === config.id) && draftRow?.id !== config.id ? config.id : `${prefix}-curve-${++rowNumber}`;
     const color = /^#[0-9a-f]{6}$/i.test(config.color || '') ? config.color : COLORS[rows.length % COLORS.length];
-    const row = { id, expression, color, visible: config.visible !== false, error: null, compiled: null, element, draft };
+    const row = { id, expression, color, visible: config.visible !== false, imported: config.imported === true, error: null, compiled: null, element, draft };
     const controls = doc.createElement('div'); controls.className = 'graph-expression-controls';
     const visible = doc.createElement('input'); visible.type = 'checkbox'; visible.checked = row.visible; visible.className = 'graph-visibility'; visible.title = 'Show or hide curve'; visible.setAttribute('aria-label', 'Show expression');
     visible.disabled = draft;
@@ -207,24 +361,43 @@ export function createGraph(container, options = {}) {
     const remove = doc.createElement('button'); remove.type = 'button'; remove.className = 'graph-delete'; remove.textContent = '×'; remove.title = 'Delete expression'; remove.setAttribute('aria-label', 'Delete expression');
     remove.hidden = draft;
     visibilityLabel.append(visible, number); controls.append(visibilityLabel, picker, remove);
-    const field = options.createExpressionField ? options.createExpressionField(expression, value => {
+    const onFieldInput = value => {
       if (destroyed || (!rows.includes(row) && draftRow !== row)) return;
       row.expression = typeof value === 'string' ? value : String(value?.target?.value ?? '');
       if (row.draft && row.expression.trim()) commitDraft(row);
       compileRow(row);
-    }) : doc.createElement('input');
-    if (!field?.setAttribute || !field?.classList) throw new TypeError('createExpressionField must return an HTMLElement.');
-    if (!options.createExpressionField) {
-      field.type = 'text'; field.value = expression; field.placeholder = 'e.g. y=x^2'; field.maxLength = GRAPH_LIMITS.expressionLength; field.autocomplete = 'off'; field.spellcheck = false;
-      field.addEventListener('input', () => { row.expression = field.value; if (row.draft && row.expression.trim()) commitDraft(row); compileRow(row); });
-    }
-    field.classList.add('graph-expression-field'); field.setAttribute('aria-label', 'Graph expression');
-    field.addEventListener('keydown', event => {
-      if (event.key !== 'Enter' || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
-      event.preventDefault(); event.stopPropagation();
-      if (row.draft) commitDraft(row);
-      draftRow?.field.focus();
-    }, true);
+    };
+    const createEditable = () => {
+      const input = options.createExpressionField ? options.createExpressionField(row.expression, onFieldInput) : doc.createElement('input');
+      if (!input?.setAttribute || !input?.classList) throw new TypeError('createExpressionField must return an HTMLElement.');
+      if (!options.createExpressionField) {
+        input.type = 'text'; input.value = row.expression; input.placeholder = 'e.g. y=x^2';
+        input.maxLength = GRAPH_LIMITS.expressionLength; input.autocomplete = 'off'; input.spellcheck = false;
+        input.addEventListener('input', () => onFieldInput(input.value));
+      }
+      input.classList.add('graph-expression-field'); input.setAttribute('aria-label', 'Graph expression');
+      input.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
+        event.preventDefault(); event.stopPropagation();
+        if (row.draft) commitDraft(row);
+        draftRow?.field.focus();
+      }, true);
+      return input;
+    };
+    let field;
+    if (row.imported && typeof options.renderExpression === 'function') {
+      field = doc.createElement('button'); field.type = 'button';
+      field.className = 'graph-expression-field graph-imported-formula';
+      field.setAttribute('aria-label', 'Imported graph expression. Click to edit');
+      field.title = 'Click to edit this mathematical region';
+      field.append(options.renderExpression(expression));
+      field.addEventListener('click', () => {
+        const live = createEditable();
+        live.setAttribute('aria-describedby', errorNode.id);
+        field.replaceWith(live); row.field = field = live; row.imported = false;
+        live.focus(); schedule(true, false);
+      });
+    } else field = createEditable();
     const errorNode = doc.createElement('p'); errorNode.className = 'graph-expression-message'; errorNode.id = `${prefix}-message-${++rowNumber}`; errorNode.setAttribute('role', 'status');
     const warningIcon = doc.createElement('span'); warningIcon.className = 'graph-warning-icon'; warningIcon.setAttribute('aria-hidden', 'true'); warningIcon.hidden = true;
     warningIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg>';
@@ -242,7 +415,7 @@ export function createGraph(container, options = {}) {
     });
     if (draft) draftRow = row; else rows.push(row);
     list.insertBefore(element, draft ? null : draftRow?.element || null);
-    compileRow(row); updateCount();
+    compileRow(row); if (!bulkLoading) updateCount();
     return row;
   }
   function disposeRow(row) { row.field.destroy?.(); row.element.remove(); }
@@ -260,6 +433,28 @@ export function createGraph(container, options = {}) {
     rows.forEach(disposeRow); if (draftRow) disposeRow(draftRow);
     rows = []; draftRow = null; clearTrace();
     entries.forEach(entry => makeRow(entry.expression, entry)); ensureDraft(); updateCount(); updateParameters(); schedule(true);
+  }
+  async function setExpressionsInBatches(expressions, onProgress = () => {}, signal) {
+    if (destroyed) return;
+    if (!Array.isArray(expressions) || expressions.length > GRAPH_LIMITS.expressions
+      || expressions.some(entry => !entry || typeof entry.expression !== 'string')) {
+      throw new RangeError(`Supply at most ${GRAPH_LIMITS.expressions} valid graph expressions.`);
+    }
+    const previous = getExpressions();
+    rows.forEach(disposeRow); if (draftRow) disposeRow(draftRow);
+    rows = []; draftRow = null; clearTrace(); bulkLoading = true;
+    try {
+      for (let i = 0; i < expressions.length; i += 16) {
+        if (destroyed || signal?.aborted) throw new DOMException('Image import cancelled.', 'AbortError');
+        for (const entry of expressions.slice(i, i + 16)) makeRow(entry.expression, entry);
+        onProgress(Math.min(expressions.length, i + 16), expressions.length);
+        await new Promise(resolve => win.setTimeout(resolve, 0));
+      }
+      if (destroyed || signal?.aborted) throw new DOMException('Image import cancelled.', 'AbortError');
+      bulkLoading = false; ensureDraft(); updateCount(); updateParameters(); schedule(true);
+    } catch (error) {
+      bulkLoading = false; if (!destroyed) setExpressions(previous); throw error;
+    }
   }
 
   function grid(context) {
@@ -340,10 +535,23 @@ export function createGraph(container, options = {}) {
     const explicitBudget = Math.max(500, Math.min(6500, Math.floor(36000 / count)));
     const implicitBudget = Math.max(600, Math.min(22000, Math.floor(60000 / count)));
     const shadeBudget = Math.max(200, Math.min(5000, Math.floor(14000 / count)));
+    for (const row of active) if (row.compiled.kind === 'region') {
+      const b = row.compiled.bounds;
+      const topLeft = worldToScreen({ x: b.xMin, y: b.yMax }, viewport, width, height);
+      const bottomRight = worldToScreen({ x: b.xMax, y: b.yMin }, viewport, width, height);
+      bg.fillStyle = row.color;
+      bg.fillRect(Math.floor(topLeft.x), Math.floor(topLeft.y),
+        Math.ceil(bottomRight.x) - Math.floor(topLeft.x), Math.ceil(bottomRight.y) - Math.floor(topLeft.y));
+      geometries.set(row.id, [[
+        { x: b.xMin, y: b.yMin }, { x: b.xMax, y: b.yMin },
+        { x: b.xMax, y: b.yMax }, { x: b.xMin, y: b.yMax }, { x: b.xMin, y: b.yMin },
+      ]]);
+    }
     for (const row of active) if (row.compiled.kind === 'inequality') shade(row, shadeBudget);
     bg.save(); bg.beginPath(); bg.rect(0, 0, width, height); bg.clip();
     for (const row of active) {
       const descriptor = row.compiled;
+      if (descriptor.kind === 'region') continue;
       if (descriptor.kind === 'point') {
         const p = descriptor.point(parameters);
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
@@ -412,6 +620,10 @@ export function createGraph(container, options = {}) {
     const survey = { xMin: -20, xMax: 20, yMin: -20, yMax: 20 };
     for (const row of rows.filter(row => row.visible && row.compiled)) {
       if (row.compiled.kind === 'point') points.push(row.compiled.point(parameters));
+      else if (row.compiled.kind === 'region') {
+        const b = row.compiled.bounds;
+        points.push({ x: b.xMin, y: b.yMin }, { x: b.xMax, y: b.yMax });
+      }
       else if (row.compiled.kind === 'explicit') {
         points.push(...sampleExplicit(row.compiled, survey, { width: 400, height: 300, parameters, maxSamples: 1200 }).flat());
         // Include offscreen values: otherwise even a horizontal y=1000 line
@@ -434,6 +646,11 @@ export function createGraph(container, options = {}) {
     for (const row of rows.filter(row => row.visible && row.compiled?.kind === 'point')) {
       const p = row.compiled.point(parameters);
       if (Number.isFinite(p.x) && Number.isFinite(p.y) && Math.abs(p.x) < 1e11 && Math.abs(p.y) < 1e11) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+    }
+    for (const row of rows.filter(row => row.visible && row.compiled?.kind === 'region')) {
+      const b = row.compiled.bounds;
+      x0 = Math.min(x0, b.xMin); x1 = Math.max(x1, b.xMax);
+      y0 = Math.min(y0, b.yMin); y1 = Math.max(y1, b.yMax);
     }
     const xPad = Math.max(.5, (x1 - x0) * .12), yPad = Math.max(.5, (y1 - y0) * .12);
     clearTrace(); setView({ xMin: x0 - xPad, xMax: x1 + xPad, yMin: y0 - yPad, yMax: y1 + yPad }, { equalize: true });
@@ -555,13 +772,15 @@ export function createGraph(container, options = {}) {
   observeResolution();
   setExpressions(options.expressions || []); resize(); schedule();
   return {
-    addExpression, getExpressions, setExpressions, getState: state,
+    addExpression, getExpressions, setExpressions, setExpressionsInBatches, getState: state,
     setViewport(next) { if (!destroyed) setView(validateViewport(next), { equalize: true }); },
     zoom, reset, resize,
     destroy() {
       if (destroyed) return;
       destroyed = true; if (frame !== null) win.cancelAnimationFrame(frame);
       observer?.disconnect(); resolutionQuery?.removeEventListener?.('change', resolutionChanged);
+      imageAbort?.abort(); importOverlay?.remove();
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
       listeners.forEach(remove => remove()); rows.forEach(disposeRow); if (draftRow) disposeRow(draftRow); rows = []; draftRow = null; pointers.clear(); geometries.clear(); sidebar.remove(); root.remove();
     },
   };

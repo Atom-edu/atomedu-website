@@ -3,7 +3,7 @@ import { normalizeInput, parseExpression, parseStatement, evaluate, variables } 
 
 export const DEFAULT_VIEWPORT = Object.freeze({ xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
 export const DEFAULT_PARAMETERS = Object.freeze({ a: 1, b: 0, c: 0 });
-export const GRAPH_LIMITS = Object.freeze({ expressionLength: 2048, expressions: 24, pieces: 32, comparisons: 64, samples: 12000, contourSamples: 24000, coordinate: 1e12, minSpan: 1e-9 });
+export const GRAPH_LIMITS = Object.freeze({ expressionLength: 2048, expressions: 768, pieces: 32, comparisons: 64, samples: 12000, contourSamples: 24000, coordinate: 1e12, minSpan: 1e-9 });
 
 export function validateViewport(viewport) {
   const v = Object.fromEntries(['xMin', 'xMax', 'yMin', 'yMax'].map(key => [key, viewport?.[key]]));
@@ -294,8 +294,41 @@ function compilePiecewise(input, source) {
   };
 }
 
+function parseRectangleRegion(source) {
+  const parts = source.split(/\s+and\s+/i);
+  if (parts.length !== 2) return null;
+  const axes = new Map();
+  for (const part of parts) {
+    let statement;
+    try { statement = parseStatement(part.trim()); } catch { return null; }
+    if (statement.kind !== 'inequality' || statement.relation !== '<=') return null;
+    const absolute = statement.left, argument = absolute?.args?.[0];
+    if (absolute?.type !== 'call' || absolute.name !== 'abs' || absolute.args.length !== 1
+      || argument?.type !== 'binary' || !['+', '-'].includes(argument.op)
+      || argument.left?.type !== 'sym' || !['x', 'y'].includes(argument.left.name)
+      || variables(argument.right).length || variables(statement.right).length
+      || axes.has(argument.left.name)) return null;
+    const offset = scalar(argument.right)({}), center = argument.op === '-' ? offset : -offset;
+    const radius = scalar(statement.right)({});
+    if (!Number.isFinite(center) || !Number.isFinite(radius) || radius <= 0
+      || Math.abs(center) + radius > GRAPH_LIMITS.coordinate || radius * 2 < GRAPH_LIMITS.minSpan) {
+      throw new Error('Image region bounds must be finite and have positive width.');
+    }
+    axes.set(argument.left.name, { center, radius });
+  }
+  if (!axes.has('x') || !axes.has('y')) return null;
+  const x = axes.get('x'), y = axes.get('y');
+  const bounds = { xMin: x.center - x.radius, xMax: x.center + x.radius,
+    yMin: y.center - y.radius, yMax: y.center + y.radius };
+  return { kind: 'region', source, parameters: [], relation: '<=', bounds,
+    value(px, py) { return Math.max(Math.abs(px - x.center) - x.radius, Math.abs(py - y.center) - y.radius); },
+    contains(px, py) { return Number.isFinite(px) && Number.isFinite(py)
+      && Math.abs(px - x.center) <= x.radius && Math.abs(py - y.center) <= y.radius; } };
+}
+
 /** Returns a numerical descriptor; throws a user-readable error for invalid input.
- * kind: explicit (axis is the dependent coordinate), implicit, inequality, point.
+ * kind: explicit (axis is the dependent coordinate), implicit, inequality,
+ * region (two exact rectangular inequalities), or point.
  * value(x,y,parameters) is the residual LHS−RHS for relations. Explicit descriptors
  * also expose sample(t,parameters) and point descriptors expose point(parameters).
  */
@@ -307,6 +340,11 @@ export function compileGraphExpression(expression, { readExpression = value => v
   if (grouped !== expression) internal = readExpression(grouped);
   if (typeof internal !== 'string' || internal.length > GRAPH_LIMITS.expressionLength) throw new Error('The graph expression is too long or could not be converted.');
   const source = graphTrigInput(normalizeInput(internal)), pair = splitPoint(source);
+  // Image import uses exact rectangular inequalities, not an opaque raster
+  // layer. The bounds are recovered from the visible editable formula so
+  // undo, export, and subsequent edits always agree with what is drawn.
+  const rectangle = parseRectangleRegion(source);
+  if (rectangle) return rectangle;
   const environment = (x, y, params) => ({ ...DEFAULT_PARAMETERS, ...params, x, y });
   if (pair) {
     const asts = pair.map(parseExpression), names = [...new Set(asts.flatMap(astInfo))];

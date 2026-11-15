@@ -237,6 +237,19 @@ test('implicit residuals and approximate inequalities keep their distinct meanin
   assert(compileGraphExpression('y<=x').contains(1, 1));
 });
 
+test('editable rectangular math regions round-trip through LaTeX and support image-scale expression counts', () => {
+  const source = 'abs(x+3.5)<=0.25 and abs(y-1.2)<=0.5';
+  const region = compileGraphExpression(source);
+  assert.equal(region.kind, 'region');
+  assert.deepEqual(region.bounds, { xMin: -3.75, xMax: -3.25, yMin: .7, yMax: 1.7 });
+  assert(region.contains(-3.5, 1.2));
+  assert(!region.contains(-3, 1.2));
+  const latexRegion = compileGraphExpression('\\left|x+\\frac{7}{2}\\right|\\le\\frac{1}{4}\\land\\left|y-\\frac{6}{5}\\right|\\le\\frac{1}{2}', { readExpression: latexToInput });
+  assert.deepEqual(latexRegion.bounds, region.bounds);
+  assert(GRAPH_LIMITS.expressions > 24);
+  assert.throws(() => compileGraphExpression('abs(x-0)<=0 and abs(y-0)<=1'), /positive width/);
+});
+
 test('undefined root, logarithm and reciprocal domains survive surrounding arithmetic', () => {
   for (const expression of ['y=sqrt(x)^0', 'y=ln(x)^0', 'y=1/ln(x)']) {
     const curve = compileGraphExpression(expression);
