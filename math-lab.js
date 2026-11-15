@@ -1,7 +1,8 @@
 // Standalone browser UI. All mathematical decisions belong to ./engine/index.js.
 // Engine calls may return values or promises. Typesetting never certifies a proof.
-import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-17';
-import { latexToInput } from './engine/latex.js?v=proof-lab-17';
+import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-18';
+import { latexToInput } from './engine/latex.js?v=proof-lab-18';
+import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=1';
 
 const $ = (id) => document.getElementById(id);
 const tabs = [...document.querySelectorAll('.view-tab')];
@@ -25,6 +26,7 @@ let graphHistory = [];
 let graphHistoryIndex = -1;
 let graphHistoryRestoring = false;
 let clearHistory = null;
+const sharedGraph = parseGraphShareUrl(location.href);
 
 const solveField = createMathField('f(x)=2/(x-3)+1', {
   id: 'solve-input', ariaLabel: 'Your problem', className: 'math-input',
@@ -105,6 +107,22 @@ const EXAMPLE_GROUPS = [
     { label: 'Hyperbola', input: 'x^2/16-y^2/9=1' },
     { label: 'Parabola focus', input: 'y^2=8x' },
   ] },
+  { label: 'Precalculus and data', examples: [
+    { label: 'Unit circle at 30°', input: { kind: 'precalculus', topic: 'trigonometry', operation: 'unit_circle', angle: '1/6' }, description: 'Exact sine, cosine, and tangent at pi/6.' },
+    { label: 'Solve sine on one cycle', input: { kind: 'precalculus', topic: 'trigonometry', operation: 'solve_equation', function: 'sin', target: '1/2', interval: { lower: 0, upper: 2 } }, description: 'Find all exact roots of sin(theta)=1/2 from 0 to 2 pi.' },
+    { label: 'Polar to Cartesian', input: { kind: 'precalculus', topic: 'polar', operation: 'to_cartesian', radius: 2, angle: '1/4' } },
+    { label: 'Vector dot product', input: { kind: 'precalculus', topic: 'vector', operation: 'dot', a: [1, 2], b: [3, 4] } },
+    { label: 'Average rate of change', input: { kind: 'precalc_functions', topic: 'rates', operation: 'average_rate', function: { type: 'polynomial', coefficients: [2, -3, 1] }, from: '1/2', to: '3/2' } },
+    { label: 'Parametric position', input: { kind: 'parametric', operation: 'evaluate', x: [1, 2], y: [0, 1, 1], t: '1/2' } },
+    { label: 'Sinusoidal model', input: { kind: 'trig_models', operation: 'analyze', function: 'sin', scale: '3/2', rate: '2/3', shift: '1/5', offset: '-1/4' } },
+    { label: 'Inverse sine', input: { kind: 'trig_models', operation: 'inverse', function: 'asin', value: '1/2' } },
+    { label: 'Fit a line to data', input: { kind: 'data_reasoning', topic: 'regression', operation: 'fit', points: [[0, 1], [1, 3], [2, 5]] } },
+  ] },
+  { label: 'Supported word problems', examples: [
+    { label: 'Taxi fee and miles', word: true, input: 'A taxi charges a $5 flat fee plus $2 per mile. If the total cost is $17, how many miles were traveled?' },
+    { label: 'Consecutive integers', word: true, input: 'The sum of three consecutive integers is 72. Find the integers.' },
+    { label: 'Discount', word: true, input: 'A jacket costs $80 and is discounted by 25%. What is the sale price?' },
+  ] },
 ];
 
 const CHECK_EXAMPLES = {
@@ -169,11 +187,22 @@ function loadSolveProblem(problem) {
   $('solve-variable').value = '';
   const structured = isObject(problem) || Array.isArray(problem);
   $('use-structured').checked = structured;
+  $('use-word-problem').checked = false;
   $('structured-mode').open = structured;
-  $('solve-field-mount').classList.toggle('inactive-math-field', structured);
-  solveField.readOnly = structured;
+  syncSolveInputMode();
   if (structured) $('structured-input').value = inputText(problem);
   else setMathFieldValue(solveField, problem);
+}
+
+function syncSolveInputMode(focus = false) {
+  const structured = $('use-structured').checked, word = $('use-word-problem').checked;
+  solveField.readOnly = structured || word;
+  $('solve-field-mount').classList.toggle('inactive-math-field', structured || word);
+  if (focus) {
+    if (word) $('word-problem-input').focus();
+    else if (structured) $('structured-input').focus();
+    else { setDefaultMathField(solveField); solveField.focus(); }
+  }
 }
 
 function badge(label, kind) { return node('span', `badge badge-${kind}`, label); }
@@ -197,8 +226,8 @@ async function connectEngine() {
     // A new URL on explicit retries also recovers from a cached missing module
     // while the core is being added to a shared development directory.
     const module = connectionAttempts++ === 0
-      ? await import('./engine/index.js?v=proof-lab-17')
-      : await import(`./engine/index.js?v=proof-lab-17&math-lab-retry=${connectionAttempts}`);
+      ? await import('./engine/index.js?v=proof-lab-18')
+      : await import(`./engine/index.js?v=proof-lab-18&math-lab-retry=${connectionAttempts}`);
     for (const name of ['solve', 'checkWork', 'generateProblem', 'getCapabilities']) {
       if (typeof module[name] !== 'function') throw new Error(`The engine export “${name}” is missing.`);
     }
@@ -613,6 +642,41 @@ function graphOptions(expressions, extra = {}) {
   };
 }
 
+function mountClassroomShare(graph) {
+  const sidebar = $('graph-sidebar-host').querySelector('.graph-sidebar');
+  if (!sidebar || sidebar.querySelector('.graph-classroom-share')) return;
+  const panel = node('section', 'graph-classroom-share');
+  panel.setAttribute('aria-label', 'Share graph with Google Classroom');
+  panel.append(node('h3', '', 'Share this graph'));
+  panel.append(node('p', '', 'Send an editable graph link to Google Classroom. The link contains your expressions and window settings.'));
+  const link = node('a', 'graph-classroom-link');
+  link.href = 'https://classroom.google.com/share';
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  const icon = document.createElement('img');
+  icon.src = '/images/google-classroom-icon.png';
+  icon.alt = '';
+  icon.width = 36;
+  icon.height = 36;
+  link.append(icon, node('span', '', 'Share to Google Classroom'));
+  const status = node('p', 'graph-classroom-status');
+  status.setAttribute('role', 'status');
+  link.addEventListener('click', (event) => {
+    try {
+      const graphUrl = buildGraphShareUrl(graph.getState(), 'https://atom-edu.org/');
+      const classroomUrl = new URL('https://classroom.google.com/share');
+      classroomUrl.searchParams.set('url', graphUrl);
+      link.href = classroomUrl.href;
+      status.textContent = 'Choose a class in Google Classroom to share this graph link.';
+    } catch (error) {
+      event.preventDefault();
+      status.textContent = errorMessage(error) + ' Try a smaller graph or save a PNG instead.';
+    }
+  });
+  panel.append(link, status, node('small', '', 'Sharing opens Google Classroom and sends the graph link there. Google Classroom is a trademark of Google LLC; atomEDU is not affiliated with Google.'));
+  sidebar.append(panel);
+}
+
 function rememberGraphState(state) {
   if (graphHistoryRestoring) return;
   const snapshot = graphStateSnapshot(state);
@@ -647,15 +711,20 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-19').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-21').then(({ createGraph }) => {
     host.replaceChildren();
-    graphWorkspace = createGraph(host, graphOptions([''], {
+    graphWorkspace = createGraph(host, graphOptions(sharedGraph?.expressions || [''], {
       sidebarHost: $('graph-sidebar-host'),
-      viewport: { xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 },
-      equalAspect: true,
+      viewport: sharedGraph?.viewport || { xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 },
+      equalAspect: sharedGraph?.equalAspect ?? true,
+      parameters: sharedGraph?.parameters,
+      xScale: sharedGraph?.xScale,
+      yScale: sharedGraph?.yScale,
+      gridMode: sharedGraph?.gridMode,
       onChange: rememberGraphState,
       onShowSidebar: () => setRailCollapsed(false),
     }));
+    mountClassroomShare(graphWorkspace);
     // Capture edits before the next canvas frame, including in background tabs.
     // The plotter's onChange still records window changes and gesture updates.
     graphHistory = [graphStateSnapshot(graphWorkspace.getState())];
@@ -708,7 +777,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js?v=proof-lab-19').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-21').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);
@@ -858,7 +927,7 @@ function transferProblem(problem, view) {
     markDirty('check');
   }
   showView(view);
-  (view === 'solve' ? $('use-structured').checked ? $('structured-input') : solveField : document.querySelector('.step-input')).focus();
+  (view === 'solve' ? $('use-word-problem').checked ? $('word-problem-input') : $('use-structured').checked ? $('structured-input') : solveField : document.querySelector('.step-input')).focus();
   announce(`Problem opened in ${view === 'solve' ? 'Solve' : 'Check work'}.`);
 }
 
@@ -1011,8 +1080,9 @@ function randomSeed() {
 function handleSolve(event) {
   event.preventDefault();
   let problem;
-  try { problem = parseInput($('use-structured').checked ? $('structured-input').value : solveField.value, 'a problem to solve', $('use-structured').checked); }
-  catch (error) { showError('solve', errorMessage(error), $('use-structured').checked ? $('structured-input') : solveField); return; }
+  const field = $('use-word-problem').checked ? $('word-problem-input') : $('use-structured').checked ? $('structured-input') : solveField;
+  try { problem = parseInput(field.value, 'a problem to solve', $('use-structured').checked); }
+  catch (error) { showError('solve', errorMessage(error), field); return; }
   const options = {};
   options.domain = $('solve-domain').value;
   if ($('solve-task').value) options.task = $('solve-task').value;
@@ -1250,10 +1320,18 @@ function exampleButton(example) {
   if (example.description) button.title = example.description;
   button.append(document.createTextNode(example.label), node('span', '', '↗'));
   button.addEventListener('click', () => {
-    loadSolveProblem(example.input);
+    if (example.word) {
+      $('use-structured').checked = false;
+      $('use-word-problem').checked = true;
+      $('structured-mode').open = false;
+      $('solve-options').open = true;
+      $('word-mode').open = true;
+      $('word-problem-input').value = example.input;
+      syncSolveInputMode();
+    } else loadSolveProblem(example.input);
     $('solve-task').value = example.task || '';
     $('solve-variable').value = example.variable || '';
-    markDirty('solve'); ($('use-structured').checked ? $('structured-input') : solveField).focus();
+    markDirty('solve'); ($('use-word-problem').checked ? $('word-problem-input') : $('use-structured').checked ? $('structured-input') : solveField).focus();
     announce(`${example.label} example loaded. ${example.description || ''} Run Solve problem to see the result.`);
   });
   return button;
@@ -1288,11 +1366,16 @@ $('check-form').addEventListener('submit', handleCheck);
 $('generate-form').addEventListener('submit', handleGenerate);
 $('use-structured').addEventListener('change', () => {
   const structured = $('use-structured').checked;
-  solveField.readOnly = structured;
-  $('solve-field-mount').classList.toggle('inactive-math-field', structured);
+  if (structured) { $('use-word-problem').checked = false; $('word-mode').open = false; }
+  syncSolveInputMode();
   markDirty('solve');
-  if (structured) $('structured-input').focus();
-  else { setDefaultMathField(solveField); solveField.focus(); }
+  syncSolveInputMode(true);
+});
+$('use-word-problem').addEventListener('change', () => {
+  if ($('use-word-problem').checked) { $('use-structured').checked = false; $('structured-mode').open = false; }
+  syncSolveInputMode();
+  markDirty('solve');
+  syncSolveInputMode(true);
 });
 toolViews.forEach((view) => {
   forms[view].addEventListener('input', () => { if (clearHistory?.view === view) clearHistory = null; markDirty(view); });

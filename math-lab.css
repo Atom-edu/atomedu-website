@@ -361,6 +361,7 @@ textarea.latex-source { min-height: 72px; max-height: 200px; padding: 10px; marg
 .structured-toggle { display: flex; align-items: center; gap: 8px; font-size: 11px; margin: 16px 0; cursor: pointer; }
 .structured-toggle input { accent-color: var(--clay); width: 16px; height: 16px; }
 textarea.structured-input { min-height: 150px; padding: 12px; }
+textarea.word-problem-input { min-height: 115px; padding: 12px; font-family: inherit; font-size: 13px; line-height: 1.5; }
 .inactive-math-field { opacity: .5; }
 .rendered-math { max-width: 100%; letter-spacing: normal; }
 .rendered-math .katex { font-size: 1.12em; }
@@ -729,6 +730,15 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app #graph-sidebar-host .graph-visibility { width: 16px; height: 16px; }
 .lab-app #graph-sidebar-host .graph-expression-number { color: #5d6d7c; }
 .lab-app #graph-sidebar-host .graph-window { margin-top: 19px; }
+.lab-app .graph-classroom-share { display: grid; gap: 9px; margin: 22px 0 70px; padding: 18px 4px 0; border-top: 1px solid #dce2e8; }
+.lab-app .graph-classroom-share h3 { font-size: 14px; }
+.lab-app .graph-classroom-share p { margin: 0; color: #52616f; font-size: 11px; line-height: 1.5; }
+.lab-app .graph-classroom-link { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; width: fit-content; padding: 6px 12px 6px 7px; border: 1px solid #c8d1d8; border-radius: 6px; background: #fff; color: #24313d; font-family: Roboto, Arial, sans-serif; font-size: 13px; font-weight: 700; text-decoration: none; }
+.lab-app .graph-classroom-link img { display: block; width: 36px; height: 36px; object-fit: contain; }
+.lab-app .graph-classroom-link:hover { border-color: #638572; background: #f5faf6; }
+.lab-app .graph-classroom-link:hover img { filter: brightness(.8); }
+.lab-app .graph-classroom-share .graph-classroom-status { min-height: 1em; color: #355f4d; }
+.lab-app .graph-classroom-share small { color: #677481; font-size: 10px; line-height: 1.45; }
 .lab-app .coverage-fab { right: 17px; bottom: 16px; width: 39px; height: 39px; }
 .lab-app .coverage-dialog { max-height: min(88dvh, 730px); overflow: hidden; }
 .lab-app .coverage-dialog-card { display: flex; flex-direction: column; max-height: min(88dvh, 730px); }

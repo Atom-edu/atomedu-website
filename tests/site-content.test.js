@@ -145,6 +145,30 @@ test('home presents compact partner logos without the former VC Boom pill', () =
   assert.doesNotMatch(home, /No account, API key, or paid tier is needed to use Proof Lab/);
 });
 
+test('Classroom integration is separate from featured partners and uses the official icon', () => {
+  const home = read('index.html');
+  const icon = readFileSync(resolve(root, 'images/google-classroom-icon.png'));
+  assert.deepEqual([...icon.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+  assert.ok(home.indexOf('id="integrations-title"') > home.indexOf('id="partners-title"'));
+  assert.match(home, /For use with Google Classroom™/);
+  assert.match(home, /images\/google-classroom-icon\.png/);
+  assert.match(home, /atomEDU is not affiliated with or endorsed by Google/);
+  assert.match(home, /href="\/proof-lab#graph"/);
+  assert.match(read('math-lab.js'), /buildGraphShareUrl\(graph\.getState\(\), 'https:\/\/atom-edu\.org\/'\)/);
+  assert.match(read('math-lab.js'), /classroom\.google\.com\/share/);
+  assert.match(read('proof-lab.html'), /id="graph"/);
+});
+
+test('Solve exposes the strict word-problem mode separately from LaTeX and JSON', () => {
+  const proof = read('proof-lab.html');
+  const app = read('math-lab.js');
+  assert.match(proof, /id="use-word-problem"/);
+  assert.match(proof, /id="word-problem-input"/);
+  assert.match(proof, /Other wording is reported as unsupported, not guessed/);
+  assert.match(app, /word-problem-input/);
+  assert.match(read('engine/index.js'), /parseWordProblem\(input\) \|\| latexToInput/);
+});
+
 test('about page shows all three founders with their portraits and group photo', () => {
   const about = read('about.html');
   for (const [name, image] of [
@@ -187,10 +211,12 @@ test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', 
 
 test('legal page defines the free tool and states academic integrity consequences', () => {
   const legal = read('legal.html');
-  assert.match(legal, /Last updated[\s\S]*November 14 2026/);
+  assert.match(legal, /Last updated[\s\S]*November 15 2026/);
   assert.match(legal, /mailto:hello@atom-edu\.org/);
   assert.match(legal, /also called atom, Proof Lab, the tool, we, us, or our/);
   assert.match(legal, /If you use the tool to cheat or break a rule/);
   assert.match(legal, /disciplinary action, suspension/);
+  assert.match(legal, /a link containing your graph expressions and window settings is sent to Google Classroom/);
+  assert.match(legal, /official Classroom branding resources/);
   assert.doesNotMatch(legal, /plain-language draft|needs legal review|terms text is a draft/i);
 });

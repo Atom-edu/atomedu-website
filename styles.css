@@ -236,6 +236,17 @@ h3.sub-title { font-size: 1.25rem; margin: 0; font-weight: 600; }
 .partner-vcboom img { width: min(100%, 13rem); }
 .partner-med img { width: min(100%, 15rem); }
 
+/* Classroom is a product integration, not a featured partner. */
+.integrations-section { padding: 3.4rem 0 4.4rem; }
+.integrations-section .wrap { max-width: 50rem; }
+.classroom-integration { display: flex; align-items: center; gap: 1.6rem; margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--cream-raised); }
+.classroom-integration img { display: block; width: 80px; height: 80px; flex: none; object-fit: contain; }
+.classroom-integration h3 { margin: 0 0 .35rem; font-family: Roboto, Arial, sans-serif; font-size: 1.15rem; font-weight: 700; }
+.classroom-integration p { margin: 0 0 .7rem; color: var(--ink-soft); font-size: .9rem; }
+.classroom-integration .textlink { font-size: .86rem; }
+.integration-attribution { margin: 1rem 0 0; color: var(--muted); font-size: .7rem; }
+@media (max-width: 520px) { .classroom-integration { align-items: flex-start; gap: 1rem; } .classroom-integration img { width: 56px; height: 56px; } }
+
 /* founders */
 .founder-grid {
   max-width: var(--max);

@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { latexToInput } from '../engine/latex.js';
 import {
   DEFAULT_VIEWPORT, GRAPH_LIMITS, validateViewport, equalizeViewport, niceStep,
-  getTicks, worldToScreen, screenToWorld, zoomViewport, panViewport,
-  compileGraphExpression, sampleExplicit, contourSegments,
+  getTicks, getPolarGrid, worldToScreen, screenToWorld, zoomViewport, panViewport,
+  compileGraphExpression, sampleExplicit, sampleParametric, contourSegments,
 } from '../graph/model.js';
 
 const close = (actual, expected, tolerance = 1e-9) => assert(Math.abs(actual - expected) <= tolerance, `${actual} ≉ ${expected}`);
@@ -64,6 +64,95 @@ test('pan and equal-unit aspect preserve the center and validate numerical bound
   const nearLimit = panViewport(box(), 1e20, -1e20);
   assert(Object.values(nearLimit).every(n => Math.abs(n) <= GRAPH_LIMITS.coordinate));
   close(nearLimit.xMax - nearLimit.xMin, 10); close(nearLimit.yMax - nearLimit.yMin, 10);
+});
+
+test('independent logarithmic axes preserve screen coordinates through zoom and pan', () => {
+  const scales = { xScale: 'log', yScale: 'log' }, v = box(.1, 1000, .01, 100);
+  const width = 800, height = 500, pointer = { x: 137, y: 388 };
+  close(worldToScreen({ x: 1, y: 1 }, v, width, height, scales).x, 200);
+  close(worldToScreen({ x: 1, y: 1 }, v, width, height, scales).y, 250);
+  for (const p of [{ x: .1, y: .01 }, { x: 2, y: 20 }, { x: 1000, y: 100 }]) {
+    const back = screenToWorld(worldToScreen(p, v, width, height, scales), v, width, height, scales);
+    close(back.x, p.x); close(back.y, p.y);
+  }
+  const anchor = screenToWorld(pointer, v, width, height, scales);
+  const zoomed = zoomViewport(v, 2, anchor, scales);
+  const anchored = worldToScreen(anchor, zoomed, width, height, scales);
+  close(anchored.x, pointer.x); close(anchored.y, pointer.y);
+  const panned = panViewport(v, 1, -1, scales);
+  close(panned.xMin, 1); close(panned.xMax, 10000);
+  close(panned.yMin, .001); close(panned.yMax, 10);
+  assert.throws(() => validateViewport(box(0, 10, .1, 10), scales), /positive/);
+  assert.throws(() => validateViewport(v, { xScale: 'logarithmic' }), /linear or log/);
+  assert(Number.isNaN(worldToScreen({ x: -1, y: 1 }, v, width, height, scales).x));
+});
+
+test('mixed log and linear axes equalize displayed units and sample by decades', () => {
+  const scales = { xScale: 'log', yScale: 'linear' }, v = box(.01, 100, -2, 2);
+  const equal = equalizeViewport(v, 800, 400, scales);
+  close((Math.log10(equal.xMax) - Math.log10(equal.xMin)) / 800, (equal.yMax - equal.yMin) / 400);
+  const curve = compileGraphExpression('y=log(x)');
+  const paths = sampleExplicit(curve, box(.001, 1000, -4, 4), { width: 900, height: 500, ...scales });
+  assert(paths.length);
+  assert(paths.flat().some(p => p.x < .01), 'sampling reaches the low decades');
+  assert(paths.flat().some(p => p.x > 100), 'sampling reaches the high decades');
+  assert(paths.flat().every(p => p.x > 0 && Number.isFinite(p.y)));
+  const contour = contourSegments(compileGraphExpression('x*y=1'), box(.01, 100, -10, 10), { width: 400, height: 300, ...scales });
+  assert(contour.length);
+  assert(contour.flat().every(p => p.x > 0));
+});
+
+test('polar grid radii and angle rays stay bounded across centered and panned windows', () => {
+  for (const v of [box(), box(20, 40, -10, 10), box(-1e6, -1e6 + 100, 0, 100)]) {
+    const { radii, angles, maxRadius } = getPolarGrid(v, 800, 500);
+    assert(radii.length > 0 && radii.length <= 120);
+    assert(radii.every((radius, i) => radius > 0 && radius <= maxRadius && (!i || radius > radii[i - 1])));
+    assert.equal(angles.length, 24); close(angles[0], 0); close(angles[6], Math.PI / 2);
+  }
+});
+
+test('structured polar and parametric curves compile as numerical Cartesian points', () => {
+  const polarSource = 'polar(r=2+sin(theta);theta=0..2*pi)';
+  const polar = compileGraphExpression(polarSource, { readExpression() { throw new Error('Structured text must bypass the LaTeX reader.'); } });
+  assert.equal(polar.kind, 'polar'); assert.equal(polar.parameter, 'theta'); assert.equal(polar.source, polarSource);
+  close(polar.tMin, 0); close(polar.tMax, 2 * Math.PI);
+  close(polar.point(0).x, 2); close(polar.point(Math.PI / 2).y, 3);
+  const circle = compileGraphExpression('parametric(x=a*cos(t);y=b*sin(t);t=0..2*pi)');
+  assert.equal(circle.kind, 'parametric'); assert.deepEqual(circle.parameters, ['a', 'b']);
+  assert.deepEqual(circle.point(0, { a: 3, b: 2 }), { x: 3, y: 0 });
+  close(circle.point(Math.PI / 2, { a: 3, b: 2 }).y, 2);
+  const paths = sampleParametric(circle, box(-4, 4, -3, 3), { width: 800, height: 500, parameters: { a: 3, b: 2 } });
+  assert(paths.length && paths.flat().length > 30);
+  assert(paths.flat().every(p => Number.isFinite(p.x) && Number.isFinite(p.y) && p.t >= 0 && p.t <= 2 * Math.PI));
+  close(paths[0][0].x, 3); close(paths.at(-1).at(-1).x, 3);
+  assert.deepEqual(sampleParametric(compileGraphExpression('y=x'), box()), []);
+});
+
+test('structured curves leave gaps at undefined samples and obey sampling budgets', () => {
+  const broken = compileGraphExpression('parametric(x=t;y=1/t;t=-1..1)');
+  const paths = sampleParametric(broken, box(-2, 2, -10, 10), { width: 801, maxSamples: 1500 });
+  assert(paths.length >= 2);
+  for (const path of paths) for (let i = 1; i < path.length; i++)
+    assert(!(path[i - 1].t < 0 && path[i].t > 0), 'no path may bridge the pole');
+  let calls = 0; const original = broken.point;
+  broken.point = (...args) => { calls++; return original(...args); };
+  sampleParametric(broken, box(), { maxSamples: 90 }); assert(calls <= 90);
+  assert.deepEqual(sampleParametric(broken, box(), { maxSamples: 0 }), []);
+  const positive = compileGraphExpression('parametric(x=exp(t);y=exp(t);t=-2..2)');
+  const logPaths = sampleParametric(positive, box(.1, 10, .1, 10), { xScale: 'log', yScale: 'log' });
+  assert(logPaths.length && logPaths.flat().every(p => p.x > 0 && p.y > 0));
+});
+
+test('structured curve syntax rejects unsafe variables, intervals, and malformed clauses', () => {
+  for (const source of [
+    'polar(r=theta;theta=0..)', 'polar(r=theta;theta=2..1)',
+    'polar(r=1;theta=0..1000*pi)', 'polar(r=x;theta=0..pi)',
+    'parametric(x=cos(t);y=sin(t);t=0..1e7)',
+    'parametric(x=x+t;y=t;t=0..1)', 'parametric(x=t;y=window.alert(t);t=0..1)',
+    'parametric(x=t;y=t;t=a..2)', 'parametric(x=t;x=t;t=0..1)',
+    'parametric(x=t;y=t;t=0..1',
+  ]) assert.throws(() => compileGraphExpression(source), undefined, source);
+  assert.throws(() => compileGraphExpression('polar(r=1;theta=0..1)'.repeat(200)), /characters/);
 });
 
 test('expression compiler handles both explicit orientations and axis-aligned lines', () => {

@@ -45,6 +45,8 @@ Serve the entire vendor, graph, engine, and editor paths shown above. Copying ju
 - Numerical inequality shading and supported piecewise expressions
 - Parameter sliders for `a`, `b`, and `c`
 - Numbered major/minor grid lines and equal axis-unit aspect
+- Optional logarithmic x and y axes with positive bounds, and a circular polar grid
+- Bounded numerical polar and parametric curves, each with an explicit finite parameter interval
 - Pointer drag to pan, anchored wheel zoom, touch pinch, and zoom/reset/fit buttons
 - Keyboard arrows to pan, plus/minus to zoom, and Home to reset
 - Coordinate readout, click-to-trace, editable window bounds, and PNG export
@@ -53,6 +55,12 @@ Serve the entire vendor, graph, engine, and editor paths shown above. Copying ju
 Image import is a color-and-shape approximation, not a photorealistic tracing system. The wave and line styles create actual function paths with bounded domains; the mosaic style creates actual shaded inequalities. The imported formulas are the source of the rendered art; clicking a formula replaces its lightweight preview with a visual math editor. Keep rights to any source image you use, and check the separate art-contest rules before submitting exported work.
 
 The factory returns `addExpression`, `setExpressions`, `getState`, `setViewport`, `zoom`, `reset`, `resize`, and `destroy`. Call `resize()` after revealing a graph that was mounted in a hidden tab, and `destroy()` when removing a graph permanently.
+
+The Graph view can share a bounded, editable graph link through Google Classroom. The link restores up to 24 expressions, the viewport, parameters, and axis/grid modes. Sharing sends those details in the URL to Classroom when the user chooses the share control. Larger image-import graphs should be exported as PNG instead; this share path does not upload files or access a class roster. The Classroom Share URL is documented by [Google](https://developers.google.com/workspace/classroom/guides/sharebutton).
+
+Use `createGraph(container, { xScale: 'log', yScale: 'linear', gridMode: 'cartesian', viewport: { xMin: 0.1, xMax: 100, yMin: -5, yMax: 5 } })` for a logarithmic x axis, or `gridMode: 'polar'` with linear axes for concentric circles and angle rays. Polar grid lines are a viewing aid; Cartesian `x`/`y` expressions keep their original meaning. `getState()` returns the modes, and `setGraphMode({ xScale, yScale, gridMode, viewport })` changes them on an existing graph. A log axis cannot show zero or negative coordinates.
+
+Polar and parametric expressions are separate from the grid choice. Enter `polar(r=2+sin(theta);theta=0..2*pi)` to draw a polar curve, or `parametric(x=cos(t);y=sin(t);t=0..2*pi)` for a parametric curve. Both are sampled numerically within their stated finite intervals. They can be exported or included in a bounded Classroom graph link, but neither drawing is a proof of an identity or a complete equation solution.
 
 Sampling and contours are bounded. Explicit sampling avoids connecting known poles; implicit contour edges require root-convergence checks rather than sign changes alone. The graph is a numerical exploration tool, not a proof. Features below the sample resolution can be missed; the symbolic verifier remains the authority for mathematical results.
 

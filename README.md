@@ -16,6 +16,8 @@ npm start
 
 Open [Proof Lab](http://127.0.0.1:8080/proof-lab.html). Its four views solve problems, check student work with Ghost steps, generate seeded practice at difficulty `0.000` through `1.000`, and provide a full interactive graphing workspace. Fractions, roots, matrices, piecewise functions, and other templates have editable placeholder boxes. A large symbol and number pad edits the active expression.
 
+The graph offers Cartesian, logarithmic-axis, and polar-grid views. A user may explicitly share a bounded graph link to Google Classroom; that sends the graph expressions and window settings in the URL to Google, where the user chooses a class. This is link sharing, not roster access, automatic grading, or an OAuth-backed Classroom API connection. The math solver still runs locally and never calls Google to decide an answer.
+
 The vendored math assets are ready to serve. To reinstall or refresh the pinned editor/renderer dependencies, run `npm ci`; `npm run build` reproducibly copies their browser files, fonts, and licenses into the served assets. MathLive and KaTeX do not need a CDN at runtime; the site typography still loads from Google Fonts.
 
 ```sh
@@ -33,6 +35,7 @@ The generator CLI streams newline-delimited JSON, supports up to one million pro
 See [graph embedding and controls](./graph/README.md) for connecting the graph workspace to another page without a paid service.
 
 See [the engine API and supported inputs](./engine/README.md) and [the product plan](./math-engine-plan.md).
+The [standards coverage checklist](./docs/standards-coverage.md) maps verified subsets and remaining gaps against Missouri DESE Algebra I, Algebra II, Geometry, and AP Precalculus Units 1–4. It is not a claim of complete course coverage.
 
 ## Pages
 - `index.html` - main page
@@ -42,6 +45,8 @@ See [the engine API and supported inputs](./engine/README.md) and [the product p
 - `contact.html` - email contact and FAQ
 - `proof-lab.html` - local math engine, work checking, and generated practice
 - `math-lab.html` - redirect for old links
+- `art-contest.html` - public daily graph-art contest
+- `judging.html` - password-protected contest judging view
 
 ## Shared files
 - `styles.css` - all styling (cream palette, fonts, layout)
@@ -49,7 +54,7 @@ See [the engine API and supported inputs](./engine/README.md) and [the product p
 - `images/` - logos, three graph backgrounds, and footer artwork
 
 ## Fonts
-Loaded from Google Fonts: Poiret One (headings), Fraunces (serif accent words), Space Grotesk (body). They load over the internet. To ship offline, download the font files and point the `@font-face` rules at local copies.
+Loaded from Google Fonts: Poiret One (headings), Fraunces (serif accent words), Space Grotesk (body), and Roboto (Classroom integration text). They load over the internet. To ship offline, download the font files and point the `@font-face` rules at local copies.
 
 ## About the images
 The first home slide uses the local polar graph image `images/bg1.png`. The second uses the Webb Cosmic Cliffs image in `images/bg2.jpg`, and the third uses the Table Mountain pelargonium photo in `images/bg3.jpg`. Image credits are listed on the site. The footer uses the original `images/footer.svg` artwork.

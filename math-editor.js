@@ -1,7 +1,7 @@
 // Visual editing and safe typesetting only. The local engine owns all mathematics.
 import { MathfieldElement } from './vendor/mathlive/mathlive.min.mjs';
 import katex from './vendor/katex/katex.mjs';
-import { toLatex } from './engine/latex.js?v=proof-lab-17';
+import { toLatex } from './engine/latex.js?v=proof-lab-18';
 
 MathfieldElement.fontsDirectory = new URL('./vendor/mathlive/fonts', import.meta.url).href;
 MathfieldElement.soundsDirectory = null;
