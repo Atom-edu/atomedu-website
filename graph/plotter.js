@@ -9,7 +9,7 @@
  * Editor values/callbacks are strings (LaTeX with a supplied editor/reader).
  * readExpression may also return {kind:'piecewise', variable:'x'|'y', pieces:
  * [{expression: internalString, condition: comparisonString|'otherwise'}]}.
- * setExpressions accepts strings or { expression, id?, color?, visible?, imported? }.
+ * setExpressions accepts strings or { expression, id?, color?, visible?, imported?, strokeWidth? }.
  * Imported regions use lightweight LaTeX previews and become visual math
  * editors when clicked; the formula remains the authoritative geometry.
  * getExpressions returns detached entries suitable for setExpressions; the
@@ -75,7 +75,7 @@ export function createGraph(container, options = {}) {
         <details class="graph-image-import">
           <summary>Image import</summary>
           <div class="graph-image-panel">
-            <p>Turn an image into colored regions made from editable mathematical inequalities. Simple shapes look crisp; photos become an approximation. Use images you have rights to.</p>
+            <p>Draw your image with bounded sine waves, straight-line functions, or colored inequality regions. Complex photos become an approximation. Use images you have rights to.</p>
             <label class="graph-image-drop">
               <span class="graph-image-drop-icon" aria-hidden="true">⇧</span>
               <strong>Choose or drop an image</strong>
@@ -84,11 +84,11 @@ export function createGraph(container, options = {}) {
             </label>
             <p class="graph-image-name" aria-live="polite">No image selected.</p>
             <img class="graph-image-preview" alt="Selected image preview" hidden>
-            <label class="graph-image-quality-label">Detail
-              <select class="graph-image-quality">
-                <option value="192">Quick</option>
-                <option value="384" selected>Balanced</option>
-                <option value="640">Fine</option>
+            <label class="graph-image-style-label">Drawing style
+              <select class="graph-image-style">
+                <option value="waves" selected>Wave drawing</option>
+                <option value="mosaic">Balanced mosaic</option>
+                <option value="lines">Line sketch</option>
               </select>
             </label>
             <button type="button" class="graph-image-convert">Draw with math</button>
@@ -127,10 +127,10 @@ export function createGraph(container, options = {}) {
   $('.graph-image-import').hidden = options.compact === true || options.showImageImport === false;
   const on = (target, name, handler, config) => { target.addEventListener(name, handler, config); listeners.push(() => target.removeEventListener(name, handler, config)); };
   const state = () => ({
-    expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, imported: row.imported, error: row.error, kind: row.compiled?.kind || null })),
+    expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, imported: row.imported, strokeWidth: row.strokeWidth, error: row.error, kind: row.compiled?.kind || null })),
     viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, trace: trace ? { ...trace } : null,
   });
-  const getExpressions = () => rows.map(({ id, expression, color, visible, imported }) => ({ id, expression, color, visible, imported }));
+  const getExpressions = () => rows.map(({ id, expression, color, visible, imported, strokeWidth }) => ({ id, expression, color, visible, imported, strokeWidth }));
   function schedule(change = false, scene = true) {
     if (destroyed) return;
     sceneDirty ||= scene; pendingChange ||= change;
@@ -168,7 +168,7 @@ export function createGraph(container, options = {}) {
 
   const imageFile = $('.graph-image-file'), imageDrop = $('.graph-image-drop');
   const imageName = $('.graph-image-name'), imagePreview = $('.graph-image-preview');
-  const imageQuality = $('.graph-image-quality'), imageConvert = $('.graph-image-convert');
+  const imageStyle = $('.graph-image-style'), imageConvert = $('.graph-image-convert');
   const imageStatus = $('.graph-image-status');
   let imagePreviewUrl = null, imageAbort = null;
   function selectImage(file) {
@@ -224,7 +224,7 @@ export function createGraph(container, options = {}) {
   on(imageConvert, 'click', async () => {
     if (imageImportBusy) return;
     if (!selectedImage) { imageStatus.textContent = 'Choose an image first.'; return; }
-    imageImportBusy = true; imageFile.disabled = imageQuality.disabled = imageConvert.disabled = true;
+    imageImportBusy = true; imageFile.disabled = imageStyle.disabled = imageConvert.disabled = true;
     const overlay = showImportOverlay(), started = win.performance.now();
     const phase = overlay.querySelector('.graph-import-phase');
     const track = overlay.querySelector('.graph-import-track');
@@ -235,7 +235,7 @@ export function createGraph(container, options = {}) {
       track.firstElementChild.style.width = percent + '%';
       const elapsed = win.performance.now() - started;
       const remaining = percent > 5 && percent < 100 ? Math.ceil(elapsed * (100 - percent) / percent / 1000)
-        : Math.ceil(Number(imageQuality.value) / 55);
+        : Math.ceil((imageStyle.value === 'mosaic' ? 384 : 480) / 55);
       eta.textContent = percent === 100 ? 'Complete' : 'Est. ' + Math.max(1, remaining) + ' seconds remaining';
     };
     progress(1, 'Reading your image…');
@@ -257,7 +257,7 @@ export function createGraph(container, options = {}) {
         throw new Error('Use an image up to 4096 × 4096 pixels.');
       }
       progress(12, 'Scanning colors and shapes…');
-      const edge = Number(imageQuality.value) >= 640 ? 96 : Number(imageQuality.value) >= 384 ? 72 : 52;
+      const edge = imageStyle.value === 'mosaic' ? 72 : 96;
       const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
       const sample = doc.createElement('canvas');
       sample.width = Math.max(1, Math.round(bitmap.width * scale));
@@ -269,18 +269,20 @@ export function createGraph(container, options = {}) {
       sampleContext.drawImage(bitmap, 0, 0, sample.width, sample.height);
       bitmap.close?.(); bitmap = null;
       await new Promise(resolve => win.setTimeout(resolve, 0));
-      const { imageToGraphRegions } = await import('./image-import.js');
-      const converted = imageToGraphRegions(sampleContext.getImageData(0, 0, sample.width, sample.height),
-        { maxRegions: Number(imageQuality.value) });
-      if (!converted.expressions.length) throw new Error('This image did not produce graph regions.');
+      const pixels = sampleContext.getImageData(0, 0, sample.width, sample.height);
+      const converted = imageStyle.value === 'mosaic'
+        ? (await import('./image-import.js')).imageToGraphRegions(pixels, { maxRegions: 384 })
+        : (await import('./stroke-import.js')).imageToGraphStrokes(pixels,
+          { style: imageStyle.value, maxExpressions: 560 });
+      if (!converted.expressions.length) throw new Error('This image did not produce graph expressions.');
       if (imageAbort.signal.aborted) throw new DOMException('Image import cancelled.', 'AbortError');
-      progress(30, 'Writing ' + converted.expressions.length + ' mathematical regions…');
+      progress(30, 'Writing ' + converted.expressions.length + ' mathematical expressions…');
       await setExpressionsInBatches(converted.expressions.map(entry => ({ ...entry, imported: true })),
-        (done, total) => progress(30 + 65 * done / total, 'Writing region ' + done + ' of ' + total + '…'),
+        (done, total) => progress(30 + 65 * done / total, 'Writing expression ' + done + ' of ' + total + '…'),
         imageAbort.signal);
       setView(equalAspect ? equalizeFromY(homeViewport) : homeViewport);
       progress(100, 'Your graph art is ready.');
-      imageStatus.textContent = 'Created ' + converted.expressions.length + ' editable math regions. Adjust their colors or formulas in the expression list.';
+      imageStatus.textContent = 'Created ' + converted.expressions.length + ' editable math expressions. Adjust their colors or formulas in the expression list.';
     } catch (error) {
       imageStatus.textContent = error.name === 'AbortError' ? 'Image import cancelled. Your previous graph was restored.'
         : (error.message || 'Could not import this image.');
@@ -288,7 +290,7 @@ export function createGraph(container, options = {}) {
       bitmap?.close?.();
       overlay.remove(); importOverlay = null; imageAbort = null;
       root.removeAttribute('aria-busy');
-      imageImportBusy = false; imageFile.disabled = imageQuality.disabled = imageConvert.disabled = false;
+      imageImportBusy = false; imageFile.disabled = imageStyle.disabled = imageConvert.disabled = false;
       if (!destroyed) imageConvert.focus();
     }
   });
@@ -350,7 +352,9 @@ export function createGraph(container, options = {}) {
     const element = doc.createElement('div'); element.className = `graph-expression-row${draft ? ' graph-row-draft' : ''}`;
     const id = typeof config.id === 'string' && config.id && !rows.some(row => row.id === config.id) && draftRow?.id !== config.id ? config.id : `${prefix}-curve-${++rowNumber}`;
     const color = /^#[0-9a-f]{6}$/i.test(config.color || '') ? config.color : COLORS[rows.length % COLORS.length];
-    const row = { id, expression, color, visible: config.visible !== false, imported: config.imported === true, error: null, compiled: null, element, draft };
+    const row = { id, expression, color, visible: config.visible !== false, imported: config.imported === true,
+      strokeWidth: Number.isFinite(config.strokeWidth) ? clamp(config.strokeWidth, 1, 16) : 2.2,
+      error: null, compiled: null, element, draft };
     const controls = doc.createElement('div'); controls.className = 'graph-expression-controls';
     const visible = doc.createElement('input'); visible.type = 'checkbox'; visible.checked = row.visible; visible.className = 'graph-visibility'; visible.title = 'Show or hide curve'; visible.setAttribute('aria-label', 'Show expression');
     visible.disabled = draft;
@@ -389,7 +393,7 @@ export function createGraph(container, options = {}) {
       field = doc.createElement('button'); field.type = 'button';
       field.className = 'graph-expression-field graph-imported-formula';
       field.setAttribute('aria-label', 'Imported graph expression. Click to edit');
-      field.title = 'Click to edit this mathematical region';
+      field.title = 'Click to edit this mathematical expression';
       field.append(options.renderExpression(expression));
       field.addEventListener('click', () => {
         const live = createEditable();
@@ -520,8 +524,8 @@ export function createGraph(container, options = {}) {
     }
     bg.globalAlpha = 1;
   }
-  function drawPaths(context, paths, color, dashed = false) {
-    context.beginPath(); context.lineWidth = 2.2; context.strokeStyle = color; context.lineJoin = 'round'; context.lineCap = 'round'; context.setLineDash(dashed ? [6, 4] : []);
+  function drawPaths(context, paths, color, dashed = false, strokeWidth = 2.2) {
+    context.beginPath(); context.lineWidth = strokeWidth; context.strokeStyle = color; context.lineJoin = 'round'; context.lineCap = 'round'; context.setLineDash(dashed ? [6, 4] : []);
     for (const path of paths) for (let i = 0; i < path.length; i++) {
       const p = worldToScreen(path[i], viewport, width, height);
       if (i === 0) context.moveTo(p.x, p.y); else context.lineTo(p.x, p.y);
@@ -564,7 +568,7 @@ export function createGraph(container, options = {}) {
       const config = { width, height, parameters, maxSamples: descriptor.kind === 'explicit' ? explicitBudget : implicitBudget };
       const paths = descriptor.kind === 'explicit' ? sampleExplicit(descriptor, viewport, config) : contourSegments(descriptor, viewport, config);
       geometries.set(row.id, paths);
-      drawPaths(bg, paths, row.color, descriptor.kind === 'inequality' && ['<', '>'].includes(descriptor.relation));
+      drawPaths(bg, paths, row.color, descriptor.kind === 'inequality' && ['<', '>'].includes(descriptor.relation), row.strokeWidth);
       for (const endpoint of descriptor.endpoints?.(parameters) || []) {
         const p = worldToScreen(endpoint, viewport, width, height);
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || p.x < -6 || p.x > width + 6 || p.y < -6 || p.y > height + 6) continue;

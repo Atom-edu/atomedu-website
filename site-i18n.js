@@ -495,10 +495,15 @@
     'Window settings': 'Configuración de la ventana',
     'Image import': 'Importar imagen',
     'Turn an image into colored regions made from editable mathematical inequalities. Simple shapes look crisp; photos become an approximation. Use images you have rights to.': 'Convierte una imagen en regiones de color definidas por desigualdades matemáticas editables. Las formas sencillas se ven nítidas; las fotos se aproximan. Usa imágenes sobre las que tengas derechos.',
+    'Draw your image with bounded sine waves, straight-line functions, or colored inequality regions. Complex photos become an approximation. Use images you have rights to.': 'Dibuja tu imagen con ondas sinusoidales acotadas, funciones lineales o regiones de color definidas por desigualdades. Las fotos complejas se aproximan. Usa imágenes sobre las que tengas derechos.',
     'Choose or drop an image': 'Elige o arrastra una imagen',
     'PNG, JPG, WebP, or GIF. Up to 8 MiB.': 'PNG, JPG, WebP o GIF. Hasta 8 MiB.',
     'No image selected.': 'No hay ninguna imagen seleccionada.',
     'Detail': 'Detalle',
+    'Drawing style': 'Estilo de dibujo',
+    'Wave drawing': 'Dibujo con ondas',
+    'Balanced mosaic': 'Mosaico equilibrado',
+    'Line sketch': 'Boceto de líneas',
     'Quick': 'Rápido',
     'Balanced': 'Equilibrado',
     'Fine': 'Detallado',
@@ -521,8 +526,10 @@
     'Use an image up to 4096 × 4096 pixels.': 'Usa una imagen de hasta 4096 × 4096 píxeles.',
     'This browser cannot scan image colors.': 'Este navegador no puede analizar los colores de la imagen.',
     'This image did not produce graph regions.': 'Esta imagen no produjo regiones para la gráfica.',
+    'This image did not produce graph expressions.': 'Esta imagen no produjo expresiones para la gráfica.',
     'Imported graph expression. Click to edit': 'Expresión importada de la gráfica. Haz clic para editar',
     'Click to edit this mathematical region': 'Haz clic para editar esta región matemática',
+    'Click to edit this mathematical expression': 'Haz clic para editar esta expresión matemática',
     'Image region bounds must be finite and have positive width.': 'Los límites de la región deben ser finitos y tener una anchura positiva.',
     'Equal axis units': 'Unidades iguales en los ejes',
     'Apply window': 'Aplicar ventana',
@@ -1965,12 +1972,18 @@
       return 'Problema ' + (spanish[match[1][0].toUpperCase() + match[1].slice(1)] || match[1]) + '. ' + translateSpanish(match[2]);
     if ((match = /^Writing (\d+) mathematical regions…$/.exec(core)))
       return 'Escribiendo ' + match[1] + ' regiones matemáticas…';
+    if ((match = /^Writing (\d+) mathematical expressions…$/.exec(core)))
+      return 'Escribiendo ' + match[1] + ' expresiones matemáticas…';
     if ((match = /^Writing region (\d+) of (\d+)…$/.exec(core)))
       return 'Escribiendo la región ' + match[1] + ' de ' + match[2] + '…';
+    if ((match = /^Writing expression (\d+) of (\d+)…$/.exec(core)))
+      return 'Escribiendo la expresión ' + match[1] + ' de ' + match[2] + '…';
     if ((match = /^Est\. (\d+) seconds remaining$/.exec(core)))
       return 'Tiempo estimado: ' + match[1] + ' segundos restantes';
     if ((match = /^Created (\d+) editable math regions\. Adjust their colors or formulas in the expression list\.$/.exec(core)))
       return 'Se crearon ' + match[1] + ' regiones matemáticas editables. Ajusta sus colores o fórmulas en la lista de expresiones.';
+    if ((match = /^Created (\d+) editable math expressions\. Adjust their colors or formulas in the expression list\.$/.exec(core)))
+      return 'Se crearon ' + match[1] + ' expresiones matemáticas editables. Ajusta sus colores o fórmulas en la lista de expresiones.';
     if ((match = /^Supply at most (\d+) valid graph expressions\.$/.exec(core)))
       return 'Proporciona como máximo ' + match[1] + ' expresiones válidas para la gráfica.';
     return undefined;

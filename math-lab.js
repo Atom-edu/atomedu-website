@@ -603,9 +603,12 @@ function graphOptions(expressions, extra = {}) {
     expressions,
     readExpression: latexToInput,
     createExpressionField(value, onChange) {
-      return createMathField(value, { ariaLabel: 'Graph expression', placeholder: 'y=x^2', onInput: onChange });
+      return createMathField(value, { ariaLabel: 'Graph expression', placeholder: 'y=x^2', onInput: onChange,
+        latex: typeof value === 'string' && /^\\begin\{cases\}/.test(value.trim()) });
     },
-    renderExpression(value) { return renderMath(toLatex(value)); },
+    renderExpression(value) {
+      return renderMath(typeof value === 'string' && /^\\begin\{cases\}/.test(value.trim()) ? value : toLatex(value));
+    },
     ...extra,
   };
 }
@@ -622,7 +625,7 @@ function rememberGraphState(state) {
 
 function graphStateSnapshot(state) {
   return JSON.stringify({
-    expressions: state.expressions.map(({ expression, color, visible, imported }) => ({ expression, color, visible, imported })),
+    expressions: state.expressions.map(({ expression, color, visible, imported, strokeWidth }) => ({ expression, color, visible, imported, strokeWidth })),
   });
 }
 
@@ -644,7 +647,7 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-18').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-19').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions([''], {
       sidebarHost: $('graph-sidebar-host'),
@@ -705,7 +708,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js?v=proof-lab-18').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-19').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);

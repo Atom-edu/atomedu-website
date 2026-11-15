@@ -250,6 +250,18 @@ test('editable rectangular math regions round-trip through LaTeX and support ima
   assert.throws(() => compileGraphExpression('abs(x-0)<=0 and abs(y-0)<=1'), /positive width/);
 });
 
+test('bounded wave and line formulas draw as actual functions, not image overlays', () => {
+  const options = { readExpression: latexToInput };
+  const wave = compileGraphExpression('\\begin{cases}2+0.1\\sin(3x)&-2\\le x\\le1\\end{cases}', options);
+  assert.equal(wave.kind, 'explicit');
+  close(wave.sample(0), 2);
+  assert(Number.isNaN(wave.sample(3)));
+  const line = compileGraphExpression('\\begin{cases}1+0.25x&-2\\le x\\le1\\end{cases}', options);
+  assert.equal(line.kind, 'explicit');
+  close(line.sample(1), 1.25);
+  assert(Number.isNaN(line.sample(-3)));
+});
+
 test('undefined root, logarithm and reciprocal domains survive surrounding arithmetic', () => {
   for (const expression of ['y=sqrt(x)^0', 'y=ln(x)^0', 'y=1/ln(x)']) {
     const curve = compileGraphExpression(expression);

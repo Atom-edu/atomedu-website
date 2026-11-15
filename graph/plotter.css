@@ -107,8 +107,8 @@
 :is(.atom-graph, #graph-sidebar-host) .graph-image-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 :is(.atom-graph, #graph-sidebar-host) .graph-image-name { margin: 0; color: #526779; font-size: 10px; overflow-wrap: anywhere; }
 :is(.atom-graph, #graph-sidebar-host) .graph-image-preview { display: block; width: 100%; max-height: 155px; object-fit: contain; border: 1px solid #dde5ee; border-radius: 8px; background: #fff; }
-:is(.atom-graph, #graph-sidebar-host) .graph-image-quality-label { display: flex; justify-content: space-between; align-items: center; gap: 9px; font-size: 11px; font-weight: 650; }
-:is(.atom-graph, #graph-sidebar-host) .graph-image-quality { width: 125px; padding: 7px 9px; border: 1px solid #cbd7e4; border-radius: 7px; background: #fff; }
+:is(.atom-graph, #graph-sidebar-host) .graph-image-style-label { display: flex; justify-content: space-between; align-items: center; gap: 9px; font-size: 11px; font-weight: 650; }
+:is(.atom-graph, #graph-sidebar-host) .graph-image-style { width: 145px; padding: 7px 9px; border: 1px solid #cbd7e4; border-radius: 7px; background: #fff; }
 :is(.atom-graph, #graph-sidebar-host) .graph-image-convert { min-height: 39px; padding: 8px 11px; border: 1px solid #22374b; border-radius: 8px; background: #22374b; color: #fff; font-weight: 700; font-size: 12px; }
 :is(.atom-graph, #graph-sidebar-host) .graph-image-convert:hover { background: #355471; }
 :is(.atom-graph, #graph-sidebar-host) .graph-image-status { min-height: 2.5em; margin: 0; color: #57697b; font-size: 11px; line-height: 1.45; }
