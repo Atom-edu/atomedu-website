@@ -2,6 +2,8 @@
 
 Cloudflare Worker with a private D1 submission table and private R2 image bucket. The Worker serves routes under `/api/art-contest`. It does not publish entrant images; only a selected winner's image has a public route. The winner and archive appear immediately after judge confirmation.
 
+The production Worker is `https://atom-contest-api.archimedes-api1.workers.dev`, bound to D1 `atom-contest` and the private R2 bucket `atom-contest-private`. The public site uses [contest-config.js](../contest-config.js) to reach it. Only `https://atom-edu.org` is allowed by CORS, so a local browser preview cannot submit to the production API. Keep `JUDGING_PASSWORD` and `SESSION_SECRET` in Cloudflare Worker secrets, never in this repository.
+
 ## Setup and deployment
 
 1. Run `npm ci` in this directory, then copy `wrangler.example.jsonc` to `wrangler.jsonc`. The copied file is ignored by Git. Set `ALLOWED_ORIGIN` to the exact website origin (scheme and host, no trailing slash).

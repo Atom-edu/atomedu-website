@@ -37,5 +37,8 @@ test('judging stays server-backed and neither public page embeds an admin passwo
   assert.match(judgeScript, /permanently deletes ALL other submissions/);
   assert.doesNotMatch(page + judgeScript, /[—–·]/);
   assert.doesNotMatch(publicScript + judgeScript + page, /(?:password\s*[:=]\s*['"]admin['"]|Basic\s+YWRtaW4)/i);
-  assert.match(read('contest-config.js'), /ATOM_CONTEST_API_BASE = ''/);
+  assert.match(read('contest-config.js'), /ATOM_CONTEST_API_BASE = 'https:\/\/atom-contest-api\.archimedes-api1\.workers\.dev\/api\/art-contest'/);
+  assert.doesNotMatch(read('contest-config.js'), /JUDGING_PASSWORD|SESSION_SECRET|admin/i);
+  assert.match(read('art-contest.html'), /contest-config\.js\?v=2026-11-15/);
+  assert.match(page, /contest-config\.js\?v=2026-11-15/);
 });
