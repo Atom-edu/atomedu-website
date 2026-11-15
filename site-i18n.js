@@ -13,6 +13,7 @@
     'Contact': 'Contacto',
     'Start math': 'Empezar a practicar',
     'Menu': 'Menú',
+    'Main navigation': 'Navegación principal',
     'How it works': 'Cómo funciona',
     'See the features': 'Ver las funciones',
     'Bring the math. Show the proof.': 'Plantea el problema. Demuestra cada paso.',
@@ -183,6 +184,7 @@
     'Proof Lab is a free math proof tool for solving supported problems, checking your steps, generating practice, and exploring graphs in your browser.': 'Proof Lab es una herramienta gratuita para resolver problemas matemáticos compatibles, comprobar tus pasos, generar ejercicios y explorar gráficas en tu navegador.',
     'Skip to workspace': 'Ir al espacio de trabajo',
     'Back to site': 'Volver al sitio',
+    'Art contest': 'Concurso de arte',
     'atomEDU home': 'Inicio de atomEDU',
     'Help and tour': 'Ayuda y recorrido',
     'Take a Tour': 'Hacer un recorrido',
@@ -1438,6 +1440,258 @@
     'Expected a function expression or f(x) = expression.': 'Se esperaba una expresión de función o f(x) = expresión.',
     'Function operation must be compose, inverse, or evaluate.': 'La operación con funciones debe ser composición, inversa o evaluación.',
 
+    // Daily art contest. Each key follows a complete visible text node or attribute.
+    'Enter the atomEDU daily art contest, see the latest winner, and explore the winner archive.': 'Participa en el concurso diario de arte de atomEDU, conoce al ganador más reciente y explora el archivo de ganadores.',
+    'Daily Art Contest | atomEDU': 'Concurso diario de arte | atomEDU',
+    'atomEDU daily graph art contest': 'Concurso diario de arte con gráficas de atomEDU',
+    '01 / THE SPOTLIGHT': '01 / EN PRIMER PLANO',
+    'Latest daily winner': 'Ganador diario más reciente',
+    'A little applause goes a long way.': 'Un poco de reconocimiento significa mucho.',
+    'YOUR ART COULD BE HERE': 'TU OBRA PODRÍA ESTAR AQUÍ',
+    'Waiting for the first spotlight': 'Esperando a la primera obra destacada',
+    'The latest selected winner will appear here when the contest server has one.': 'El ganador seleccionado más reciente aparecerá aquí cuando el servidor del concurso registre uno.',
+    '✳   DAILY PICK': '✳   SELECCIÓN DEL DÍA',
+    'A new canvas every day': 'Un lienzo nuevo cada día',
+    'Make graph art': 'Crea arte con gráficas',
+    'worth sharing.': 'que valga la pena compartir.',
+    'Create an original image in atomEDU Proof Lab’s Graph view, save the graph as a PNG, and share it in our daily spotlight.': 'Crea una imagen original en la vista Gráfica de atomEDU Proof Lab, guarda la gráfica como PNG y compártela en nuestra selección diaria.',
+    'Enter the contest': 'Participar en el concurso',
+    'Entries and winners are managed by the contest server. No account needed.': 'El servidor del concurso gestiona las participaciones y los ganadores. No necesitas una cuenta.',
+    'create': 'crea',
+    'today': 'hoy',
+    'Checking today’s contest…': 'Consultando el concurso de hoy…',
+    'Getting the schedule and entry status.': 'Consultando el horario y el estado de las participaciones.',
+    'Try again': 'Volver a intentar',
+    '02 / YOUR TURN': '02 / TU TURNO',
+    'Put your art in the mix.': 'Comparte tu obra.',
+    'A small moment to share something big.': 'Un momento para compartir algo grande.',
+    '01: CREATE & SUBMIT': '01: CREA Y ENVÍA',
+    'Checking entries': 'Consultando las participaciones',
+    'CONTEST SCHEDULE': 'HORARIO DEL CONCURSO',
+    'Checking the schedule…': 'Consultando el horario…',
+    'Times shown in Central time and your local time.': 'Las horas se muestran en horario central y en tu hora local.',
+    'Your display name': 'Tu nombre visible',
+    'Required': 'Obligatorio',
+    'The name you want shown with your art': 'El nombre que quieres mostrar junto a tu obra',
+    'Use a display name. Please don’t include contact information.': 'Usa un nombre visible. No incluyas datos de contacto.',
+    'Your artwork': 'Tu obra',
+    'Upload your atomEDU graph art': 'Sube tu arte con gráficas de atomEDU',
+    'Use Save PNG in Proof Lab. JPG, PNG, WebP, or GIF, up to 8 MiB.': 'Usa Guardar PNG en Proof Lab. Se aceptan JPG, PNG, WebP o GIF de hasta 8 MiB.',
+    'One image per entry': 'Una imagen por participación',
+    'Preview of your selected artwork': 'Vista previa de la obra seleccionada',
+    'Preview of your entry': 'Vista previa de tu participación',
+    'Choose another image': 'Elegir otra imagen',
+    'I am at least 13, have permission from a parent or guardian if I am under 18, and accept the': 'Tengo al menos 13 años, cuento con el permiso de mi padre, madre o tutor si soy menor de 18 años y acepto las',
+    'contest rules and terms': 'reglas y condiciones del concurso',
+    'I give atomEDU permission to publish my winning image and display name on this site and in the winner archive if my entry is selected.': 'Autorizo a atomEDU a publicar mi imagen ganadora y mi nombre visible en este sitio y en el archivo de ganadores si se selecciona mi participación.',
+    'Review my entry': 'Revisar mi participación',
+    'ONE LAST LOOK': 'UNA ÚLTIMA REVISIÓN',
+    'Ready to share?': '¿Listo para compartir?',
+    'Artwork selected for submission': 'Obra seleccionada para enviar',
+    'Your entry is only sent when you choose': 'Tu participación solo se envía cuando eliges',
+    'Confirm and submit': 'Confirmar y enviar',
+    '. Only original art made in atomEDU’s graph is eligible. Your winning image and display name may be published if selected.': '. Solo se admiten obras originales creadas en la gráfica de atomEDU. Si tu obra resulta ganadora, podrían publicarse tu imagen y tu nombre visible.',
+    'Edit entry': 'Editar participación',
+    'MAKE IT IN PROOF LAB': 'CRÉALA EN PROOF LAB',
+    'Graph it. Save it. Upload it.': 'Crea la gráfica. Guárdala. Súbela.',
+    'Only artwork created in atomEDU’s Graph view is eligible. A Desmos graph or image made in another app will be disqualified.': 'Solo se admiten obras creadas en la vista Gráfica de atomEDU. Se descalificará cualquier gráfica de Desmos o imagen creada en otra aplicación.',
+    'Illustration of the Proof Lab Graph view: click its PNG save control, then upload that saved image here': 'Ilustración de la vista Gráfica de Proof Lab: pulsa el control para guardar en PNG y sube aquí la imagen guardada',
+    'Proof Lab / Graph': 'Proof Lab / Gráfica',
+    'Graph view': 'Vista Gráfica',
+    'Save PNG': 'Guardar PNG',
+    'Upload': 'Subir',
+    'and choose Graph.': 'y elige Gráfica.',
+    'Create your graph art, then use the PNG save control.': 'Crea tu arte con gráficas y usa el control para guardar en PNG.',
+    'Upload that saved file here and confirm your entry.': 'Sube aquí el archivo guardado y confirma tu participación.',
+    '03 / THE FINE PRINT': '03 / LAS CONDICIONES',
+    'Contest rules & terms': 'Reglas y condiciones del concurso',
+    'Use atomEDU’s graph': 'Usa la gráfica de atomEDU',
+    'Only original artwork you create in atomEDU Proof Lab’s Graph view is eligible. Use its PNG save control and upload your saved image. Desmos graphs, art from other software, and work you did not create are disqualified, even if submitted in an accepted image format.': 'Solo se admiten obras originales que crees en la vista Gráfica de atomEDU Proof Lab. Usa su control para guardar en PNG y sube la imagen guardada. Las gráficas de Desmos, las obras creadas con otro software y las obras que no hayas creado tú quedan descalificadas, aunque se envíen en un formato de imagen aceptado.',
+    'Enter as often as you like': 'Participa tantas veces como quieras',
+    'You may make unlimited submissions each day while entries are open. Each submission contains one image. Every entry must meet all contest rules.': 'Puedes enviar un número ilimitado de participaciones cada día mientras se acepten. Cada participación contiene una imagen. Todas las participaciones deben cumplir las reglas del concurso.',
+    'Protect people’s privacy': 'Protege la privacidad de las personas',
+    'Do not include photos, faces, or other personal imagery. Do not put contact details, identifying information, or private information in the artwork or your display name.': 'No incluyas fotografías, rostros ni otras imágenes personales. No pongas datos de contacto, información que identifique a alguien ni información privada en la obra o en tu nombre visible.',
+    'Keep it appropriate': 'Mantén el contenido apropiado',
+    'No inappropriate or NSFW content, including hateful, violent, sexually explicit, illegal, or harassing material. Such entries may be removed and may lead to a temporary or permanent ban from this and future contest rounds.': 'No se permite contenido inapropiado o no apto para el trabajo (NSFW), incluido material que incite al odio, sea violento, sexualmente explícito, ilegal o constituya acoso. Estas participaciones pueden eliminarse y pueden dar lugar a una prohibición temporal o permanente de participar en esta y futuras rondas del concurso.',
+    'Age and permission': 'Edad y permiso',
+    'You must be at least 13 to enter. If you are under 18, you must have permission from a parent or guardian. We do not ask for your birth date. The first checkbox confirms these requirements and your agreement to the rules.': 'Debes tener al menos 13 años para participar. Si eres menor de 18 años, necesitas el permiso de tu padre, madre o tutor. No pedimos tu fecha de nacimiento. La primera casilla confirma que cumples estos requisitos y aceptas las reglas.',
+    'Ownership and display': 'Autoría y publicación',
+    'You keep ownership of your work. You allow atomEDU’s owners to review your entry. Your separate display consent lets us publish your winning image and display name on this site and in the archive if selected.': 'Conservas la propiedad de tu obra. Permites que los propietarios de atomEDU revisen tu participación. Tu consentimiento independiente para la publicación nos permite publicar tu imagen ganadora y tu nombre visible en este sitio y en el archivo si se selecciona tu participación.',
+    'Judges and decisions': 'Jueces y decisiones',
+    'atomEDU’s owners judge eligible entries. Their winner decisions are final, with no appeals. Entering does not guarantee a feature or prize. The winning entry is archived; other submissions for that day are removed after a winner is confirmed.': 'Los propietarios de atomEDU evalúan las participaciones que cumplen las reglas. Sus decisiones sobre los ganadores son definitivas y no admiten apelación. Participar no garantiza que tu obra aparezca destacada ni que recibas un premio. La participación ganadora se archiva; las demás participaciones de ese día se eliminan una vez confirmado el ganador.',
+    '04 / DAILY RHYTHM': '04 / RITMO DIARIO',
+    'The daily schedule': 'El horario diario',
+    'Normal times in America/Chicago.': 'Horarios habituales en America/Chicago.',
+    'The live status above controls whether you can submit. These are the normal daily times, including daylight saving changes.': 'El estado en vivo indicado arriba determina si puedes enviar una participación. Estos son los horarios diarios habituales, teniendo en cuenta los cambios de horario de verano.',
+    'What happens': 'Qué sucede',
+    'Central time': 'Horario central',
+    'UTC in winter (CST)': 'UTC en invierno (CST)',
+    'UTC in summer (CDT)': 'UTC en verano (CDT)',
+    'Submissions close; judging starts': 'Cierran las participaciones; comienza la evaluación',
+    'Judging ends; target winner announcement': 'Termina la evaluación; hora prevista para anunciar al ganador',
+    'Rare result delay limit; next round opens': 'Límite de retraso excepcional del resultado; abre la siguiente ronda',
+    '01:00 next day': '01:00 del día siguiente',
+    '00:00 next day': '00:00 del día siguiente',
+    '02:30 next day': '02:30 del día siguiente',
+    '01:30 next day': '01:30 del día siguiente',
+    '03:30 next day': '03:30 del día siguiente',
+    'Judging normally runs from 7:00 to 8:30 PM CT. A result may rarely be delayed until 9:30 PM CT. The next round opens at 9:30 PM CT. A winner appears only after atomEDU’s owners confirm one.': 'La evaluación suele realizarse de 7:00 a 8:30 p. m. CT. En casos excepcionales, el resultado puede retrasarse hasta las 9:30 p. m. CT. La siguiente ronda abre a las 9:30 p. m. CT. Un ganador aparece únicamente después de que los propietarios de atomEDU lo confirmen.',
+    '05 / THE ARCHIVE': '05 / EL ARCHIVO',
+    'Past spotlights': 'Obras destacadas anteriores',
+    'Good ideas deserve a second look.': 'Las buenas ideas merecen otra mirada.',
+    'Loading the winner archive…': 'Cargando el archivo de ganadores…',
+    'Make graph art. Share graph art. Keep creating.': 'Crea arte con gráficas. Compártelo. Sigue creando.',
+    'Site terms': 'Términos del sitio',
+    '7:00 PM': '7:00 p. m.',
+    '8:30 PM': '8:30 p. m.',
+    '9:30 PM': '9:30 p. m.',
+
+    // Private judging workspace. Submitted names and file names are data, not UI copy.
+    'Art Contest Judging | atomEDU': 'Evaluación del concurso de arte | atomEDU',
+    'ART CONTEST / JUDGING': 'CONCURSO DE ARTE / EVALUACIÓN',
+    '← Public contest': '← Concurso público',
+    'PRIVATE WORKSPACE': 'ÁREA PRIVADA',
+    'Daily judging': 'Evaluación diaria',
+    'Review server records, select a daily winner, and remove entries that break the rules.': 'Revisa los registros del servidor, selecciona un ganador diario y elimina las participaciones que incumplan las reglas.',
+    'JUDGE ACCESS': 'ACCESO DE JUECES',
+    'Enter the judging password.': 'Introduce la contraseña de evaluación.',
+    'Access is checked by the contest server for every request. This page does not store the password after you leave.': 'El servidor del concurso comprueba el acceso en cada solicitud. Esta página no conserva la contraseña después de que salgas.',
+    'Password': 'Contraseña',
+    'Open judging': 'Abrir evaluación',
+    'Judging dashboard': 'Panel de evaluación',
+    'Contest date': 'Fecha del concurso',
+    'Load date': 'Cargar fecha',
+    'Only the current contest date is available from the judging API.': 'La API de evaluación solo permite consultar la fecha actual del concurso.',
+    'Sync live date': 'Sincronizar fecha actual',
+    'Sign out': 'Cerrar sesión',
+    'DATE': 'FECHA',
+    'SUBMISSIONS': 'PARTICIPACIONES',
+    'WINNER': 'GANADOR',
+    'ENTRIES': 'PARTICIPACIONES',
+    'Submissions': 'Participaciones',
+    'Choose a date to load entries.': 'Elige una fecha para cargar las participaciones.',
+    'Contest records and judging decisions are saved by the server.': 'El servidor guarda los registros del concurso y las decisiones de los jueces.',
+    'View the public contest →': 'Ver el concurso público →',
+
+    // Public contest and judging messages created by their scripts.
+    'This action is not authorized.': 'Esta acción no está autorizada.',
+    'That image is too large for the contest server. Choose a smaller file.': 'La imagen es demasiado grande para el servidor del concurso. Elige un archivo más pequeño.',
+    'The contest server did not accept this image format.': 'El servidor del concurso no aceptó este formato de imagen.',
+    'Please wait a moment before trying again.': 'Espera un momento antes de volver a intentarlo.',
+    'The contest API has not been configured. Entries and winners are unavailable.': 'La API del concurso no está configurada. Las participaciones y los ganadores no están disponibles.',
+    'The contest service is unavailable. Please try again later.': 'El servicio del concurso no está disponible. Vuelve a intentarlo más tarde.',
+    'The contest server returned an unreadable response.': 'El servidor del concurso devolvió una respuesta ilegible.',
+    'Entries open': 'Participaciones abiertas',
+    'Entries closed': 'Participaciones cerradas',
+    'Unavailable': 'No disponible',
+    'Entries are open': 'Se aceptan participaciones',
+    'Entries are closed': 'Las participaciones están cerradas',
+    'Times are shown in Central time.': 'Las horas se muestran en horario central.',
+    'The contest server has not published a schedule time yet.': 'El servidor del concurso todavía no ha publicado una hora para el horario.',
+    'Selected daily winner': 'Ganador diario seleccionado',
+    ', image unavailable': ', imagen no disponible',
+    'the daily winner': 'el ganador diario',
+    'Daily winner': 'Ganador diario',
+    'a contest winner': 'un ganador del concurso',
+    'Contest winner': 'Ganador del concurso',
+    'Past winner images are unavailable right now.': 'Las imágenes de ganadores anteriores no están disponibles en este momento.',
+    'No past winners have been published yet. Check back soon.': 'Todavía no se han publicado ganadores anteriores. Vuelve pronto.',
+    'The contest server returned an incomplete state. Please try again later.': 'El servidor del concurso devolvió un estado incompleto. Vuelve a intentarlo más tarde.',
+    'Share your artwork before the deadline shown below. Review it before you submit.': 'Comparte tu obra antes del plazo indicado abajo. Revísala antes de enviarla.',
+    'Judging is underway': 'La evaluación está en curso',
+    'Today’s result is pending': 'El resultado de hoy está pendiente',
+    'The next opening is shown in the schedule below when available.': 'La próxima apertura aparecerá en el horario de abajo cuando esté disponible.',
+    'Entries have closed. Please return when the next contest opens.': 'Las participaciones han cerrado. Vuelve cuando se abra el siguiente concurso.',
+    'Live status unavailable': 'Estado en vivo no disponible',
+    'Normal daily times are listed below. The server must confirm that entries are open.': 'Los horarios diarios habituales figuran abajo. El servidor debe confirmar que se aceptan participaciones.',
+    'Winner unavailable': 'Ganador no disponible',
+    'The latest winner will appear when the contest service is available.': 'El ganador más reciente aparecerá cuando el servicio del concurso esté disponible.',
+    'The winner archive is unavailable right now.': 'El archivo de ganadores no está disponible en este momento.',
+    'Contest submissions are not available yet': 'Las participaciones del concurso aún no están disponibles',
+    'Please try again later.': 'Vuelve a intentarlo más tarde.',
+    'Choose a JPG, PNG, WebP, or GIF image.': 'Elige una imagen JPG, PNG, WebP o GIF.',
+    'Choose an image larger than zero bytes and no more than 8 MiB.': 'Elige una imagen de más de cero bytes y de 8 MiB como máximo.',
+    'This image could not be previewed. Choose another file.': 'No se pudo mostrar una vista previa de esta imagen. Elige otro archivo.',
+    'Add a display name and a supported image before reviewing.': 'Añade un nombre visible y una imagen de un formato admitido antes de revisar la participación.',
+    'Please agree to the rules and display consent before reviewing.': 'Acepta las reglas y el consentimiento para la publicación antes de revisar la participación.',
+    'Entries are not open right now.': 'No se aceptan participaciones en este momento.',
+    'Your entry changed. Please edit it and review again.': 'Tu participación ha cambiado. Edítala y vuelve a revisarla.',
+    'The contest server did not confirm this submission. Please check with atomEDU before trying again.': 'El servidor del concurso no confirmó esta participación. Consulta con atomEDU antes de volver a intentarlo.',
+    'Your artwork was submitted. Thank you for sharing it!': 'Tu obra se envió. ¡Gracias por compartirla!',
+    'Submission failed. Please try again.': 'No se pudo enviar la participación. Vuelve a intentarlo.',
+    'The contest API has not been configured. Judging is unavailable.': 'La API del concurso no está configurada. La evaluación no está disponible.',
+    'Sign in to judge this contest.': 'Inicia sesión para evaluar este concurso.',
+    'The judging service is unavailable. Please try again later.': 'El servicio de evaluación no está disponible. Vuelve a intentarlo más tarde.',
+    'The judging server returned an unreadable response.': 'El servidor de evaluación devolvió una respuesta ilegible.',
+    'Your judging session expired or is not authorized. Sign in again.': 'Tu sesión de evaluación ha caducado o no está autorizada. Vuelve a iniciar sesión.',
+    'The password was not accepted by the contest server.': 'El servidor del concurso no aceptó la contraseña.',
+    'Image unavailable': 'Imagen no disponible',
+    'Your judging session expired. Sign in again.': 'Tu sesión de evaluación ha caducado. Vuelve a iniciar sesión.',
+    'Image could not be displayed': 'No se pudo mostrar la imagen',
+    'Sign in to view submissions.': 'Inicia sesión para ver las participaciones.',
+    'Time unavailable': 'Hora no disponible',
+    'The judging server returned an incomplete list of submissions.': 'El servidor de evaluación devolvió una lista incompleta de participaciones.',
+    'The judging server returned an invalid submission.': 'El servidor de evaluación devolvió una participación no válida.',
+    'Not selected': 'Sin seleccionar',
+    'Status not provided': 'Estado no indicado',
+    'No submissions remain for this date. The selected winner is shown above.': 'No quedan participaciones para esta fecha. El ganador seleccionado se muestra arriba.',
+    'No submissions for this date.': 'No hay participaciones para esta fecha.',
+    'Loading private image…': 'Cargando imagen privada…',
+    'WINNER ✳': 'GANADOR ✳',
+    'Select winner': 'Seleccionar ganador',
+    'A winner has already been selected.': 'Ya se ha seleccionado un ganador.',
+    'Winner selection opens after entries close.': 'La selección del ganador comienza cuando cierran las participaciones.',
+    'Delete': 'Eliminar',
+    'Loading entries from the contest server…': 'Cargando las participaciones del servidor del concurso…',
+    'Loading submissions…': 'Cargando participaciones…',
+    'The contest server did not provide a valid live date.': 'El servidor del concurso no proporcionó una fecha actual válida.',
+    'Choose a valid contest date.': 'Elige una fecha válida para el concurso.',
+    'This date is not available from the judging API.': 'Esta fecha no está disponible en la API de evaluación.',
+    'The judging service is unavailable.': 'El servicio de evaluación no está disponible.',
+    'Submissions are unavailable.': 'Las participaciones no están disponibles.',
+    'Saving your change on the contest server…': 'Guardando tu cambio en el servidor del concurso…',
+    'The contest server did not confirm the change. Please refresh before trying again.': 'El servidor del concurso no confirmó el cambio. Actualiza la página antes de volver a intentarlo.',
+    'The change could not be saved.': 'No se pudo guardar el cambio.',
+    'The winner was saved by the contest server.': 'El servidor del concurso guardó al ganador.',
+    'The submission was deleted by the contest server.': 'El servidor del concurso eliminó la participación.',
+    'Judging requires an HTTPS API connection.': 'La evaluación requiere una conexión HTTPS con la API.',
+    'Checking password with the contest server…': 'Comprobando la contraseña con el servidor del concurso…',
+    'The judging server did not issue a valid session.': 'El servidor de evaluación no creó una sesión válida.',
+    'Judging sign-in failed.': 'No se pudo iniciar sesión para evaluar.',
+    'Signed out of this page.': 'Se cerró la sesión de esta página.',
+
+    // Reviewed errors returned by the contest service and displayed by these clients.
+    'Origin is not allowed': 'Este origen no está permitido',
+    'Request is too large': 'La solicitud es demasiado grande',
+    'Request body is required': 'Se requiere el contenido de la solicitud',
+    'Expected JSON': 'Se esperaba JSON',
+    'Invalid JSON object': 'El objeto JSON no es válido',
+    'Judging secrets are not configured': 'Los secretos de evaluación no están configurados',
+    'Too many requests': 'Demasiadas solicitudes',
+    'Invalid password': 'Contraseña no válida',
+    'Invalid credentials': 'Credenciales no válidas',
+    'Bearer token required': 'Se requiere un token Bearer',
+    'Invalid or expired token': 'Token no válido o caducado',
+    'Submissions are closed': 'Las participaciones están cerradas',
+    'Expected multipart form data': 'Se esperaban datos de formulario multipart',
+    'Invalid multipart form data': 'Los datos de formulario multipart no son válidos',
+    'Expected one of each required field': 'Se esperaba uno de cada campo obligatorio',
+    'Name must be 1 to 60 characters': 'El nombre debe tener entre 1 y 60 caracteres',
+    'Rules, age 13+, and public winner display consent are required': 'Es obligatorio aceptar las reglas, tener al menos 13 años y consentir la publicación pública de la obra ganadora',
+    'Image must be 1 byte to 8 MiB': 'La imagen debe tener entre 1 byte y 8 MiB',
+    'Image must be PNG, JPEG, WebP, or GIF with matching bytes': 'La imagen debe ser PNG, JPEG, WebP o GIF y su contenido debe coincidir con el formato',
+    'Image not found': 'Imagen no encontrada',
+    'Submission not found': 'Participación no encontrada',
+    'Winner selection is only available 19:00–21:30 Chicago time for today': 'Hoy solo se puede seleccionar un ganador entre las 19:00 y las 21:30, hora de Chicago',
+    'Invalid submission ID': 'ID de participación no válido',
+    'A winner already exists for this date': 'Ya existe un ganador para esta fecha',
+    'Submission not found for this date': 'No se encontró la participación para esta fecha',
+    'Contest bindings are not configured': 'Las vinculaciones del concurso no están configuradas',
+    'Not found': 'No encontrado',
+    'Expected id and date (YYYY-MM-DD)': 'Se esperaban un ID y una fecha (AAAA-MM-DD)',
+    'Winner not found': 'Ganador no encontrado',
+    'Internal error': 'Error interno',
+
     // Legal page. Keep the legal meaning and qualifiers in the source copy.
     'Legal | atomEDU': 'Aviso legal | atomEDU',
     'Privacy, terms, and attributions for atomEDU Proof Lab, the free browser-based math proof tool.': 'Privacidad, términos y atribuciones de Proof Lab de atomEDU, la herramienta gratuita de demostraciones matemáticas para el navegador.',
@@ -1456,6 +1710,9 @@
     'Younger users': 'Usuarios menores de edad',
     'Proof Lab does not ask you to create an account. If you are a younger student, ask a parent, guardian, or teacher before sending personal information by email.': 'Proof Lab no te pide crear una cuenta. Si eres un estudiante menor de edad, consulta con un padre, tutor o docente antes de enviar información personal por correo electrónico.',
     'Your choices': 'Tus opciones',
+    'Art contest submissions': 'Participaciones en el concurso de arte',
+    'The art contest is separate from solving math in Proof Lab. When contest submissions are open, entering sends the display name and image you choose to the contest service for judging. We do not ask for a device ID. The contest service uses a short-lived keyed hash of your IP address to limit spam, not a raw IP address in its contest database. Hosting services may still process ordinary connection information, including an IP address. Only the owners judging the contest can view entries before a winner is chosen.': 'El concurso de arte es independiente de la resolución de problemas en Proof Lab. Cuando se aceptan participaciones, se envían el nombre visible y la imagen que eliges al servicio del concurso para evaluarlos. No pedimos un identificador del dispositivo. Para limitar el spam, el servicio del concurso usa un hash de tu dirección IP generado con una clave y de corta duración; no almacena la dirección IP sin procesar en su base de datos del concurso. Los servicios de alojamiento todavía pueden procesar datos normales de conexión, incluida una dirección IP. Solo los propietarios que evalúan el concurso pueden ver las participaciones antes de elegir al ganador.',
+    "When a daily winner is confirmed, other entries for that day are removed from the contest list. We delete their stored images and retry if storage is temporarily unavailable. A winning image and its display name may remain in the public winner archive. Do not include your full name, contact details, a person's face, or other private information in an entry. The contest is for people aged 13 or older. If you are under 18, get permission from a parent or guardian before entering. To request removal of a winning entry or ask about your submission, contact": 'Cuando se confirma un ganador diario, las demás participaciones de ese día se eliminan de la lista del concurso. Borramos sus imágenes almacenadas y volvemos a intentarlo si el almacenamiento no está disponible temporalmente. La imagen ganadora y su nombre visible pueden permanecer en el archivo público de ganadores. No incluyas tu nombre completo, datos de contacto, el rostro de una persona ni otros datos privados en una participación. El concurso es para personas de 13 años o más. Si eres menor de 18 años, pide permiso a tu padre, madre o tutor antes de participar. Para solicitar la retirada de una obra ganadora o preguntar por tu participación, escribe a',
     'There is no account data to export or delete in the current tool. Copy any result you want to keep before leaving the page. For a question about an email you sent us, write to': 'En la herramienta actual no hay datos de cuenta que exportar o eliminar. Copia cualquier resultado que quieras conservar antes de salir de la página. Si tienes alguna pregunta sobre un correo que nos enviaste, escribe a',
     'Scope': 'Alcance',
     'Proof Lab handles math within its supported rule families. If a problem is unsupported, the tool should say so. The graph is a numerical exploration feature and is not a mathematical proof.': 'Proof Lab trabaja con problemas matemáticos dentro de los tipos de reglas que admite. Si un problema no es compatible, la herramienta debería indicarlo. La gráfica es una función de exploración numérica y no constituye una demostración matemática.',
@@ -1505,7 +1762,7 @@
   var titleEnglish = document.title;
   var description = document.querySelector('meta[name="description"]');
   var descriptionEnglish = description && description.getAttribute('content');
-  var supportedPage = /^\/(?:index|features|learn|about|contact|legal|proof-lab)?(?:\.html)?\/?$/i.test(location.pathname);
+  var supportedPage = /^\/(?:index|features|learn|about|contact|legal|proof-lab|art-contest|judging)?(?:\.html)?\/?$/i.test(location.pathname);
   var blocked = 'script, style, svg, math, math-field, canvas, code, pre, kbd, textarea, noscript, .katex, .MathJax, .rendered-math, .latex-source, [contenteditable], [data-i18n-ignore]';
   var attributes = ['aria-label', 'alt', 'title', 'placeholder'];
   // KaTeX puts reviewed prose in both accessible MathML mtext and its visible
@@ -1535,10 +1792,60 @@
     'and': 'y'
   };
 
+  // These date shapes are produced by the two contest scripts with en-US Intl.
+  // Only calendar words change; the original numbers and time-zone labels stay intact.
+  var contestMonths = {
+    January: 'enero', February: 'febrero', March: 'marzo', April: 'abril',
+    May: 'mayo', June: 'junio', July: 'julio', August: 'agosto',
+    September: 'septiembre', October: 'octubre', November: 'noviembre', December: 'diciembre'
+  };
+  var contestShortMonths = {
+    Jan: 'ene', Feb: 'feb', Mar: 'mar', Apr: 'abr', May: 'may', Jun: 'jun',
+    Jul: 'jul', Aug: 'ago', Sep: 'sept', Oct: 'oct', Nov: 'nov', Dec: 'dic'
+  };
+  var contestWeekdays = { Sun: 'dom', Mon: 'lun', Tue: 'mar', Wed: 'mié', Thu: 'jue', Fri: 'vie', Sat: 'sáb' };
+  function translateContestDate(value) {
+    var match = /^([A-Z][a-z]+) (\d{1,2}), (\d{4})$/.exec(value);
+    if (match && contestMonths[match[1]]) return match[2] + ' de ' + contestMonths[match[1]] + ' de ' + match[3];
+    match = /^(?:([A-Z][a-z]{2}), )?([A-Z][a-z]{2}) (\d{1,2}), (\d{1,2}:\d{2}) (AM|PM) ([A-Z]{2,5})$/.exec(value);
+    if (match && contestShortMonths[match[2]] && (!match[1] || contestWeekdays[match[1]]))
+      return (match[1] ? contestWeekdays[match[1]] + ', ' : '') + match[3] + ' ' + contestShortMonths[match[2]] + ', ' + match[4] + ' ' + (match[5] === 'AM' ? 'a. m.' : 'p. m.') + ' ' + match[6];
+    return null;
+  }
+
   // These are complete, narrowly shaped engine/UI messages with variable
   // numbers or notation. Captured math is copied verbatim into the translation.
   function translateGenerated(core) {
     var match;
+    var contestDate = translateContestDate(core);
+    if (contestDate) return contestDate;
+    if ((match = /^(Entries close|Next opening): (.+)$/.exec(core)) && translateContestDate(match[2]))
+      return (match[1] === 'Entries close' ? 'Cierre de participaciones: ' : 'Próxima apertura: ') + translateContestDate(match[2]);
+    if ((match = /^UTC: (.+?)(?:; Your time: (.+))?$/.exec(core)) && translateContestDate(match[1]) && (!match[2] || translateContestDate(match[2])))
+      return 'UTC: ' + translateContestDate(match[1]) + (match[2] ? '; Tu hora: ' + translateContestDate(match[2]) : '');
+    if ((match = /^Your time: (.+)$/.exec(core)) && translateContestDate(match[1]))
+      return 'Tu hora: ' + translateContestDate(match[1]);
+    if ((match = /^(.+), image unavailable$/.exec(core)) && (translateContestDate(match[1]) || match[1] === 'Selected daily winner'))
+      return (translateContestDate(match[1]) || spanish[match[1]]) + ', imagen no disponible';
+    if ((match = /^Artwork by (.+)$/.exec(core))) return 'Obra de ' + match[1];
+    if ((match = /^Submission by (.+)$/.exec(core))) return 'Participación de ' + match[1];
+    if ((match = /^Delete submission by (.+)$/.exec(core))) return 'Eliminar la participación de ' + match[1];
+    if ((match = /^Submitted (.+)$/.exec(core)) && (translateContestDate(match[1]) || match[1] === 'Time unavailable'))
+      return 'Enviada el ' + (translateContestDate(match[1]) || spanish[match[1]]);
+    if ((match = /^(\d+) (entry|entries) for (.+)$/.exec(core)) && translateContestDate(match[3]))
+      return match[1] + ' ' + (match[2] === 'entry' ? 'participación' : 'participaciones') + ' del ' + translateContestDate(match[3]);
+    if ((match = /^The judging API only provides the live contest date, (.+)\. Choose that date or select Sync live date\.$/.exec(core)) && translateContestDate(match[1]))
+      return 'La API de evaluación solo permite consultar la fecha actual del concurso, ' + translateContestDate(match[1]) + '. Elige esa fecha o selecciona Sincronizar fecha actual.';
+    if ((match = /^(The winner was saved by the contest server\.|The submission was deleted by the contest server\.) The list could not be refreshed; select Sync live date\.$/.exec(core)))
+      return spanish[match[1]] + ' No se pudo actualizar la lista; selecciona Sincronizar fecha actual.';
+    if ((match = /^The contest server could not complete this request \((\d{3})\)\. Please try again\.$/.exec(core)))
+      return 'El servidor del concurso no pudo completar esta solicitud (' + match[1] + '). Vuelve a intentarlo.';
+    if ((match = /^The judging server could not complete this request \((\d{3})\)\.$/.exec(core)))
+      return 'El servidor de evaluación no pudo completar esta solicitud (' + match[1] + ').';
+    if ((match = /^Select (.+) as the winner for (\d{2}\/\d{2}\/\d{4})\? Confirming one winner permanently deletes ALL other submissions for that contest date\. This cannot be undone, and an existing winner cannot be replaced\.$/.exec(core)))
+      return '¿Seleccionar a ' + match[1] + ' como ganador del ' + match[2] + '? Confirmar a un ganador elimina permanentemente TODAS las demás participaciones de esa fecha del concurso. Esta acción no se puede deshacer y no se puede reemplazar a un ganador existente.';
+    if ((match = /^Permanently delete (.+)'s submission for (\d{2}\/\d{2}\/\d{4})\? This cannot be undone\.$/.exec(core)))
+      return '¿Eliminar permanentemente la participación de ' + match[1] + ' del ' + match[2] + '? Esta acción no se puede deshacer.';
     if ((match = /^(\d+) (line|lines|examples)$/.exec(core)))
       return match[1] + ' ' + (match[2] === 'line' ? 'línea' : match[2] === 'lines' ? 'líneas' : 'ejemplos');
     if ((match = /^Difficulty (\d\.\d{3})$/.exec(core))) return 'Dificultad ' + match[1];
@@ -1680,6 +1987,13 @@
 
   function translateNode(node, dynamic) {
     if (isBlocked(node.parentElement) || !node.nodeValue.trim()) return;
+    // The contest scripts put selected file names in these hosts. A file named
+    // like a translated UI word must retain the exact submitted name.
+    if (node.parentElement.matches('#preview-file-name, #review-filename')) return;
+    if (node.parentElement.id === 'upload-name' && document.getElementById('art-image')?.files?.length) return;
+    // The judging response can supply a winner name through winnerId even when
+    // winnerName is absent. Its matching card is already in the finished DOM.
+    if (node.parentElement.id === 'summary-winner' && Array.from(document.querySelectorAll('.judge-card h3')).some(function (name) { return name.textContent === node.nodeValue; })) return;
     var source = originals.get(node);
     if (source === undefined) source = dynamic ? englishSource(node.nodeValue) : node.nodeValue;
     else if (node.nodeValue !== source && node.nodeValue !== translateSpanish(source)) source = dynamic ? englishSource(node.nodeValue) : node.nodeValue;
@@ -1758,6 +2072,13 @@
       return function () { listeners = listeners.filter(function (item) { return item !== callback; }); };
     }
   };
+
+  // Native confirmation remains the decision gate for destructive judging
+  // actions. Only its reviewed message text is localized.
+  if (/^\/judging(?:\.html)?\/?$/i.test(location.pathname)) {
+    var nativeConfirm = window.confirm;
+    window.confirm = function (message) { return nativeConfirm.call(window, translate(message)); };
+  }
 
   try { localStorage.setItem(STORAGE_KEY, language); } catch (_) { /* storage may be disabled */ }
   function initialize() {

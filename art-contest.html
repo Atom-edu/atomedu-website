@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Enter the atomEDU daily art contest, see the latest winner, and explore the winner archive." />
+  <title>Daily Art Contest | atomEDU</title>
+  <link rel="icon" href="images/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="art-contest.css" />
+  <script src="contest-config.js"></script>
+  <script src="art-contest.js" defer></script>
+  <script src="site.js" defer></script>
+  <script src="site-i18n.js?v=contest-1" defer></script>
+</head>
+<body class="contest-page">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/"><img class="mark" src="images/logo.svg" alt="" /><span class="word">atom<b>EDU</b></span></a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="/">Home</a><a href="/features">Features</a><a href="/learn">Learn</a><a href="/about">About</a><a class="active" aria-current="page" href="/art-contest">Art contest</a><a class="cta" href="/proof-lab">Start math</a>
+      </nav>
+      <button class="menu-btn" type="button" aria-label="Menu"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    </div>
+    <div class="mobile-nav"><div class="inner"><a href="/">Home</a><a href="/features">Features</a><a href="/learn">Learn</a><a href="/about">About</a><a class="active" aria-current="page" href="/art-contest">Art contest</a><a class="cta" href="/proof-lab">Start math</a></div></div>
+  </header>
+
+  <main>
+    <h1 class="visually-hidden">atomEDU daily graph art contest</h1>
+      <section class="winner-section contest-shell" aria-labelledby="winner-title">
+        <div class="section-heading"><div><p class="section-index">01 / THE SPOTLIGHT</p><h2 class="heading-display" id="winner-title">Latest daily winner</h2></div><span class="section-aside">A little applause goes a long way.</span></div>
+        <div class="winner-card" id="winner-card"><div class="winner-visual"><div class="winner-placeholder" id="winner-placeholder" aria-hidden="true"><span>✳</span><small>YOUR ART COULD BE HERE</small></div><img id="winner-image" alt="" hidden /></div><div class="winner-copy"><h3 class="heading-display" id="winner-name">Waiting for the first spotlight</h3><p id="winner-date">The latest selected winner will appear here when the contest server has one.</p><span class="winner-seal" aria-hidden="true">✳ &nbsp; DAILY PICK</span></div></div>
+      </section>
+    <section class="contest-hero" aria-labelledby="contest-title">
+      <div class="contest-shell hero-grid">
+        <div class="hero-copy">
+          <p class="contest-eyebrow"><span class="live-dot" aria-hidden="true"></span> A new canvas every day</p>
+          <h2 class="heading-display" id="contest-title">Make graph art <em>worth sharing.</em></h2>
+          <p class="hero-lead">Create an original image in atomEDU Proof Lab’s Graph view, save the graph as a PNG, and share it in our daily spotlight.</p>
+          <div class="hero-actions"><a class="btn btn-accent" href="#enter">Enter the contest <span aria-hidden="true">↗</span></a><a class="hero-link" href="/proof-lab">Open Proof Lab <span aria-hidden="true">↗</span></a></div>
+          <p class="hero-small">Entries and winners are managed by the contest server. No account needed.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-sheet"><span class="sheet-sun"></span><span class="sheet-hill hill-one"></span><span class="sheet-hill hill-two"></span><span class="sheet-mark">a.</span></div><span class="hero-scribble">create<br />today<span class="scribble-star">✳</span></span><span class="art-stamp">01 / ∞</span></div>
+      </div>
+    </section>
+
+    <div class="contest-shell">
+      <div class="state-strip" id="state-strip" role="status" aria-live="polite"><span class="state-icon" aria-hidden="true">◌</span><div><strong id="state-title">Checking today’s contest…</strong><p id="state-detail">Getting the schedule and entry status.</p></div><button class="state-retry" id="state-retry" type="button" hidden>Try again</button></div>
+
+
+
+      <section class="enter-section" id="enter" aria-labelledby="enter-title">
+        <div class="section-heading"><div><p class="section-index">02 / YOUR TURN</p><h2 class="heading-display" id="enter-title">Put your art in the mix.</h2></div><span class="section-aside">A small moment to share something big.</span></div>
+        <div class="entry-layout">
+          <div class="entry-card">
+            <div class="entry-topline"><span class="entry-step">01: CREATE &amp; SUBMIT</span><span class="entry-status" id="entry-status">Checking entries</span></div>
+            <div class="schedule-panel"><div><small>CONTEST SCHEDULE</small><strong id="schedule-primary">Checking the schedule…</strong><span id="schedule-secondary">Times shown in Central time and your local time.</span></div><span class="schedule-icon" aria-hidden="true">◷</span></div>
+            <form id="entry-form" novalidate>
+              <fieldset id="entry-fields" disabled>
+                <label class="field-label" for="artist-name">Your display name <span>Required</span></label>
+                <input id="artist-name" name="name" type="text" maxlength="60" autocomplete="nickname" placeholder="The name you want shown with your art" required />
+                <p class="field-hint">Use a display name. Please don’t include contact information.</p>
+
+                <label class="field-label" for="art-image">Your artwork <span>Required</span></label>
+                <label class="upload-zone" for="art-image" id="upload-zone"><span class="upload-symbol" aria-hidden="true">↑</span><strong>Upload your atomEDU graph art</strong><span>Use Save PNG in Proof Lab. JPG, PNG, WebP, or GIF, up to 8 MiB.</span><small id="upload-name">One image per entry</small></label>
+                <input class="visually-hidden" id="art-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" required />
+                <div class="preview" id="preview" hidden><img id="preview-image" alt="Preview of your selected artwork" /><div><strong>Preview of your entry</strong><span id="preview-file-name"></span><button type="button" id="remove-image">Choose another image</button></div></div>
+
+                <div class="consent-group">
+                  <label class="consent"><input id="terms-accepted" type="checkbox" required /><span>I am at least 13, have permission from a parent or guardian if I am under 18, and accept the <a href="#rules">contest rules and terms</a>.</span></label>
+                  <label class="consent"><input id="display-consent" type="checkbox" required /><span>I give atomEDU permission to publish my winning image and display name on this site and in the winner archive if my entry is selected.</span></label>
+                </div>
+                <p class="form-message" id="form-message" role="alert" hidden></p>
+                <button class="btn btn-accent review-button" type="submit">Review my entry <span aria-hidden="true">→</span></button>
+              </fieldset>
+            </form>
+            <div class="review-panel" id="review-panel" hidden><p class="review-eyebrow">ONE LAST LOOK</p><h3 class="heading-display">Ready to share?</h3><div class="review-art"><img id="review-image" alt="Artwork selected for submission" /><div><strong id="review-name"></strong><span id="review-filename"></span></div></div><p>Your entry is only sent when you choose <strong>Confirm and submit</strong>. Only original art made in atomEDU’s graph is eligible. Your winning image and display name may be published if selected.</p><div class="review-actions"><button class="btn btn-accent" id="confirm-submit" type="button">Confirm and submit</button><button class="btn btn-ghost" id="edit-entry" type="button">Edit entry</button></div><p class="form-message" id="review-message" role="alert" hidden></p></div>
+          </div>
+          <aside class="entry-aside"><p class="section-index">MAKE IT IN PROOF LAB</p><h3 class="heading-display">Graph it. Save it. Upload it.</h3><p>Only artwork created in atomEDU’s Graph view is eligible. A Desmos graph or image made in another app will be disqualified.</p><div class="proof-flow" role="img" aria-label="Illustration of the Proof Lab Graph view: click its PNG save control, then upload that saved image here"><div class="proof-mini"><div class="proof-mini-top"><span>Proof Lab / Graph</span><span class="proof-mini-dots">•••</span></div><div class="proof-mini-grid"><svg viewBox="0 0 180 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 82 Q24 72 42 55 T85 63 T130 35 T180 20" fill="none" stroke="#bf5a2e" stroke-width="4" stroke-linecap="round"/></svg></div><div class="proof-mini-toolbar"><span>Graph view</span><span class="proof-png-control"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg> PNG</span></div></div><div class="proof-flow-arrow"><span>Save PNG</span><b aria-hidden="true">→</b></div><div class="proof-upload"><span aria-hidden="true">↑</span><strong>Upload</strong></div></div><div class="aside-facts"><div><span>01</span><p><a href="/proof-lab">Open Proof Lab</a> and choose Graph.</p></div><div><span>02</span><p>Create your graph art, then use the PNG save control.</p></div><div><span>03</span><p>Upload that saved file here and confirm your entry.</p></div></div></aside>
+        </div>
+      </section>
+
+      <section class="rules-section" id="rules" aria-labelledby="rules-title">
+        <div class="section-heading"><div><p class="section-index">03 / THE FINE PRINT</p><h2 class="heading-display" id="rules-title">Contest rules &amp; terms</h2></div></div>
+        <div class="rules-grid">
+          <div><span class="rule-number">01</span><h3>Use atomEDU’s graph</h3><p>Only original artwork you create in atomEDU Proof Lab’s Graph view is eligible. Use its PNG save control and upload your saved image. Desmos graphs, art from other software, and work you did not create are disqualified, even if submitted in an accepted image format.</p></div>
+          <div><span class="rule-number">02</span><h3>Enter as often as you like</h3><p>You may make unlimited submissions each day while entries are open. Each submission contains one image. Every entry must meet all contest rules.</p></div>
+          <div><span class="rule-number">03</span><h3>Protect people’s privacy</h3><p>Do not include photos, faces, or other personal imagery. Do not put contact details, identifying information, or private information in the artwork or your display name.</p></div>
+          <div><span class="rule-number">04</span><h3>Keep it appropriate</h3><p>No inappropriate or NSFW content, including hateful, violent, sexually explicit, illegal, or harassing material. Such entries may be removed and may lead to a temporary or permanent ban from this and future contest rounds.</p></div>
+          <div><span class="rule-number">05</span><h3>Age and permission</h3><p>You must be at least 13 to enter. If you are under 18, you must have permission from a parent or guardian. We do not ask for your birth date. The first checkbox confirms these requirements and your agreement to the rules.</p></div>
+          <div><span class="rule-number">06</span><h3>Ownership and display</h3><p>You keep ownership of your work. You allow atomEDU’s owners to review your entry. Your separate display consent lets us publish your winning image and display name on this site and in the archive if selected.</p></div>
+          <div><span class="rule-number">07</span><h3>Judges and decisions</h3><p>atomEDU’s owners judge eligible entries. Their winner decisions are final, with no appeals. Entering does not guarantee a feature or prize. The winning entry is archived; other submissions for that day are removed after a winner is confirmed.</p></div>
+        </div>
+      </section>
+
+      <section class="timing-section" aria-labelledby="timing-title">
+        <div class="section-heading"><div><p class="section-index">04 / DAILY RHYTHM</p><h2 class="heading-display" id="timing-title">The daily schedule</h2></div><span class="section-aside">Normal times in America/Chicago.</span></div>
+        <p class="timing-intro">The live status above controls whether you can submit. These are the normal daily times, including daylight saving changes.</p>
+        <div class="timing-table-wrap"><table class="timing-table"><thead><tr><th scope="col">What happens</th><th scope="col">Central time</th><th scope="col">UTC in winter (CST)</th><th scope="col">UTC in summer (CDT)</th></tr></thead><tbody><tr><th scope="row">Submissions close; judging starts</th><td>7:00 PM</td><td>01:00 next day</td><td>00:00 next day</td></tr><tr><th scope="row">Judging ends; target winner announcement</th><td>8:30 PM</td><td>02:30 next day</td><td>01:30 next day</td></tr><tr><th scope="row">Rare result delay limit; next round opens</th><td>9:30 PM</td><td>03:30 next day</td><td>02:30 next day</td></tr></tbody></table></div>
+        <p class="timing-note">Judging normally runs from 7:00 to 8:30 PM CT. A result may rarely be delayed until 9:30 PM CT. The next round opens at 9:30 PM CT. A winner appears only after atomEDU’s owners confirm one.</p>
+      </section>
+
+      <section class="archive-section" id="archive" aria-labelledby="archive-title"><div class="section-heading"><div><p class="section-index">05 / THE ARCHIVE</p><h2 class="heading-display" id="archive-title">Past spotlights</h2></div><span class="section-aside">Good ideas deserve a second look.</span></div><div class="archive-grid" id="archive-grid" aria-live="polite"><p class="archive-empty">Loading the winner archive…</p></div></section>
+    </div>
+  </main>
+
+  <footer class="contest-footer"><div class="contest-shell footer-inner"><div><a class="brand" href="/"><img class="mark" src="images/logo.svg" alt="" /><span class="word">atom<b>EDU</b></span></a><p>Make graph art. Share graph art. Keep creating.</p></div><div class="footer-links"><a href="/">Home</a><a href="/legal">Site terms</a><a href="/contact">Contact</a></div><small>© <span id="year"></span> atomEDU</small></div></footer>
+</body>
+</html>

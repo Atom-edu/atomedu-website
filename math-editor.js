@@ -1,7 +1,7 @@
 // Visual editing and safe typesetting only. The local engine owns all mathematics.
 import { MathfieldElement } from './vendor/mathlive/mathlive.min.mjs';
 import katex from './vendor/katex/katex.mjs';
-import { toLatex } from './engine/latex.js';
+import { toLatex } from './engine/latex.js?v=proof-lab-17';
 
 MathfieldElement.fontsDirectory = new URL('./vendor/mathlive/fonts', import.meta.url).href;
 MathfieldElement.soundsDirectory = null;
@@ -102,13 +102,12 @@ export function createMathField(value = '', {
   field.setAttribute('math-virtual-keyboard-policy', 'manual');
   field.mathVirtualKeyboardPolicy = 'manual';
   // MathLive may dispatch focus/focusin asynchronously after focus() returns.
-  // Open the pad in the same turn for callers that focus a field programmatically.
+  // Track programmatic focus immediately without opening the pad.
   const focusField = field.focus.bind(field);
   field.focus = (...args) => {
     const result = focusField(...args);
     if (field.isConnected && !field.readOnly && !field.closest('[hidden]')) {
       setActiveMathField(field);
-      openKeypad(field);
     }
     return result;
   };
@@ -141,8 +140,8 @@ export function createMathField(value = '', {
     `;
     field.shadowRoot.append(style);
   });
-  field.addEventListener('focusin', () => { setActiveMathField(field); openKeypad(field); });
-  field.addEventListener('pointerdown', () => { setActiveMathField(field); openKeypad(field); });
+  field.addEventListener('focusin', () => setActiveMathField(field));
+  field.addEventListener('pointerdown', () => setActiveMathField(field));
   if (onInput) field.addEventListener('input', (event) => onInput(field.value, event, field));
   setMathFieldValue(field, value, { latex });
   return field;
@@ -163,7 +162,7 @@ export function createLatexDisclosure(field, { label = 'Edit LaTeX source' } = {
   input.maxLength = 20000;
   input.value = field.value;
   const sync = () => { if (document.activeElement !== input) input.value = field.value; };
-  input.addEventListener('focus', () => { setActiveMathField(field); openKeypad(field); });
+  input.addEventListener('focus', () => setActiveMathField(field));
   input.addEventListener('blur', sync);
   field.addEventListener('input', sync);
   field.addEventListener('math-value-set', sync);
@@ -283,19 +282,18 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   };
   focusListeners.add(updateTarget);
   updateTarget(getActiveMathField());
-  const openFromFieldInteraction = (event) => {
+  const trackFieldInteraction = (event) => {
     const field = event.composedPath().find((element) => element?.tagName === 'MATH-FIELD');
     if (!field || field.readOnly || field.closest('[hidden]')) return;
     setActiveMathField(field);
-    openKeypad(field);
   };
   const endKeypadInteraction = (event) => {
     if (!container.contains(event.target)) keypadInteraction = false;
   };
-  document.addEventListener('pointerdown', openFromFieldInteraction, true);
-  document.addEventListener('focusin', openFromFieldInteraction, true);
+  document.addEventListener('pointerdown', trackFieldInteraction, true);
+  document.addEventListener('focusin', trackFieldInteraction, true);
   // Keyboard and scripted activation can dispatch click without pointerdown or focusin.
-  document.addEventListener('click', openFromFieldInteraction, true);
+  document.addEventListener('click', trackFieldInteraction, true);
   document.addEventListener('pointerdown', endKeypadInteraction, true);
   document.addEventListener('keydown', endKeypadInteraction, true);
   const closeOnEscape = (event) => {
@@ -447,9 +445,9 @@ export function createKeypad(container, { announce = () => {}, onEnter = () => {
   return { destroy() {
     sizeObserver?.disconnect();
     focusListeners.delete(updateTarget);
-    document.removeEventListener('pointerdown', openFromFieldInteraction, true);
-    document.removeEventListener('focusin', openFromFieldInteraction, true);
-    document.removeEventListener('click', openFromFieldInteraction, true);
+    document.removeEventListener('pointerdown', trackFieldInteraction, true);
+    document.removeEventListener('focusin', trackFieldInteraction, true);
+    document.removeEventListener('click', trackFieldInteraction, true);
     document.removeEventListener('pointerdown', endKeypadInteraction, true);
     document.removeEventListener('keydown', endKeypadInteraction, true);
     document.removeEventListener('keydown', closeOnEscape);

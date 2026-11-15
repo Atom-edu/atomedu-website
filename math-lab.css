@@ -825,6 +825,10 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 /* Proof Lab control and small-screen refinements. */
 .lab-app .lab-topbar { justify-content: space-between; }
 .lab-app .lab-back { margin-right: auto; min-height: 38px; gap: 8px; padding: 0 12px 0 9px; border-color: #617181; background: #344352; border-radius: 9px; color: #fff; transition: background .15s, border-color .15s; }
+.lab-app .lab-back { margin-right: 0; }
+.lab-app .lab-art-link { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; margin-left: 8px; margin-right: auto; padding: 0 12px; border: 1px solid #607e9d; border-radius: 9px; background: #284762; color: #fff; font-size: 12px; font-weight: 650; white-space: nowrap; transition: background .15s, border-color .15s; }
+.lab-app .lab-art-link:hover { background: #365d80; border-color: #8db0d2; }
+.lab-app .lab-art-link svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .lab-app .lab-back:hover { background: #435569; border-color: #8b9baa; }
 .lab-app .lab-back svg, .lab-app .rail-toolbar svg, .lab-app .rail-expand svg, .lab-app .keyboard-toggle svg, .lab-app .tab-icon, .lab-tour-preview svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .lab-app .lab-back svg { width: 18px; height: 18px; }
@@ -882,6 +886,8 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 @media (max-width: 620px) {
   .lab-app .lab-back { width: 40px; min-width: 40px; padding: 0; justify-content: center; }
   .lab-app .lab-back-label { display: none; }
+  .lab-app .lab-art-link { width: 40px; min-width: 40px; padding: 0; justify-content: center; }
+  .lab-app .lab-art-link span { display: none; }
   .lab-app .tab-icon { display: block; }
   .lab-app .view-tab { flex-direction: column; gap: 2px; min-height: 49px; font-size: 9px; }
   .lab-app .workbench { grid-template-rows: minmax(210px, 38%) minmax(0, 62%); }
@@ -916,4 +922,12 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
   .lab-app .keypad-heading { min-height: 24px; }
   .lab-app .keypad-tabs { margin: 2px 0 3px; padding-bottom: 2px; }
   .lab-app .keypad-tab { padding: 3px 7px; font-size: 10px; }
+}
+@media (max-width: 320px) {
+  .lab-app .lab-topbar { padding-inline: 5px; }
+  .lab-app .lab-back, .lab-app .lab-art-link { width: 34px; min-width: 34px; min-height: 34px; }
+  .lab-app .lab-art-link { margin-left: 4px; }
+  .lab-app .lab-topbar-brand { font-size: 17px; }
+  .lab-app .lab-topbar-actions { gap: 3px; }
+  .lab-app .lab-topbar-button { width: 33px; min-height: 34px; }
 }

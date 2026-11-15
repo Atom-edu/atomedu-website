@@ -138,6 +138,51 @@ function splitPoint(text) {
   return comma === -1 ? null : [text.slice(1, comma), text.slice(comma + 1, -1)];
 }
 
+// The shared algebra parser deliberately requires function parentheses. Graph
+// input also accepts the usual short trig notation, but only when the argument
+// is a single graph variable (optionally scaled by an adjacent number). An
+// explicit product, or a parenthesized call followed by a product, keeps its
+// original meaning.
+function graphTrigInput(source) {
+  const functions = /(?<![A-Za-z_])(?:sin|cos|tan)/gi;
+  const bareArgument = /^(?:(?:\d+(?:\.\d*)?|\.\d+)\s*)?[xyabc](?:\s*\^\s*(?:\d+|\(\s*\d+\s*\)))?(?![A-Za-z_0-9])/i;
+  const numericArgument = /^(?:\d+(?:\.\d*)?|\.\d+)(?=\s*(?:[+\-*/=<>),]|$))/;
+  let result = '', offset = 0, match;
+  while ((match = functions.exec(source))) {
+    const name = match[0].toLowerCase();
+    let end = functions.lastIndex, power = null;
+    const exponent = /^\s*\^\s*(\d+|\(\s*\d+\s*\))/.exec(source.slice(end));
+    if (exponent) { power = exponent[1]; end += exponent[0].length; }
+    const spacing = /^\s*/.exec(source.slice(end))[0];
+    end += spacing.length;
+    let argument;
+    if (power !== null && source[end] === '(') {
+      let depth = 0, close = end;
+      for (; close < source.length; close++) {
+        if (source[close] === '(') depth++;
+        else if (source[close] === ')' && --depth === 0) break;
+      }
+      if (close < source.length) { argument = source.slice(end, close + 1); end = close + 1; }
+    } else if (source[end] !== '(') {
+      const bare = bareArgument.exec(source.slice(end)) || numericArgument.exec(source.slice(end));
+      if (bare) { argument = `(${bare[0]})`; end += bare[0].length; }
+    }
+    if (!argument) continue;
+    result += source.slice(offset, match.index) + (power === null ? `${name}${argument}` : `(${name}${argument})^${power}`);
+    offset = end;
+    functions.lastIndex = end;
+  }
+  return result + source.slice(offset);
+}
+
+// Preserve the intended coefficient-and-variable argument when a visual editor
+// emits compact notation such as \sin3x. Group it before bridge conversion so
+// older readers behave consistently; explicit products retain their meaning.
+function graphLatexTrigInput(source) {
+  return source.replace(/\\(sin|cos|tan)(?![A-Za-z])((?:\s*\^\s*(?:\{\s*\d+\s*\}|\d+))?)\s*((?:\d+(?:\.\d*)?|\.\d+)\s*[xyabc](?:\s*\^\s*(?:\{\s*\d+\s*\}|\d+))?)(?![A-Za-z_0-9])/gi,
+    (_, name, power, argument) => `\\${name}${power}(${argument})`);
+}
+
 // Extract numerical affine condition boundaries without simplifying away domains.
 // Nonlinear conditions still work by sampling; their tiny features can be omitted.
 function affineForm(ast, variable) {
@@ -256,10 +301,12 @@ function compilePiecewise(input, source) {
  */
 export function compileGraphExpression(expression, { readExpression = value => value } = {}) {
   if (typeof expression !== 'string' || expression.length > GRAPH_LIMITS.expressionLength) throw new Error(`Use at most ${GRAPH_LIMITS.expressionLength} characters per graph expression.`);
-  const internal = readExpression(expression);
+  let internal = readExpression(expression);
   if (internal?.kind === 'piecewise') return compilePiecewise(internal, expression);
+  const grouped = graphLatexTrigInput(expression);
+  if (grouped !== expression) internal = readExpression(grouped);
   if (typeof internal !== 'string' || internal.length > GRAPH_LIMITS.expressionLength) throw new Error('The graph expression is too long or could not be converted.');
-  const source = normalizeInput(internal), pair = splitPoint(source);
+  const source = graphTrigInput(normalizeInput(internal)), pair = splitPoint(source);
   const environment = (x, y, params) => ({ ...DEFAULT_PARAMETERS, ...params, x, y });
   if (pair) {
     const asts = pair.map(parseExpression), names = [...new Set(asts.flatMap(astInfo))];

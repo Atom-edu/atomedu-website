@@ -123,9 +123,17 @@ class Reader {
     if (this.peek()?.type === 'command' && this.peek('left')) this.take();
     const t = this.peek();
     if (t?.type === '(' || t?.type === '{' || t?.type === '[') { this.take(); return this.group({ '(': ')', '{': '}', '[': ']' }[t.type]).slice(1, -1); }
+    // A common unbraced trig argument is a numeric coefficient followed by
+    // one variable: \sin3x means sin(3x), while \sin(3)x remains sin(3)*x.
+    // An explicit \cdot or \times prevents this grouping.
+    let coefficient = '';
+    if (t?.type === 'number' && this.tokens[this.i + 1]?.type === 'word'
+      && /^[A-Za-z]$/.test(this.tokens[this.i + 1].value)) {
+      coefficient = this.take().value;
+    }
     let value = this.argument();
     if (this.peek('^')) { this.take(); value = `(${value})^(${this.argument()})`; }
-    return value;
+    return coefficient + value;
   }
   atom() {
     const t = this.take(); if (!t) fail('An operand is missing.', { incomplete: true });

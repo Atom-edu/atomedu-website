@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { latexToInput } from '../engine/latex.js';
 import {
   DEFAULT_VIEWPORT, GRAPH_LIMITS, validateViewport, equalizeViewport, niceStep,
   getTicks, worldToScreen, screenToWorld, zoomViewport, panViewport,
@@ -81,6 +82,56 @@ test('expression compiler handles both explicit orientations and axis-aligned li
   close(compileGraphExpression('y=cbrt(x)').sample(-27), -3);
   close(compileGraphExpression('y=x^(2/3)').sample(-8), 4);
   assert(Number.isNaN(compileGraphExpression('y=root(x,4)').sample(-1)));
+});
+
+test('graph trig shorthand groups adjacent coefficients and powers without changing products', () => {
+  for (const text of ['y=sin3x', 'y=sin 3x', 'y=sin(3x)']) {
+    const curve = compileGraphExpression(text);
+    assert.equal(curve.kind, 'explicit');
+    close(curve.sample(Math.PI / 6), 1);
+    close(curve.sample(Math.PI / 3), 0);
+  }
+  close(compileGraphExpression('y=cos2x').sample(Math.PI / 2), -1);
+  close(compileGraphExpression('y=sinx').sample(Math.PI / 2), 1);
+  close(compileGraphExpression('y=sin x').sample(Math.PI / 2), 1);
+  close(compileGraphExpression('y=sin^2 x').sample(Math.PI / 4), .5);
+  close(compileGraphExpression('y=sin^2(3x)').sample(Math.PI / 6), 1);
+  close(compileGraphExpression('y=sin x^2').sample(2), Math.sin(4));
+  close(compileGraphExpression('y=3sinx').sample(Math.PI / 2), 3);
+  close(compileGraphExpression('y=sin(3)x').sample(2), 2 * Math.sin(3));
+  close(compileGraphExpression('y=sin 3*x').sample(2), 2 * Math.sin(3));
+  close(compileGraphExpression('y=2sin(x)').sample(Math.PI / 2), 2);
+  close(compileGraphExpression('y=2(x+1)').sample(2), 6);
+  close(compileGraphExpression('x=cos2y').sample(Math.PI / 2), -1);
+  close(compileGraphExpression('sin3x+y=0').value(Math.PI / 6, -1), 0);
+  assert(compileGraphExpression('y<sin3x').contains(Math.PI / 6, .5));
+  assert.throws(() => compileGraphExpression('y=sin3xy'));
+});
+
+test('graph LaTeX trig shorthand survives the host reader without absorbing explicit products', () => {
+  const readExpression = latexToInput;
+  // Exact LaTeX emitted by the browser MathLive field for these typed inputs.
+  for (const [text, x, expected] of [
+    ['y=\\sin\\left(3x\\right)', Math.PI / 6, 1],
+    ['y=\\sin3x', Math.PI / 6, 1],
+    ['y=\\sin x', Math.PI / 6, .5],
+    ['y=\\sin^2x', Math.PI / 4, .5],
+  ]) close(compileGraphExpression(text, { readExpression }).sample(x), expected);
+  for (const text of ['y=\\sin3x', 'y=\\sin 3x', 'y=\\sin^2 3x']) {
+    const curve = compileGraphExpression(text, { readExpression });
+    close(curve.sample(Math.PI / 6), 1);
+    close(curve.sample(Math.PI / 3), 0);
+  }
+  close(compileGraphExpression('y=\\cos2x', { readExpression }).sample(Math.PI / 2), -1);
+  close(compileGraphExpression('y=\\sin^2 x', { readExpression }).sample(Math.PI / 4), .5);
+  close(compileGraphExpression('y=\\sin3x^{2}', { readExpression }).sample(2), Math.sin(12));
+  close(compileGraphExpression('y=\\sin(3x)', { readExpression }).sample(Math.PI / 6), 1);
+  close(compileGraphExpression('y=\\sin(3)x', { readExpression }).sample(2), 2 * Math.sin(3));
+  close(compileGraphExpression('y=\\sin 3\\cdot x', { readExpression }).sample(2), 2 * Math.sin(3));
+  close(compileGraphExpression('y=2\\sin x', { readExpression }).sample(Math.PI / 2), 2);
+  const seen = [];
+  compileGraphExpression('y=\\sin3x', { readExpression(source) { seen.push(source); return latexToInput(source); } });
+  assert.deepEqual(seen, ['y=\\sin3x', 'y=\\sin(3x)']);
 });
 
 test('compiler uses the host LaTeX reader and exposes stable parameter names', () => {

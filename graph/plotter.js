@@ -25,7 +25,7 @@ import {
   DEFAULT_PARAMETERS, GRAPH_LIMITS, validateViewport,
   niceStep, getTicks, worldToScreen, screenToWorld, zoomViewport, panViewport,
   equalizeViewport, compileGraphExpression, sampleExplicit, contourSegments,
-} from './model.js';
+} from './model.js?v=proof-lab-17';
 
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
 const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });

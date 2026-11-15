@@ -1,7 +1,7 @@
 // Standalone browser UI. All mathematical decisions belong to ./engine/index.js.
 // Engine calls may return values or promises. Typesetting never certifies a proof.
-import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-15';
-import { latexToInput } from './engine/latex.js';
+import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-17';
+import { latexToInput } from './engine/latex.js?v=proof-lab-17';
 
 const $ = (id) => document.getElementById(id);
 const tabs = [...document.querySelectorAll('.view-tab')];
@@ -197,8 +197,8 @@ async function connectEngine() {
     // A new URL on explicit retries also recovers from a cached missing module
     // while the core is being added to a shared development directory.
     const module = connectionAttempts++ === 0
-      ? await import('./engine/index.js')
-      : await import(`./engine/index.js?math-lab-retry=${connectionAttempts}`);
+      ? await import('./engine/index.js?v=proof-lab-17')
+      : await import(`./engine/index.js?v=proof-lab-17&math-lab-retry=${connectionAttempts}`);
     for (const name of ['solve', 'checkWork', 'generateProblem', 'getCapabilities']) {
       if (typeof module[name] !== 'function') throw new Error(`The engine export “${name}” is missing.`);
     }
@@ -643,7 +643,7 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-15').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-17').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions([''], {
       sidebarHost: $('graph-sidebar-host'),
@@ -704,7 +704,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js?v=proof-lab-15').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-17').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);
@@ -1222,7 +1222,7 @@ $('tour-next').addEventListener('click', () => {
 $('tour-close').addEventListener('click', () => $('tour-dialog').close());
 $('tour-dialog').addEventListener('click', (event) => { if (event.target === $('tour-dialog')) $('tour-dialog').close(); });
 $('tour-coverage').addEventListener('click', () => { closePopovers(); openCoverage(); });
-$('tour-keyboard').addEventListener('click', () => { closePopovers(); showView('solve'); solveField.focus(); });
+$('tour-keyboard').addEventListener('click', () => { closePopovers(); showView('solve'); solveField.focus(); openKeypad(solveField); });
 
 tabs.forEach((tab, index) => {
   tab.addEventListener('click', () => showView(tab.dataset.view));

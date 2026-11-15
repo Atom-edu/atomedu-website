@@ -9,7 +9,7 @@ import { solveExtension, verifyExtensionCertificate } from './extensions.js';
 import { solveConic, verifyConicCertificate } from './conics.js';
 import { solveAdvanced, verifyAdvancedCertificate } from './advanced-algebra.js';
 import { isCompoundInequality, solveCompoundInequality, verifyCompoundCertificate } from './compound-inequalities.js';
-import { latexToInput, toLatex, validateLatex, formatResultLatex } from './latex.js';
+import { latexToInput, toLatex, validateLatex, formatResultLatex } from './latex.js?v=proof-lab-17';
 import { solveLiteralEquation, verifyLiteralCertificate } from './literal-equations.js';
 import { solveFiniteAggregate, verifyFiniteAggregate } from './finite-aggregates.js';
 import { solvePiecewise, verifyPiecewiseCertificate } from './piecewise.js';

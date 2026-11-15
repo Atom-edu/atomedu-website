@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const marketingPages = ['index.html', 'features.html', 'learn.html', 'about.html', 'contact.html', 'legal.html'];
-const pages = [...marketingPages, 'proof-lab.html'];
+const pages = [...marketingPages, 'proof-lab.html', 'art-contest.html', 'judging.html'];
 const expectedNav = [
   ['Home', '/'],
   ['Features', '/features'],
@@ -63,6 +63,7 @@ test('Proof Lab has a dedicated dark app header and access back to the site', ()
   assert.match(html, /data-tour-view="generate"/);
   assert.match(html, /id="tour-examples"/);
   assert.match(html, /id="graph-sidebar-host"/);
+  assert.match(html, /class="lab-art-link" href="\/art-contest"/);
   assert.doesNotMatch(html, /<footer class="site-footer">/);
 });
 

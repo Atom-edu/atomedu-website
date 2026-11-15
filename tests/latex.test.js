@@ -72,6 +72,14 @@ test('functions, logarithm bases, constants, absolute values, and implicit produ
   for (const command of ['le', 'leq', 'ge', 'geq', 'ne', 'neq']) assert.equal(validateLatex(`x\\${command} 1`).valid, true);
 });
 
+test('unbraced trig coefficient belongs to its variable, not a following linear factor', () => {
+  assert.equal(latexToInput(TEX`\sin3x`), 'sin(3x)');
+  assert.equal(latexToInput(TEX`\sin(3)x`), 'sin(3)x');
+  assert.equal(latexToInput(TEX`\sin3\cdot x`), 'sin(3)*x');
+  sameValue(TEX`\sin3x`, 1, { x: Math.PI / 6 });
+  sameValue(TEX`\sin3x^{2}`, Math.sin(12), { x: 2 });
+});
+
 test('chained comparisons and logical commands preserve the source chain and exact interval meaning', () => {
   const chain = TEX`-2\le x\le3`;
   assert.equal(latexToInput(chain), '-2<=x<=3');
