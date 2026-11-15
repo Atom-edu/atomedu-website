@@ -1,6 +1,6 @@
 /** A small, public graph snapshot for links handed to Google Classroom. */
-import { latexToInput } from '../engine/latex.js';
-import { compileGraphExpression, validateViewport } from '../graph/model.js';
+import { latexToInput } from '../engine/latex.js?v=proof-lab-18';
+import { compileGraphExpression, validateViewport } from '../graph/model.js?v=proof-lab-21';
 
 const MAX_URL_LENGTH = 4000;
 const MAX_EXPRESSIONS = 24;

@@ -2,12 +2,12 @@ import { MathError, parseStatement, parseExpression, rationalFunction, polynomia
 import { solveEquation, simplifyExpression, solveInequality, solveSystem, functionAnalysis, buildLinearSystem } from './algebra.js';
 import { verifyAlgebraResult, verifyCertificate, verifyTransition as verifyTransitionInternal } from './verifier.js';
 import { checkWork as checkWorkInternal } from './work.js';
-import { solveGeometry, parseGeometry, verifyGeometryProof, verifyGeometryCertificate } from './geometry.js';
-import { generateProblem as generateRawProblem, TOPICS } from './generator.js';
+import { solveGeometry, parseGeometry, verifyGeometryProof, verifyGeometryCertificate } from './geometry.js?v=proof-lab-18';
+import { generateProblem as generateRawProblem, TOPICS } from './generator.js?v=proof-lab-18';
 import { estimateDifficulty, difficultyToInt, formatDifficulty, tierForDifficulty } from './difficulty.js';
 import { solveExtension, verifyExtensionCertificate } from './extensions.js';
-import { solveConic, verifyConicCertificate } from './conics.js';
-import { solveAdvanced, verifyAdvancedCertificate } from './advanced-algebra.js';
+import { solveConic, verifyConicCertificate } from './conics.js?v=proof-lab-18';
+import { solveAdvanced, verifyAdvancedCertificate } from './advanced-algebra.js?v=proof-lab-18';
 import { isCompoundInequality, solveCompoundInequality, verifyCompoundCertificate } from './compound-inequalities.js';
 import { latexToInput, toLatex, validateLatex, formatResultLatex } from './latex.js?v=proof-lab-18';
 import { solveLiteralEquation, verifyLiteralCertificate } from './literal-equations.js';

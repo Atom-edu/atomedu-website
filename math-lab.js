@@ -711,7 +711,7 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-21').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-22').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions(sharedGraph?.expressions || [''], {
       sidebarHost: $('graph-sidebar-host'),

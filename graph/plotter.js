@@ -36,7 +36,7 @@ import {
   niceStep, getTicks, getPolarGrid, worldToScreen as modelWorldToScreen, screenToWorld as modelScreenToWorld,
   zoomViewport as modelZoomViewport, panViewport as modelPanViewport,
   equalizeViewport as modelEqualizeViewport, compileGraphExpression, sampleExplicit, sampleParametric, contourSegments,
-} from './model.js?v=proof-lab-20';
+} from './model.js?v=proof-lab-21';
 
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
 const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });
