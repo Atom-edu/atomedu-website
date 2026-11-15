@@ -648,7 +648,17 @@ function mountClassroomShare(graph) {
   const panel = node('section', 'graph-classroom-share');
   panel.setAttribute('aria-label', 'Share graph with Google Classroom');
   panel.append(node('h3', '', 'Share this graph'));
-  panel.append(node('p', '', 'Send an editable graph link to Google Classroom. The link contains your expressions and window settings.'));
+  panel.append(node('p', '', 'Copy an editable graph link or send it to Google Classroom. The link contains your expressions and window settings.'));
+  const copy = node('button', 'graph-share-copy', 'Copy graph link');
+  copy.type = 'button';
+  const urlRow = node('div', 'graph-share-url-row');
+  urlRow.hidden = true;
+  const urlInput = node('input', 'graph-share-url-input');
+  urlInput.type = 'url';
+  urlInput.readOnly = true;
+  urlInput.setAttribute('aria-label', 'Graph link');
+  urlInput.addEventListener('focus', () => urlInput.select());
+  urlRow.append(urlInput);
   const link = node('a', 'graph-classroom-link');
   link.href = 'https://classroom.google.com/share';
   link.target = '_blank';
@@ -661,19 +671,45 @@ function mountClassroomShare(graph) {
   link.append(icon, node('span', '', 'Share to Google Classroom'));
   const status = node('p', 'graph-classroom-status');
   status.setAttribute('role', 'status');
-  link.addEventListener('click', (event) => {
+  function showGraphLink() {
     try {
-      const graphUrl = buildGraphShareUrl(graph.getState(), 'https://atom-edu.org/');
-      const classroomUrl = new URL('https://classroom.google.com/share');
-      classroomUrl.searchParams.set('url', graphUrl);
-      link.href = classroomUrl.href;
-      status.textContent = 'Choose a class in Google Classroom to share this graph link.';
+      const state = graph.getState();
+      // The graph always keeps a blank draft row; it is not a curve to share.
+      const expressions = state.expressions.filter(row =>
+        typeof row === 'string' ? row.trim() : typeof row?.expression === 'string' && row.expression.trim());
+      const graphUrl = buildGraphShareUrl({ ...state, expressions }, 'https://atom-edu.org/');
+      urlInput.value = graphUrl;
+      urlRow.hidden = false;
+      return graphUrl;
     } catch (error) {
-      event.preventDefault();
+      urlInput.value = '';
+      urlRow.hidden = true;
       status.textContent = errorMessage(error) + ' Try a smaller graph or save a PNG instead.';
+      return null;
+    }
+  }
+  copy.addEventListener('click', async () => {
+    const graphUrl = showGraphLink();
+    if (!graphUrl) return;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(graphUrl);
+      status.textContent = 'Graph link copied. You can also select it below.';
+    } catch {
+      urlInput.focus();
+      urlInput.select();
+      status.textContent = 'Graph link selected. Copy it with your keyboard.';
     }
   });
-  panel.append(link, status, node('small', '', 'Sharing opens Google Classroom and sends the graph link there. Google Classroom is a trademark of Google LLC; atomEDU is not affiliated with Google.'));
+  link.addEventListener('click', (event) => {
+    const graphUrl = showGraphLink();
+    if (!graphUrl) { event.preventDefault(); return; }
+    const classroomUrl = new URL('https://classroom.google.com/share');
+    classroomUrl.searchParams.set('url', graphUrl);
+    link.href = classroomUrl.href;
+    status.textContent = 'Graph link is shown above. Choose a class in Google Classroom to share it.';
+  });
+  panel.append(copy, urlRow, link, status, node('small', '', 'Sharing opens Google Classroom and sends the graph link there. Google Classroom is a trademark of Google LLC; atomEDU is not affiliated with Google.'));
   sidebar.append(panel);
 }
 

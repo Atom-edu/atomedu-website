@@ -154,8 +154,14 @@ test('Classroom integration is separate from featured partners and uses the offi
   assert.match(home, /images\/google-classroom-icon\.png/);
   assert.match(home, /atomEDU is not affiliated with or endorsed by Google/);
   assert.match(home, /href="\/proof-lab#graph"/);
-  assert.match(read('math-lab.js'), /buildGraphShareUrl\(graph\.getState\(\), 'https:\/\/atom-edu\.org\/'\)/);
-  assert.match(read('math-lab.js'), /classroom\.google\.com\/share/);
+  const app = read('math-lab.js');
+  assert.match(app, /buildGraphShareUrl\(\{ \.\.\.state, expressions \}, 'https:\/\/atom-edu\.org\/'\)/);
+  assert.match(app, /Copy graph link/);
+  assert.match(app, /navigator\.clipboard\.writeText\(graphUrl\)/);
+  assert.match(app, /urlInput\.value = graphUrl/);
+  assert.match(app, /urlRow\.hidden = false/);
+  assert.match(app, /urlRow\.hidden = true/);
+  assert.match(app, /classroom\.google\.com\/share/);
   assert.match(read('proof-lab.html'), /id="graph"/);
 });
 
