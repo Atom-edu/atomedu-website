@@ -162,6 +162,15 @@
     return new Intl.DateTimeFormat('en-US', { timeZone: CENTRAL, month: 'short', day: 'numeric' }).format(date);
   }
 
+  function tiedTotals(entries) {
+    const counts = new Map();
+    for (const entry of entries) {
+      const total = entry.scores?.total;
+      if (Number.isInteger(total)) counts.set(total, (counts.get(total) || 0) + 1);
+    }
+    return new Set([...counts].filter(([, count]) => count > 1).map(([total]) => total));
+  }
+
   function renderEntries(data, requestedDate, phase) {
     if (!data || !Array.isArray(data.submissions)) throw new Error('The judging server returned an incomplete list of submissions.');
     const submissions = data.submissions;
@@ -171,9 +180,14 @@
       }
     }
     const allScored = submissions.length > 0 && submissions.every((entry) => Number.isInteger(entry.scores?.total));
+    const tied = tiedTotals(submissions);
     currentEntries = submissions;
     currentPhase = phase;
     $('judge-submit-bar').hidden = !allScored || !!data.winnerId || !['judging', 'results_pending'].includes(phase);
+    $('judge-submit-bar').dataset.tied = tied.size ? 'true' : 'false';
+    $('judge-submit-bar').querySelector('p').textContent = tied.size
+      ? 'Tied totals are highlighted in red. Review and save different scores before submitting.'
+      : 'All entries are scored. Results stay private until you confirm.';
     revokeImages();
     imageController = new AbortController();
     const run = imageRun;
@@ -252,7 +266,11 @@
       const total = document.createElement('span');
       total.className = 'score-total';
       total.textContent = Number.isInteger(entry.scores?.total) ? `Total: ${entry.scores.total} / 30` : 'Not scored yet';
-      scoreForm.append(total);
+      if (tied.has(entry.scores?.total)) {
+        total.classList.add('is-tied');
+        total.setAttribute('aria-label', `Tied total: ${entry.scores.total} out of 30`);
+        total.title = 'This total is tied with another entry. Review and save scores before submitting.';
+      }
       const scoreButton = document.createElement('button');
       scoreButton.type = 'submit';
       scoreButton.textContent = 'Save scores';
@@ -278,7 +296,7 @@
       remove.textContent = 'Delete';
       remove.setAttribute('aria-label', `Delete submission by ${entry.name}`);
       remove.addEventListener('click', () => deleteEntry(entry, requestedDate));
-      actions.append(remove);
+      actions.append(total, remove);
       body.append(top, meta, scoreForm, actions);
       card.append(body);
       list.append(card);
@@ -365,6 +383,10 @@
 
   async function openPreview() {
     if (busy || !token || $('judge-submit-bar').hidden || !['judging', 'results_pending'].includes(currentPhase)) return;
+    if (tiedTotals(currentEntries).size) {
+      setMessage($('dashboard-message'), 'Resolve all tied total scores before submitting results');
+      return;
+    }
     setBusy(true);
     try {
       const data = await request('/judging/submissions', {}, true);
@@ -377,6 +399,7 @@
       if (!data.submissions.length || data.submissions.some((entry) => !Number.isInteger(entry.scores?.total))) {
         throw new Error('Save scores for every entry before submitting.');
       }
+      if (tiedTotals(data.submissions).size) throw new Error('Resolve all tied total scores before submitting results');
       const [winner, runnerUp] = rankEntries(data.submissions);
       preview = { date: $('contest-date').value, winner, runnerUp, snapshot: scoreSnapshot(data.submissions) };
       $('results-date').textContent = dateLabel(preview.date);
@@ -416,6 +439,13 @@
         setBusy(false);
         await loadEntries(true);
         setMessage($('dashboard-message'), 'The scores or entries changed. Review the updated list before confirming.');
+        return;
+      }
+      if (tiedTotals(latest.submissions).size) {
+        closePreview();
+        setBusy(false);
+        await loadEntries(true);
+        setMessage($('dashboard-message'), 'Resolve all tied total scores before submitting results');
         return;
       }
       setMessage($('results-message'), 'Publishing the confirmed results...', 'info');

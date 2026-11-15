@@ -4,7 +4,7 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + 1024 * 1024;
 const MAX_JSON_BYTES = 4096;
 const TOKEN_SECONDS = 8 * 60 * 60;
-const TERMS_VERSION = '2026-11-15';
+const TERMS_VERSION = '2026-11-15-2';
 const encoder = new TextEncoder();
 const chicagoClock = new Intl.DateTimeFormat('en-CA', {
   timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit',
@@ -419,6 +419,10 @@ async function selectWinner(env, id, date, currentTime, origin, expectedRunnerUp
   const unscored = await env.DB.prepare(`SELECT 1 FROM submissions WHERE contest_date = ?
     AND (beauty_score IS NULL OR creativity_score IS NULL OR complexity_score IS NULL) LIMIT 1`).bind(date).first();
   if (unscored) throw new ApiError(409, 'scores_incomplete', 'Score every submission before selecting a winner');
+  const tied = await env.DB.prepare(`SELECT 1 FROM submissions WHERE contest_date = ?
+    GROUP BY beauty_score + creativity_score + complexity_score HAVING COUNT(*) > 1 LIMIT 1`)
+    .bind(date).first();
+  if (tied) throw new ApiError(409, 'scores_tied', 'Resolve all tied total scores before submitting results');
   const highest = await env.DB.prepare(`SELECT MAX(beauty_score + creativity_score + complexity_score) AS total
     FROM submissions WHERE contest_date = ?`).bind(date).first();
   if (candidate.total !== highest.total) throw new ApiError(409, 'lower_score', 'Winner must have the highest total score');
@@ -445,9 +449,11 @@ async function selectWinner(env, id, date, currentTime, origin, expectedRunnerUp
             (SELECT MAX(beauty_score + creativity_score + complexity_score) FROM submissions WHERE contest_date = ?)
           AND NOT EXISTS (SELECT 1 FROM submissions WHERE contest_date = ?
             AND (beauty_score IS NULL OR creativity_score IS NULL OR complexity_score IS NULL))
+          AND NOT EXISTS (SELECT 1 FROM submissions WHERE contest_date = ?
+            GROUP BY beauty_score + creativity_score + complexity_score HAVING COUNT(*) > 1)
           AND (? = 0 OR COALESCE(second.id, '') = ?)
           AND NOT EXISTS (SELECT 1 FROM winners WHERE contest_date = ?)`)
-        .bind(selectedAt.toISOString(), date, id, date, date, date,
+        .bind(selectedAt.toISOString(), date, id, date, date, date, date,
           enforcePreview ? 1 : 0, expectedRunnerUpId || '', date),
       env.DB.prepare(`INSERT OR IGNORE INTO image_cleanup (image_key, created_at)
         SELECT image_key, ? FROM submissions WHERE contest_date = ? AND id <> ?

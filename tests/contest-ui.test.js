@@ -16,6 +16,7 @@ test('contest begins with the winner and explains graph export, schedule, consen
   for (const criterion of ['Beauty', 'Creativity', 'Complexity']) assert.match(page, new RegExp(`<h4>${criterion}</h4>`));
   assert.equal((page.match(/UP TO 10 POINTS/g) || []).length, 3);
   assert.match(page, /second-highest scorer is the runner-up/);
+  assert.match(page, /If any totals tie, the judges must review and resolve the scores before results can be published/);
   assert.match(page, /id="runner-image"/);
   assert.match(page, /id="runner-name"/);
   assert.ok(page.indexOf('id="runner-image"') > page.indexOf('class="art-sheet"'));
@@ -53,6 +54,11 @@ test('judging stays server-backed and neither public page embeds an admin passwo
   assert.match(page, /Confirm submission/);
   assert.doesNotMatch(page + judgeScript, /Select winner/);
   assert.match(judgeScript, /expectedRunnerUpId/);
+  assert.match(judgeScript, /actions\.append\(total, remove\)/);
+  assert.match(judgeScript, /tiedTotals\(currentEntries\)/);
+  assert.match(judgeScript, /tiedTotals\(latest\.submissions\)/);
+  assert.match(read('judging.css'), /\.score-total\.is-tied \{ color: #a12424;/);
+  assert.match(page, /Resolve every tied total before submitting/);
   assert.doesNotMatch(page + judgeScript, /[—–·]/);
   assert.doesNotMatch(publicScript + judgeScript + page, /(?:password\s*[:=]\s*['"]admin['"]|Basic\s+YWRtaW4)/i);
   assert.match(read('contest-config.js'), /ATOM_CONTEST_API_BASE = 'https:\/\/atom-contest-api\.archimedes-api1\.workers\.dev\/api\/art-contest'/);

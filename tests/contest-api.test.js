@@ -166,7 +166,7 @@ test('uploads enforce consent, magic bytes, size, and private entrant images', a
   const { id, contestDate } = await submitted.json();
   assert.equal(contestDate, '2026-07-10');
   const consent = sqlite.prepare('SELECT terms_version, terms_accepted_at, display_consent FROM submissions WHERE id = ?').get(id);
-  assert.equal(consent.terms_version, '2026-11-15');
+  assert.equal(consent.terms_version, '2026-11-15-2');
   assert.equal(consent.terms_accepted_at, OPEN.toISOString());
   assert.equal(consent.display_consent, 1);
   assert.equal(objects.size, 1);
@@ -229,7 +229,7 @@ test('judge selects scored winner and runner-up atomically; archive and both ima
   assert.deepEqual(after.archive, [{ ...winner, runnerUp }]);
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 0);
   assert.equal(sqlite.prepare('SELECT display_consent FROM winners').get().display_consent, 1);
-  assert.equal(sqlite.prepare('SELECT terms_version FROM winners').get().terms_version, '2026-11-15');
+  assert.equal(sqlite.prepare('SELECT terms_version FROM winners').get().terms_version, '2026-11-15-2');
   const judged = await (await call(env, '/judging/submissions', { token }, DELAY)).json();
   assert.deepEqual(judged, { submissions: [], winnerId: first.id, winnerName: 'A painter',
     runnerUpId: second.id, runnerUpName: 'A painter' });
@@ -282,22 +282,32 @@ test('scores require authentication, valid integers, and a complete slate before
   assert.equal((await score(env, token, first.id, 10, 10, 10)).status, 409);
 });
 
-test('owner can choose a tied leader and runner-up ties use submission order', async () => {
-  const { env } = makeEnv();
+test('every tied total blocks publication until judges save distinct scores', async () => {
+  const { env, sqlite, objects } = makeEnv();
   const entries = [];
   for (let i = 0; i < 4; i++) {
     entries.push(await (await call(env, '/submissions', { method: 'POST', body: form() })).json());
   }
   const token = await login(env);
   for (const entry of entries) assert.equal((await score(env, token, entry.id, 8, 8, 8)).status, 200);
-  const selected = await call(env, '/judging/winners', { method: 'POST', token,
-    body: { id: entries[2].id, date: entries[2].contestDate } }, JUDGING);
+  const submit = (id) => call(env, '/judging/winners', { method: 'POST', token,
+    body: { id, date: entries[0].contestDate } }, JUDGING);
+  for (const change of [null, [0, 10, 10, 10], [1, 9, 9, 9]]) {
+    if (change) assert.equal((await score(env, token, entries[change[0]].id, ...change.slice(1))).status, 200);
+    const blocked = await submit(entries[0].id);
+    assert.equal(blocked.status, 409);
+    assert.equal((await blocked.json()).error.code, 'scores_tied');
+    assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 0);
+    assert.equal(sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n, 4);
+    assert.equal(objects.size, 4);
+  }
+  assert.equal((await score(env, token, entries[2].id, 7, 7, 7)).status, 200);
+  const selected = await submit(entries[0].id);
   assert.equal(selected.status, 201);
   const { winner, runnerUp } = await selected.json();
-  assert.equal(winner.id, entries[2].id);
-  // All submissions share a timestamp, so the UUID is the deterministic tie breaker.
-  assert.equal(runnerUp.id, entries.filter(entry => entry.id !== entries[2].id)
-    .map(entry => entry.id).sort()[0]);
+  assert.equal(winner.id, entries[0].id);
+  assert.equal(runnerUp.id, entries[1].id);
+  assert.equal(objects.size, 2);
 });
 
 test('confirmation rejects a runner-up that changed after the private preview without publishing or deleting', async () => {

@@ -47,15 +47,18 @@
 .score-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; margin: .2rem 0 1.2rem; }
 .score-form label { min-width: 0; color: var(--ink-soft); font-size: .7rem; font-weight: 700; }
 .score-form input { width: 100%; min-height: 38px; padding: .4rem; margin-top: .3rem; border: 1px solid #c9c2b7; border-radius: .4rem; background: #fff; color: var(--ink); }
-.score-form .score-total { grid-column: 1 / -1; color: var(--ink); font-size: .82rem; font-weight: 700; }
 .score-form button { grid-column: 1 / -1; min-height: 38px; border-radius: .4rem; background: #e9edf0; color: var(--ink); font-size: .78rem; font-weight: 700; }
 .score-form button:hover { background: #d9e1e7; }
 .judge-card-actions { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: auto; }
+.judge-card-actions .score-total { align-self: center; color: var(--ink); font-size: .82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.judge-card-actions .score-total.is-tied { color: #a12424; }
 .judge-card-actions button { font-size: .78rem; padding: .5rem .65rem; border-radius: .45rem; font-weight: 700; border: 1px solid #c9c2b7; background: #fff; color: var(--ink); }
 .judge-card-actions button:hover { border-color: var(--accent); }
 .judge-card-actions .delete-entry { color: #a13b2e; margin-left: auto; }
 .judge-submit-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: -4rem 0 5rem; padding: 1.2rem 1.4rem; border: 1px solid #bfcfbd; border-radius: .75rem; background: #edf3ed; }
 .judge-submit-bar p { margin: 0; color: #385647; font-size: .88rem; }
+.judge-submit-bar[data-tied="true"] { border-color: #dfb1ae; background: #fff1ef; }
+.judge-submit-bar[data-tied="true"] p { color: #922d2a; }
 .results-dialog { width: min(calc(100% - 2rem), 800px); max-height: min(90vh, 900px); overflow: auto; padding: 0; border: 1px solid #d4cdc2; border-radius: 1rem; background: #fffdf9; color: var(--ink); box-shadow: 0 30px 100px #15202a66; }
 .results-dialog::backdrop { background: #111925b8; }
 .results-dialog-inner { padding: clamp(1.25rem, 4vw, 2.5rem); }
