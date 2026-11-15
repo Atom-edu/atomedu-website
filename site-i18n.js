@@ -1543,6 +1543,16 @@
     'Upload that saved file here and confirm your entry.': 'Sube aquí el archivo guardado y confirma tu participación.',
     '03 / THE FINE PRINT': '03 / LAS CONDICIONES',
     'Contest rules & terms': 'Reglas y condiciones del concurso',
+    'THE JUDGING GUIDE': 'GUÍA DE EVALUACIÓN',
+    'How we choose a winner': 'Cómo elegimos al ganador',
+    'We rate eligible art out of 10 in each category. Our owners compare their ratings, talk it through as a group, and choose one daily winner together.': 'Calificamos las obras que cumplen las reglas sobre 10 en cada categoría. Los propietarios comparan sus calificaciones, las comentan en grupo y eligen juntos a un ganador diario.',
+    'UP TO 10 POINTS': 'HASTA 10 PUNTOS',
+    'Beauty': 'Belleza',
+    'How visually appealing and well put together the artwork is.': 'Qué tan atractiva y bien lograda es la obra visualmente.',
+    'Creativity': 'Creatividad',
+    'How original and imaginative the idea is.': 'Qué tan original e imaginativa es la idea.',
+    'Complexity': 'Complejidad',
+    'How difficult and intricate the graph work is.': 'Qué tan difícil y elaborado es el trabajo con gráficas.',
     'Use atomEDU’s graph': 'Usa la gráfica de atomEDU',
     'Only original artwork you create in atomEDU Proof Lab’s Graph view is eligible. Use its PNG save control and upload your saved image. Desmos graphs, art from other software, and work you did not create are disqualified, even if submitted in an accepted image format.': 'Solo se admiten obras originales que crees en la vista Gráfica de atomEDU Proof Lab. Usa su control para guardar en PNG y sube la imagen guardada. Las gráficas de Desmos, las obras creadas con otro software y las obras que no hayas creado tú quedan descalificadas, aunque se envíen en un formato de imagen aceptado.',
     'Enter as often as you like': 'Participa tantas veces como quieras',
@@ -1607,6 +1617,8 @@
     'WINNER': 'GANADOR',
     'ENTRIES': 'PARTICIPACIONES',
     'Submissions': 'Participaciones',
+    'Judging guide': 'Guía de evaluación',
+    'Beauty, Creativity, and Complexity: score each out of 10. Compare your ratings and choose one winner together.': 'Belleza, Creatividad y Complejidad: califiquen cada una sobre 10. Comparen sus calificaciones y elijan juntos a un ganador.',
     'Choose a date to load entries.': 'Elige una fecha para cargar las participaciones.',
     'Contest records and judging decisions are saved by the server.': 'El servidor guarda los registros del concurso y las decisiones de los jueces.',
     'View the public contest →': 'Ver el concurso público →',
@@ -1668,6 +1680,7 @@
     'Image could not be displayed': 'No se pudo mostrar la imagen',
     'Sign in to view submissions.': 'Inicia sesión para ver las participaciones.',
     'Time unavailable': 'Hora no disponible',
+    'Date unavailable': 'Fecha no disponible',
     'The judging server returned an incomplete list of submissions.': 'El servidor de evaluación devolvió una lista incompleta de participaciones.',
     'The judging server returned an invalid submission.': 'El servidor de evaluación devolvió una participación no válida.',
     'Not selected': 'Sin seleccionar',
@@ -1845,6 +1858,8 @@
   function translateContestDate(value) {
     var match = /^([A-Z][a-z]+) (\d{1,2}), (\d{4})$/.exec(value);
     if (match && contestMonths[match[1]]) return match[2] + ' de ' + contestMonths[match[1]] + ' de ' + match[3];
+    match = /^([A-Z][a-z]{2}) (\d{1,2})$/.exec(value);
+    if (match && contestShortMonths[match[1]]) return match[2] + ' ' + contestShortMonths[match[1]];
     match = /^(?:([A-Z][a-z]{2}), )?([A-Z][a-z]{2}) (\d{1,2}), (\d{1,2}:\d{2}) (AM|PM) ([A-Z]{2,5})$/.exec(value);
     if (match && contestShortMonths[match[2]] && (!match[1] || contestWeekdays[match[1]]))
       return (match[1] ? contestWeekdays[match[1]] + ', ' : '') + match[3] + ' ' + contestShortMonths[match[2]] + ', ' + match[4] + ' ' + (match[5] === 'AM' ? 'a. m.' : 'p. m.') + ' ' + match[6];

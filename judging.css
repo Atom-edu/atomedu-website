@@ -26,6 +26,9 @@
 .judge-summary > div { display: grid; align-content: center; gap: .3rem; min-height: 100px; padding: 1.2rem; border: 1px solid #ded9cf; border-radius: .7rem; background: #fffdf9; }
 .judge-summary small { font-size: .65rem; color: var(--muted); font-weight: 700; letter-spacing: .14em; }
 .judge-summary strong { font-size: clamp(1rem, 2vw, 1.3rem); overflow-wrap: anywhere; }
+.judge-criteria { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; margin-top: 1rem; padding: 1rem 1.2rem; border: 1px solid #ded9cf; border-radius: .7rem; background: #fffdf9; }
+.judge-criteria strong { font-size: .86rem; }
+.judge-criteria span { color: var(--ink-soft); font-size: .82rem; line-height: 1.5; }
 .judge-list-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin: 4rem 0 1.5rem; }
 .judge-list-heading h2 { margin: .3rem 0 0; font-size: clamp(2rem, 3.5vw, 3.3rem); }
 .judge-list-heading > span { color: var(--muted); font-size: .83rem; }

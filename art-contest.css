@@ -136,6 +136,14 @@
 .aside-facts p { font-size: .85rem; }
 
 .rules-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 4rem; border-top: 1px solid #d7d2c7; padding-top: 2rem; }
+.criteria-panel { padding: clamp(1.4rem, 3vw, 2.4rem); margin-bottom: 2.5rem; border: 1px solid #d7d2c7; border-radius: 1rem; background: #fffdf9; box-shadow: 0 12px 28px #2430430a; }
+.criteria-intro h3 { margin: .2rem 0 .6rem; font-size: clamp(1.9rem, 3.3vw, 2.7rem); }
+.criteria-intro > p:last-child { max-width: 45rem; margin: 0 0 1.5rem; color: var(--ink-soft); font-size: .92rem; line-height: 1.55; }
+.criteria-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.criteria-grid > div { min-width: 0; padding: 1.15rem; border: 1px solid #e0d9d0; border-radius: .7rem; background: #f8f5ef; }
+.criteria-grid span { color: var(--accent); font-size: .66rem; font-weight: 800; letter-spacing: .12em; }
+.criteria-grid h4 { margin: .6rem 0 .35rem; font-size: 1.15rem; }
+.criteria-grid p { margin: 0; color: var(--ink-soft); font-size: .84rem; line-height: 1.5; }
 .rule-number { color: var(--accent); font-size: .76rem; font-weight: 700; }
 .rules-grid h3 { margin: .5rem 0; font-size: 1.2rem; }
 .rules-grid p { color: var(--ink-soft); font-size: .89rem; margin: 0; }
@@ -173,6 +181,7 @@
   .section-heading { display: block; }
   .section-aside { display: block; margin-top: .6rem; }
   .rules-grid { grid-template-columns: 1fr; }
+  .criteria-grid { grid-template-columns: 1fr; }
   .winner-visual { height: clamp(260px, 72vw, 440px); }
   .winner-copy { padding: 1.5rem; }
   .winner-seal { position: static; margin-top: 1rem; }

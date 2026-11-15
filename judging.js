@@ -145,11 +145,11 @@
     clearEntries('Sign in to view submissions.');
   }
 
-  function formatSubmittedAt(value) {
-    if (typeof value !== 'string') return 'Time unavailable';
+  function formatSubmittedDate(value) {
+    if (typeof value !== 'string') return 'Date unavailable';
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Time unavailable';
-    return new Intl.DateTimeFormat('en-US', { timeZone: CENTRAL, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(date);
+    if (Number.isNaN(date.getTime())) return 'Date unavailable';
+    return new Intl.DateTimeFormat('en-US', { timeZone: CENTRAL, month: 'short', day: 'numeric' }).format(date);
   }
 
   function renderEntries(data, requestedDate, phase) {
@@ -207,7 +207,7 @@
         top.append(badge);
       }
       const meta = document.createElement('p');
-      meta.textContent = `Submitted ${formatSubmittedAt(entry.submittedAt)}`;
+      meta.textContent = `Submitted ${formatSubmittedDate(entry.submittedAt)}`;
       const actions = document.createElement('div');
       actions.className = 'judge-card-actions';
       if (!isWinner) {
