@@ -1,10 +1,6 @@
 .judging-page { min-height: 100vh; background: #f6f5f2; }
 .judge-shell { width: min(100% - 3rem, 78rem); margin-inline: auto; }
-.judge-header { border-bottom: 1px solid #d9d4ca; background: #fffdf9; }
-.judge-header-inner { min-height: 74px; display: flex; align-items: center; gap: 2rem; }
-.judge-header-label { margin: auto; font-size: .68rem; font-weight: 700; letter-spacing: .18em; color: var(--muted); }
-.judge-back { font-size: .85rem; font-weight: 600; color: var(--accent); }
-.judge-back:hover { color: var(--accent-deep); }
+.judging-page > main { padding-top: var(--header-h); }
 .judge-title { margin: clamp(3rem, 7vw, 6rem) 0 2.4rem; }
 .judge-title h1 { font-size: clamp(3rem, 7vw, 5.6rem); margin: .5rem 0; }
 .judge-title > p:last-child { color: var(--ink-soft); max-width: 36rem; margin: 0; }
@@ -50,14 +46,9 @@
 .judge-card-actions .delete-entry { color: #a13b2e; margin-left: auto; }
 .judge-card-actions .select-winner { background: var(--ink); color: #fff; border-color: var(--ink); }
 .judge-card-actions .select-winner:hover { background: #0f1620; }
-.judge-footer { border-top: 1px solid #d9d4ca; padding: 2rem 0; color: var(--muted); font-size: .8rem; }
-.judge-footer a { color: var(--accent); }
 @media (max-width: 900px) { .judge-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 620px) {
   .judge-shell { width: min(100% - 2rem, 78rem); }
-  .judge-header-inner { gap: .7rem; }
-  .judge-header-label { display: none; }
-  .judge-back { margin-left: auto; }
   .login-row { display: grid; }
   .judge-summary { grid-template-columns: 1fr; }
   .judge-summary > div { min-height: 75px; }

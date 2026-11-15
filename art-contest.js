@@ -27,7 +27,7 @@
   let stateRequest = null;
   let lastStateAttempt = 0;
 
-  $('year').textContent = new Date().getFullYear();
+  $('yr').textContent = new Date().getFullYear();
 
   function setMessage(element, text, kind = 'error') {
     element.textContent = text;

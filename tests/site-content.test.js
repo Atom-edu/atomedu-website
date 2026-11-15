@@ -10,6 +10,7 @@ const expectedNav = [
   ['Home', '/'],
   ['Features', '/features'],
   ['Learn', '/learn'],
+  ['Art contest', '/art-contest'],
   ['About', '/about'],
   ['Contact', '/contact'],
   ['Start math', '/proof-lab'],
@@ -26,6 +27,31 @@ function links(markup) {
     attrs.match(/\bhref="([^"]+)"/)?.[1],
   ]);
 }
+
+for (const page of ['art-contest.html', 'judging.html']) {
+  test(`${page} shares the public navigation and footer, including Contact and Art contest`, () => {
+    const html = read(page);
+    const desktop = html.match(/<nav class="nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+    const mobile = html.match(/<div class="mobile-nav"[^>]*>\s*<div class="inner">([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(desktop, 'desktop navigation exists');
+    assert.ok(mobile, 'mobile navigation exists');
+    assert.deepEqual(links(desktop), expectedNav);
+    assert.deepEqual(links(mobile), expectedNav);
+    assert.match(html, /<footer class="site-footer">/);
+    assert.match(html, /<div class="footer-banner">/);
+    assert.match(html, /<div class="footer-cols">/);
+    assert.match(html, /href="\/contact">Contact<\/a>/);
+    assert.match(html, /site\.js/);
+    assert.doesNotMatch(html, /class="(?:contest-footer|judge-footer|judge-header)"/);
+  });
+}
+
+test('contest and judging use the exact shared site footer', () => {
+  const footer = (page) => read(page).match(/<footer class="site-footer">[\s\S]*?<\/footer>/)?.[0];
+  const shared = footer('index.html');
+  assert.ok(shared);
+  for (const page of ['art-contest.html', 'judging.html']) assert.equal(footer(page), shared);
+});
 
 for (const page of marketingPages) {
   test(`${page} shares the complete Proof Lab navigation and honest product copy`, () => {
