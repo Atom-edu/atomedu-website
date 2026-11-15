@@ -24,7 +24,7 @@ test('the product video deck has 15 working slides, four portraits, and real pro
   assert.doesNotMatch(html, /Official Google partner|All of Algebra|All of Geometry/i);
 });
 
-test('the 12-minute script opens with Rahul and gives Aryan most of the dialogue', () => {
+test('the 12-minute script opens with Rahul and balances all three speakers', () => {
   const script = read('docs/product-video-script.md');
   assert.match(script, /Target length: about 12 minutes/);
   assert.equal((script.match(/^## \d+:\d\d to \d+:\d\d \| Slide \d+/gm) || []).length, 15);
@@ -33,7 +33,8 @@ test('the 12-minute script opens with Rahul and gives Aryan most of the dialogue
   assert.match(script, /\*\*Pritam:\*\*/);
   assert.match(script, /\*\*Aryan:\*\*/);
   const speakerWords = name => [...script.matchAll(new RegExp(`^\\*\\*${name}:\\*\\* (.+)$`, 'gm'))].reduce((count, match) => count + match[1].split(/\s+/).length, 0);
-  assert(speakerWords('Aryan') > speakerWords('Rahul') + speakerWords('Pritam'));
+  const counts = ['Rahul', 'Aryan', 'Pritam'].map(speakerWords);
+  assert(Math.max(...counts) - Math.min(...counts) <= 30, `Unbalanced narration: ${counts.join(', ')}`);
   for (const topic of ['Solve', 'Check work', 'Ghost steps', 'Generate', 'Graph', 'Share']) {
     assert.match(script, new RegExp(topic, 'i'));
   }

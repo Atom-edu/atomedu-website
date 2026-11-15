@@ -1,10 +1,10 @@
 # atomEDU product demo script
 
-Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avuthu. Rahul opens. Aryan leads the live demonstration and speaks for most of the video. Pritam covers the engine and its boundaries. The [15-slide presentation](../product-video.html) follows the scenes below. Timing includes time to click, scroll, and let the audience read the screen.
+Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avuthu. Rahul opens, and the three speakers share the narration evenly. Rahul covers the student-work checks, Pritam covers solving and the engine, and Aryan covers the editor, practice, graph, and sharing. The [15-slide presentation](../product-video.html) follows the scenes below. Timing includes time to click, scroll, and let the audience read the screen.
 
 ## 0:00 to 0:40 | Slide 1 | Rahul opens
 
-**Rahul:** "Hi, I'm Rahul Awasthi. This is atomEDU, and today we're going to show you Proof Lab. We started building it in O'Fallon, Missouri, after watching students work hard on a problem and get only a right or wrong mark at the end. That mark doesn't say where the reasoning changed. We wanted to give students a useful next step, even when their final answer was wrong. I'll show you the idea, then Aryan will take you through the product."
+**Rahul:** "Hi, I'm Rahul Awasthi. This is atomEDU, and today we're going to show you Proof Lab. We started building it in O'Fallon, Missouri, after watching students work hard on a problem and get only a right or wrong mark at the end. That mark doesn't say where the reasoning changed. We wanted to give students a useful next step, even when their final answer was wrong. I'll show you the idea, then we'll take you through the product together."
 
 **Screen:** Rahul on camera for the first sentence, then the atomEDU logo and title. Hold the cover briefly before moving on.
 
@@ -20,27 +20,27 @@ Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: R
 
 **Screen:** Use the [editor and math pad](./product-video-assets/editor-screen.png). On the live site, insert a fraction and move between its two placeholders. Close the pad before the next scene.
 
-## 2:10 to 2:55 | Slide 4 | Aryan solves a function
+## 2:10 to 2:55 | Slide 4 | Pritam solves a function
 
-**Aryan:** "Let's try this function: f of x equals two over x minus three, plus one. I press Solve. The result shows the function, its domain, intercepts, asymptotes, and other supported features. The important detail is x cannot equal three. That restriction is part of the mathematical answer. If we simplify a rational expression and forget where the original denominator was zero, we can accidentally claim a value that was never allowed. Proof Lab keeps that boundary visible."
+**Pritam:** "I'm Pritam Avuthu. Let's try this function: f of x equals two over x minus three, plus one. I press Solve. The result shows the function, its domain, intercepts, asymptotes, and other supported features. The important detail is x cannot equal three. That restriction is part of the mathematical answer. If we simplify a rational expression and forget where the original denominator was zero, we can accidentally claim a value that was never allowed. Proof Lab keeps that boundary visible."
 
 **Screen:** Enter `f(x)=2/(x-3)+1`. Show the [verified function analysis](./product-video-assets/solve-screen.png) and pause on the domain line.
 
-## 2:55 to 3:40 | Slide 5 | Aryan follows the proof timeline
+## 2:55 to 3:40 | Slide 5 | Pritam follows the proof timeline
 
-**Aryan:** "Below the result is the proof timeline. It starts with one step, so I can read it instead of getting a wall of equations at once. I can press Show next step and see the next transformation and its rule. Notice the difference between a displayed formula and a verified step. The math is checked by the engine. The LaTeX badge only tells us that the notation renders properly. We show those separately because a nicely typeset answer can still be mathematically wrong."
+**Pritam:** "Below the result is the proof timeline. It starts with one step, so I can read it instead of getting a wall of equations at once. I can press Show next step and see the next transformation and its rule. Notice the difference between a displayed formula and a verified step. The math is checked by the engine. The LaTeX badge only tells us that the notation renders properly. We show those separately because a nicely typeset answer can still be mathematically wrong."
 
 **Screen:** Scroll to the [proof timeline](./product-video-assets/timeline-screen.png). Press Show next step twice. Keep the rule label and verified marker in view.
 
-## 3:40 to 4:30 | Slide 6 | Aryan checks student work
+## 3:40 to 4:30 | Slide 6 | Rahul checks student work
 
-**Aryan:** "Now let's look at the student's work from the beginning. The problem is three x plus two equals two times x plus four. In the first submitted line, I changed the right side to two x plus four. I multiplied the x by two, but not the four. When I check the work, Proof Lab identifies that first line as invalid and explains the distribution error. The lines after it might follow from the mistaken line. They don't repair the original problem. The correct distribution is two x plus eight, and the actual solution is x equals six."
+**Rahul:** "Now let's look at the student's work from the beginning. The problem is three x plus two equals two times x plus four. In the first submitted line, I changed the right side to two x plus four. I multiplied the x by two, but not the four. When I check the work, Proof Lab identifies that first line as invalid and explains the distribution error. The lines after it might follow from the mistaken line. They don't repair the original problem. The correct distribution is two x plus eight, and the actual solution is x equals six."
 
 **Screen:** Submit the [incorrect first step](./product-video-assets/check-screen.png). Highlight the first-error label, the explanation, and the contrast with later locally valid lines.
 
-## 4:30 to 5:15 | Slide 7 | Aryan shows Ghost steps
+## 4:30 to 5:15 | Slide 7 | Rahul shows Ghost steps
 
-**Aryan:** "Students do not have to write every tiny algebra move. If a jump is valid and the engine can reconstruct what happened, Ghost steps show the missing checkpoints. When a submitted step is wrong, a corrected continuation can also appear. It is labeled as a correction, not as something the student wrote. Here you can see two times x plus four become two x plus eight, then the equation moves toward x equals six. That gives the student a path back into the problem without pretending their original line was correct."
+**Rahul:** "Students do not have to write every tiny algebra move. If a jump is valid and the engine can reconstruct what happened, Ghost steps show the missing checkpoints. When a submitted step is wrong, a corrected continuation can also appear. It is labeled as a correction, not as something the student wrote. Here you can see two times x plus four become two x plus eight, then the equation moves toward x equals six. That gives the student a path back into the problem without pretending their original line was correct."
 
 **Screen:** Scroll to the [verified Ghost steps](./product-video-assets/ghost-screen.png). Pause on the label that distinguishes the correction from submitted work.
 
@@ -56,15 +56,15 @@ Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: R
 
 **Screen:** Plot `y=sin(x)` on the [graph](./product-video-assets/graph-screen.png). Zoom once and point to the numerical label.
 
-## 6:45 to 7:30 | Slide 10 | Aryan shows image import and art
+## 6:45 to 7:30 | Slide 10 | Pritam shows image import and art
 
-**Aryan:** "There is also a creative side to the graph. Under Image import, I can choose a picture and ask Proof Lab to approximate it with waves, straight lines, or colored regions. The formulas it uses appear in the expression list, so the result remains math that I can inspect and adjust. A complex photo will only be an approximation. Students can save graph art as a PNG and enter our daily graph-art contest. The art has to come from atomEDU's graph, and the contest has its own rules and judging."
+**Pritam:** "There is also a creative side to the graph. Under Image import, I can choose a picture and ask Proof Lab to approximate it with waves, straight lines, or colored regions. The formulas it uses appear in the expression list, so the result remains math that I can inspect and adjust. A complex photo will only be an approximation. Students can save graph art as a PNG and enter our daily graph-art contest. The art has to come from atomEDU's graph, and the contest has its own rules and judging."
 
 **Screen:** Open [Image import](./product-video-assets/image-import-screen.png). Show the drawing styles without claiming the conversion is exact. Then briefly show Save PNG and the Art contest entry point.
 
 ## 7:30 to 8:20 | Slide 11 | Pritam explains the engine
 
-**Pritam:** "I'm Pritam Avuthu. The mathematical part of Proof Lab is a rule-based engine we build and test ourselves. It parses the expression, selects a supported rule family, computes a candidate result, and checks that result before it marks it verified. The checker can replay the certificate against the input. This matters when a result looks plausible but was reached through an invalid step. We want the verified label to mean something specific. We also test examples that should be rejected, so an unsupported or incorrect step is not silently accepted."
+**Pritam:** "The mathematical part of Proof Lab is a rule-based engine we build and test ourselves. It parses the expression, selects a supported rule family, computes a candidate result, and checks that result before it marks it verified. The checker can replay the certificate against the input. This matters when a result looks plausible but was reached through an invalid step. We want the verified label to mean something specific. We also test examples that should be rejected, so an unsupported or incorrect step is not silently accepted."
 
 **Screen:** Show the four terms on the slide: Input, Rule, Result, Verification. Pause on Verification.
 
@@ -102,7 +102,7 @@ Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: R
 
 ## Recording notes
 
-- Give Aryan the live product controls. Rahul should open the video before the first screen share. Pritam should deliver the engine and limits section on camera or voiceover.
+- Rahul opens before the first screen share and demonstrates Check work and Ghost steps. Aryan demonstrates the editor, Generate, Graph, and sharing. Pritam demonstrates Solve, the proof timeline, image import, and the engine. Hand off the live product controls between speakers at scene changes.
 - Record the demonstrations at 1024 by 768 or wider. Pause on the first-error explanation, a Ghost step, and a proof timeline rule long enough to read them.
 - Use the actual rule-based product. Do not claim full Algebra I, Algebra II, Geometry, or Precalculus coverage. The [current coverage checklist](./standards-coverage.md) records the limits.
 - Verify the 3,640+ user figure and partner mark permissions before filming. Do not call atomEDU an official Google Classroom partner.
