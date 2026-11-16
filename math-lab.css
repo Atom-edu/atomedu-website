@@ -742,6 +742,11 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app .graph-share-export-list { display: grid; gap: 6px; padding: 2px 12px 8px; }
 .lab-app .graph-share-export-button { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #dce2e8; border-radius: 6px; background: #f9fafb; color: #263847; text-align: left; font: 12px Roboto, Arial, sans-serif; cursor: pointer; }
 .lab-app .graph-share-export-button:hover { border-color: #7a93a8; background: #f2f6f9; }
+.lab-app .graph-share-export-button[hidden] { display: none; }
+.lab-app .graph-notion-direct { display: grid; gap: 8px; padding: 11px; border: 1px solid #dce2e8; border-radius: 6px; background: #fff; }
+.lab-app .graph-notion-direct[hidden] { display: none; }
+.lab-app .graph-notion-direct label { display: grid; gap: 5px; color: #263847; font: 700 12px Roboto, Arial, sans-serif; }
+.lab-app .graph-notion-direct input { box-sizing: border-box; width: 100%; min-height: 37px; padding: 7px 9px; border: 1px solid #c8d1d8; border-radius: 5px; font: 12px Arial, sans-serif; }
 .lab-app .graph-share-export-button:focus-visible, .lab-app .graph-share-export > summary:focus-visible { outline: 2px solid #3265a5; outline-offset: 2px; }
 .lab-app .graph-share-export-button strong { font-weight: 700; }
 .lab-app .graph-share-export-button span { color: #657584; }

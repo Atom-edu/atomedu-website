@@ -11,6 +11,11 @@ test('Graph presents a truthful provider handoff below Copy graph link', () => {
   for (const name of ['Google Drive', 'Notion', 'Zapier', 'Dropbox', 'GitHub']) assert(app.includes(`'${name}'`));
   assert.match(app, /Dropbox saves directly after you approve it in the popup/);
   assert.match(app, /window\.Dropbox\.save\(url, 'atom-graph\.json'/);
+  assert.match(app, /buildDirectExportUrl\('github', graph\.getState\(\)\)/);
+  assert.match(app, /buildDirectExportUrl\('notion', graph\.getState\(\), notionInput\.value\.trim\(\)\)/);
+  assert.match(app, /status\?\.providers\?\.github\?\.available/);
+  assert.match(app, /status\?\.providers\?\.notion\?\.available/);
+  assert.match(css, /\.graph-share-export-button\[hidden\]/);
   assert.doesNotMatch(app, /gapi\.savetodrive|loadDriveSaver/);
   assert.match(app, /buildPublicGraphDownloadUrl\(graph\.getState\(\)\)/);
   assert.match(app, /Download graph JSON/);

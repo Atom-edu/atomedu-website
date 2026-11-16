@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildGraphShareUrl } from '../classroom/share.js';
-import { prepareGraphExport, serializeGraph, buildPublicGraphDownloadUrl } from '../graph/share-export.js';
+import { prepareGraphExport, serializeGraph, buildPublicGraphDownloadUrl, buildDirectExportUrl } from '../graph/share-export.js';
 
 const source = {
   expressions: [
@@ -117,4 +117,17 @@ test('builds a bounded public graph file URL for provider Saver widgets', () => 
   assert(!JSON.stringify(graph).includes('secret'));
   assert.throws(() => buildPublicGraphDownloadUrl({ expressions: Array(25).fill('y=x') }), /up to 24/);
   assert.throws(() => buildPublicGraphDownloadUrl({ expressions: ['y=x' + ' '.repeat(257)] }), /256 characters/);
+});
+
+test('builds a nonempty, bounded GitHub OAuth export link', () => {
+  const url = new URL(buildDirectExportUrl('github', source));
+  assert.equal(url.pathname, '/api/integrations/oauth/github/start');
+  assert.equal(JSON.parse(url.searchParams.get('graph')).expressions.length, 2);
+  const notion = new URL(buildDirectExportUrl('notion', source, 'https://app.notion.com/p/Welcome-41acb18b29318005a7c3e7921315848e'));
+  assert.equal(notion.pathname, '/api/integrations/oauth/notion/start');
+  assert.equal(notion.searchParams.get('parent'), '41acb18b29318005a7c3e7921315848e');
+  assert.throws(() => buildDirectExportUrl('notion', source), /Paste the full URL/);
+  assert.throws(() => buildDirectExportUrl('notion', source, 'https://evil.example/page-41acb18b29318005a7c3e7921315848e'), /Paste the full URL/);
+  assert.throws(() => buildDirectExportUrl('github', { expressions: [] }), /Add a graph/);
+  assert.throws(() => buildDirectExportUrl('github', { expressions: Array(24).fill('y=x' + ' '.repeat(60)) }), /too large/);
 });

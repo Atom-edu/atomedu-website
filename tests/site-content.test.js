@@ -170,7 +170,7 @@ test('home integration cards use a responsive grid and label unavailable connect
   const section = home.match(/<section class="section integrations-section"[\s\S]*?<\/section>/)?.[0];
   assert.ok(section);
   assert.match(section, /class="integration-grid"/);
-  const cards = [...section.matchAll(/<article class="integration-card(?: classroom-integration| dropbox-integration)?">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
+  const cards = [...section.matchAll(/<article class="integration-card(?: [^"]+)?">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
   assert.equal(cards.length, 6);
   assert.match(cards[0], /For use with Google Classroom™/);
   assert.match(cards[0], /href="\/proof-lab#graph"/);
@@ -181,13 +181,17 @@ test('home integration cards use a responsive grid and label unavailable connect
       assert.match(card, /Dropbox Saver/);
       assert.match(card, /Dropbox logo/);
       assert.match(card, /href="\/proof-lab#graph"/);
+    } else if (name === 'GitHub') {
+      assert.match(card, /unlisted Gist/);
+      assert.match(card, /github-lockup\.svg/);
+      assert.match(card, /href="\/proof-lab#graph"/);
     } else {
       assert.match(card, /class="integration-status">Coming soon<\/p>/);
       assert.match(card, /class="integration-placeholder" aria-hidden="true"/);
       assert.doesNotMatch(card, /<img\b|<svg\b|<a\b/, `${name} has no logo or live action`);
     }
   }
-  assert.equal([...section.matchAll(/<img\b/g)].length, 2, 'Classroom and Dropbox integrations have logos');
+  assert.equal([...section.matchAll(/<img\b/g)].length, 3, 'Classroom, Dropbox and GitHub integrations have logos');
   assert.match(section, /Other product names belong to their respective owners/);
 
   const css = read('styles.css');

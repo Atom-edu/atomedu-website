@@ -5,6 +5,7 @@ import { compileGraphExpression, GRAPH_LIMITS, validateViewport } from './model.
 
 const MAX_EXPORT_BYTES = 1024 * 1024;
 const PUBLIC_GRAPH_URL = 'https://atom-integrations-api.archimedes-api1.workers.dev/api/integrations/download';
+const DIRECT_EXPORT_BYTES = 1800;
 const VALID_FORMATS = new Set(['text', 'json', 'latex']);
 const PROVIDERS = Object.freeze({
   'google-drive': { format: 'json', delivery: 'download', instructions: 'Download the JSON file, then upload it in Google Drive.' },
@@ -183,6 +184,29 @@ export function buildPublicGraphDownloadUrl(input) {
   url.searchParams.set('graph', JSON.stringify(graph));
   if (url.href.length > 8192 || new TextEncoder().encode(JSON.stringify(graph)).length > 4096)
     throw new RangeError('This graph is too large for direct cloud saving. Download the JSON file instead.');
+  return url.href;
+}
+
+/** One-time OAuth handoff. The graph is sealed in a short-lived Worker cookie. */
+export function buildDirectExportUrl(provider, input, destinationPageUrl) {
+  if (provider !== 'github' && provider !== 'notion') throw new TypeError('Unsupported direct export provider.');
+  const url = new URL(buildPublicGraphDownloadUrl(input));
+  const graph = JSON.parse(url.searchParams.get('graph'));
+  if (!graph.expressions.length) throw new RangeError('Add a graph expression before exporting.');
+  if (byteLength(JSON.stringify(graph)) > DIRECT_EXPORT_BYTES)
+    throw new RangeError('This graph is too large for direct saving. Use the manual export option instead.');
+  if (provider === 'notion') {
+    let destination;
+    try { destination = new URL(destinationPageUrl); } catch { throw new TypeError('Paste the full URL of a Notion page you can edit.'); }
+    if (destination.protocol !== 'https:' || !['notion.so', 'www.notion.so', 'app.notion.com'].includes(destination.hostname)
+      || destination.username || destination.password || destination.port)
+      throw new TypeError('Paste the full URL of a Notion page you can edit.');
+    const match = destination.pathname.match(/([0-9a-f]{32})\/?$/i);
+    if (!match) throw new TypeError('The Notion page URL needs a valid page ID.');
+    url.searchParams.set('parent', match[1].toLowerCase());
+  }
+  url.pathname = `/api/integrations/oauth/${provider}/start`;
+  if (url.href.length > 8192) throw new RangeError('This graph is too large for direct saving.');
   return url.href;
 }
 

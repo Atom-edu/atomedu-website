@@ -3,9 +3,10 @@
 import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-18';
 import { latexToInput } from './engine/latex.js?v=proof-lab-18';
 import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=1';
-import { prepareGraphExport, buildPublicGraphDownloadUrl } from './graph/share-export.js?v=2';
+import { prepareGraphExport, buildPublicGraphDownloadUrl, buildDirectExportUrl } from './graph/share-export.js?v=4';
 
 const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
+const INTEGRATION_STATUS_URL = 'https://atom-integrations-api.archimedes-api1.workers.dev/api/integrations/status';
 let dropboxLoader = null;
 function loadDropboxSaver() {
   if (window.Dropbox?.save) return Promise.resolve();
@@ -705,9 +706,45 @@ function mountClassroomShare(graph) {
   }
   const exportStatus = node('p', 'graph-share-export-status');
   exportStatus.setAttribute('role', 'status');
+  const githubDirect = node('button', 'graph-share-export-button');
+  githubDirect.type = 'button';
+  githubDirect.hidden = true;
+  githubDirect.append(node('strong', '', 'Save to GitHub'), node('span', '', 'Create an unlisted Gist with gist permission'));
+  githubDirect.addEventListener('click', () => {
+    try {
+      const url = buildDirectExportUrl('github', graph.getState());
+      window.open(url, '_blank', 'noopener,noreferrer');
+      exportStatus.textContent = 'GitHub opens in a new tab and asks for gist access. A Gist is unlisted, not private: anyone with its link can view it. No repository access is requested.';
+    } catch (error) { exportStatus.textContent = errorMessage(error); }
+  });
+  const notionDirect = node('div', 'graph-notion-direct');
+  notionDirect.hidden = true;
+  const notionLabel = node('label', '', 'Destination Notion page URL');
+  const notionInput = node('input', 'graph-notion-url');
+  notionInput.type = 'url';
+  notionInput.placeholder = 'https://www.notion.so/...';
+  notionInput.autocomplete = 'off';
+  notionLabel.append(notionInput);
+  const notionButton = node('button', 'graph-share-export-button');
+  notionButton.type = 'button';
+  notionButton.append(node('strong', '', 'Save to Notion'), node('span', '', 'Create a child page under this destination'));
+  notionButton.addEventListener('click', () => {
+    try {
+      const url = buildDirectExportUrl('notion', graph.getState(), notionInput.value.trim());
+      window.open(url, '_blank', 'noopener,noreferrer');
+      exportStatus.textContent = 'Notion opens in a new tab. Select the same destination page when Notion asks what to share. The new graph page will be created beneath it.';
+    } catch (error) { exportStatus.textContent = errorMessage(error); }
+  });
+  notionDirect.append(notionLabel, notionButton);
   exportMenu.addEventListener('toggle', () => {
     if (!exportMenu.open) return;
     loadDropboxSaver().catch(() => { exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.'; });
+    fetch(INTEGRATION_STATUS_URL, { cache: 'no-store' }).then(response => response.ok ? response.json() : null)
+      .then(status => {
+        githubDirect.hidden = status?.providers?.github?.available !== true;
+        notionDirect.hidden = status?.providers?.notion?.available !== true;
+      })
+      .catch(() => { githubDirect.hidden = true; notionDirect.hidden = true; });
   });
   const destinations = [
     ['google-drive', 'Google Drive', 'Download file for upload'],
@@ -762,6 +799,8 @@ function mountClassroomShare(graph) {
         exportStatus.textContent = errorMessage(error);
       }
     });
+    if (provider === 'notion') exportList.append(notionDirect);
+    if (provider === 'github') exportList.append(githubDirect);
     exportList.append(button);
   }
   const downloadJson = node('button', 'graph-share-export-button');

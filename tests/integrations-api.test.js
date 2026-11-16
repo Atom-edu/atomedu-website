@@ -41,8 +41,10 @@ test('status enumerates providers and distinguishes config from connection', asy
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.deepEqual(body.providers.drive, { available: true, connected: false });
-  for (const name of ['notion', 'github', 'dropbox', 'zapier'])
+  for (const name of ['dropbox', 'zapier'])
     assert.deepEqual(body.providers[name], { available: false, connected: false, reason: 'unsupported' });
+  assert.deepEqual(body.providers.github, { available: false, connected: false, reason: 'missing_config' });
+  assert.deepEqual(body.providers.notion, { available: false, connected: false, reason: 'missing_config' });
   assert.equal(body.csrfToken, undefined);
   const absent = await (await invoke('/status', { headers: { Origin: SITE } }, { ...ENV, GOOGLE_CLIENT_SECRET: undefined })).json();
   assert.deepEqual(absent.providers.drive, { available: false, connected: false, reason: 'missing_config' });
@@ -210,4 +212,158 @@ test('download preserves graph drawing metadata without private fields', async (
   assert.deepEqual(await response.json(), styled);
   const injected = { ...styled, expressions: [{ ...styled.expressions[0], privateToken: 'secret' }] };
   assert.equal((await invoke(`/download?graph=${encodeURIComponent(JSON.stringify(injected))}`, {}, env)).status, 400);
+});
+
+const GH_ENV = { ...ENV, GITHUB_CLIENT_ID: 'test-github-client', GITHUB_CLIENT_SECRET: 'test-github-secret',
+  OAUTH_LIMITER: { async limit() { return { success: true }; } } };
+const githubPath = `/oauth/github/start?graph=${encodeURIComponent(JSON.stringify(graph))}`;
+
+test('GitHub one-shot export requires config and a bounded, nonempty graph', async () => {
+  assert.equal((await invoke(githubPath)).status, 503);
+  const status = await (await invoke('/status', {}, GH_ENV)).json();
+  assert.deepEqual(status.providers.github, { available: true, connected: false });
+  assert.equal((await invoke('/oauth/github/start?graph=%7B', {}, GH_ENV)).status, 400);
+  assert.equal((await invoke('/oauth/github/start?graph=%7B%22v%22%3A1%2C%22expressions%22%3A%5B%5D%7D', {}, GH_ENV)).status, 400);
+  const oversized = { ...graph, expressions: [{ expression: 'y=x' + ' '.repeat(1900) }] };
+  assert.equal((await invoke(`/oauth/github/start?graph=${encodeURIComponent(JSON.stringify(oversized))}`, {}, GH_ENV)).status, 413);
+  assert.equal((await invoke(`${githubPath}&redirect=https://evil.example`, {}, GH_ENV)).status, 400);
+});
+
+test('GitHub OAuth uses exact callback, gist-only scope, encrypted state, and one unlisted Gist', async () => {
+  const start = await invoke(githubPath, { headers: { 'CF-Connecting-IP': '203.0.113.8' } }, GH_ENV);
+  assert.equal(start.status, 302);
+  const authorize = new URL(start.headers.get('Location'));
+  assert.equal(authorize.origin, 'https://github.com');
+  assert.equal(authorize.pathname, '/login/oauth/authorize');
+  assert.equal(authorize.searchParams.get('scope'), 'gist');
+  assert.equal(authorize.searchParams.get('redirect_uri'), `${API}/api/integrations/oauth/github/callback`);
+  const pending = cookieValue(start, '__Host-atom_github_pending');
+  assert.match(pending, /^__Host-atom_github_pending=[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  assert.doesNotMatch(pending, /y=x|secret/);
+  const previous = globalThis.fetch; let calls = 0;
+  globalThis.fetch = async (url, init) => {
+    calls++;
+    assert.equal(init.redirect, 'manual');
+    if (calls === 1) {
+      assert.equal(url, 'https://github.com/login/oauth/access_token');
+      assert.equal(init.method, 'POST');
+      const payload = JSON.parse(init.body);
+      assert.equal(payload.client_secret, GH_ENV.GITHUB_CLIENT_SECRET);
+      assert.equal(payload.redirect_uri, `${API}/api/integrations/oauth/github/callback`);
+      return Response.json({ access_token: 'gh-token', token_type: 'bearer', scope: 'gist' });
+    }
+    assert.equal(url, 'https://api.github.com/gists');
+    assert.equal(init.headers.Authorization, 'Bearer gh-token');
+    const payload = JSON.parse(init.body);
+    assert.equal(payload.public, false);
+    assert.equal(JSON.parse(payload.files['atom-graph.json'].content).graph.expressions[0].expression, 'y=x^2');
+    return Response.json({ id: '1234567890abcdef1234567890abcdef' }, { status: 201 });
+  };
+  try {
+    const mismatch = await invoke('/oauth/github/callback?code=abc&state=wrong', { headers: { Cookie: pending } }, GH_ENV);
+    assert.equal(mismatch.status, 400);
+    assert.equal(calls, 0);
+    const callback = await invoke(`/oauth/github/callback?code=abc&state=${authorize.searchParams.get('state')}`,
+      { headers: { Cookie: pending } }, GH_ENV);
+    assert.equal(callback.status, 200);
+    const html = await callback.text();
+    assert.match(html, /https:\/\/gist\.github\.com\/1234567890abcdef1234567890abcdef/);
+    assert.match(html, /unlisted Gist/);
+    assert.doesNotMatch(html, /gh-token|test-github-secret/);
+    assert.match(callback.headers.get('Set-Cookie'), /Max-Age=0/);
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = previous; }
+});
+
+test('GitHub rejects missing gist permission before creating anything', async () => {
+  const start = await invoke(githubPath, {}, GH_ENV);
+  const authorize = new URL(start.headers.get('Location'));
+  const pending = cookieValue(start, '__Host-atom_github_pending');
+  const previous = globalThis.fetch; let calls = 0;
+  globalThis.fetch = async () => { calls++; return Response.json({ access_token: 'wrong-scope', token_type: 'bearer', scope: 'read:user' }); };
+  try {
+    const response = await invoke(`/oauth/github/callback?code=abc&state=${authorize.searchParams.get('state')}`,
+      { headers: { Cookie: pending } }, GH_ENV);
+    assert.equal(response.status, 502);
+    assert.equal(calls, 1);
+  } finally { globalThis.fetch = previous; }
+});
+
+const NOTION_ENV = { ...ENV, NOTION_CLIENT_ID: 'test-notion-client', NOTION_CLIENT_SECRET: 'test-notion-secret', NOTION_PUBLIC: 'true',
+  OAUTH_LIMITER: { async limit() { return { success: true }; } } };
+const notionParent = '41acb18b29318005a7c3e7921315848e';
+const notionPath = `/oauth/notion/start?graph=${encodeURIComponent(JSON.stringify(graph))}&parent=${notionParent}`;
+
+test('Notion one-shot export requires config, a chosen parent page, and a bounded graph', async () => {
+  assert.equal((await invoke(notionPath)).status, 503);
+  const hidden = await (await invoke('/status', {}, { ...NOTION_ENV, NOTION_PUBLIC: 'false' })).json();
+  assert.deepEqual(hidden.providers.notion, { available: false, connected: false, reason: 'not_launched' });
+  const status = await (await invoke('/status', {}, NOTION_ENV)).json();
+  assert.deepEqual(status.providers.notion, { available: true, connected: false });
+  assert.equal((await invoke(notionPath.replace(notionParent, 'bad'), {}, NOTION_ENV)).status, 400);
+  assert.equal((await invoke(`${notionPath}&extra=1`, {}, NOTION_ENV)).status, 400);
+  assert.equal((await invoke('/oauth/notion/start?graph=%7B%7D&parent=' + notionParent, {}, NOTION_ENV)).status, 400);
+});
+
+test('Notion OAuth creates a child page only under the selected destination and never returns tokens', async () => {
+  const start = await invoke(notionPath, {}, NOTION_ENV);
+  assert.equal(start.status, 302);
+  const authorize = new URL(start.headers.get('Location'));
+  assert.equal(authorize.origin, 'https://api.notion.com');
+  assert.equal(authorize.pathname, '/v1/oauth/authorize');
+  assert.equal(authorize.searchParams.get('owner'), 'user');
+  assert.equal(authorize.searchParams.get('response_type'), 'code');
+  assert.equal(authorize.searchParams.get('redirect_uri'), `${API}/api/integrations/oauth/notion/callback`);
+  const pending = cookieValue(start, '__Host-atom_notion_pending');
+  assert.doesNotMatch(pending, /y=x|test-notion-secret/);
+  const previous = globalThis.fetch; let calls = 0;
+  globalThis.fetch = async (url, init) => {
+    calls++;
+    assert.equal(init.redirect, 'manual');
+    if (calls === 1) {
+      assert.equal(url, 'https://api.notion.com/v1/oauth/token');
+      assert.equal(atob(init.headers.Authorization.slice(6)), 'test-notion-client:test-notion-secret');
+      assert.equal(JSON.parse(init.body).redirect_uri, `${API}/api/integrations/oauth/notion/callback`);
+      return Response.json({ access_token: 'notion-token', refresh_token: 'never-persisted' });
+    }
+    assert.equal(url, 'https://api.notion.com/v1/pages');
+    assert.equal(init.headers.Authorization, 'Bearer notion-token');
+    assert.equal(init.headers['Notion-Version'], '2026-03-11');
+    const payload = JSON.parse(init.body);
+    assert.deepEqual(payload.parent, { type: 'page_id', page_id: notionParent });
+    assert.equal(payload.markdown_version, 'v2');
+    assert.match(payload.markdown, /y=x\^2/);
+    return Response.json({ id: 'e824a498-b288-4f66-9340-a9db762ba6f4' });
+  };
+  try {
+    assert.equal((await invoke('/oauth/notion/callback?code=abc&state=wrong', { headers: { Cookie: pending } }, NOTION_ENV)).status, 400);
+    assert.equal(calls, 0);
+    const response = await invoke(`/oauth/notion/callback?code=abc&state=${authorize.searchParams.get('state')}`,
+      { headers: { Cookie: pending } }, NOTION_ENV);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /https:\/\/www\.notion\.so\/e824a498b2884f669340a9db762ba6f4/);
+    assert.doesNotMatch(html, /notion-token|never-persisted/);
+    assert.match(response.headers.get('Set-Cookie'), /Max-Age=0/);
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = previous; }
+});
+
+test('Notion refuses to create a page when the chosen parent was not authorized', async () => {
+  const start = await invoke(notionPath, {}, NOTION_ENV);
+  const authorize = new URL(start.headers.get('Location'));
+  const pending = cookieValue(start, '__Host-atom_notion_pending');
+  const previous = globalThis.fetch; let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    return calls === 1 ? Response.json({ access_token: 'short-lived-token' }) : Response.json({ code: 'restricted_resource' }, { status: 403 });
+  };
+  try {
+    const response = await invoke(`/oauth/notion/callback?code=abc&state=${authorize.searchParams.get('state')}`,
+      { headers: { Cookie: pending } }, NOTION_ENV);
+    assert.equal(response.status, 403);
+    assert.deepEqual(await response.json(), { error: 'notion_page_access',
+      reason: 'Select the destination page during Notion authorization and make sure you can edit it.' });
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = previous; }
 });
