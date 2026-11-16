@@ -185,13 +185,17 @@ test('home integration cards use a responsive grid and label unavailable connect
       assert.match(card, /unlisted Gist/);
       assert.match(card, /github-lockup\.svg/);
       assert.match(card, /href="\/proof-lab#graph"/);
+    } else if (name === 'Notion') {
+      assert.match(card, /new child page/);
+      assert.match(card, /front-static\/logo-ios\.png/);
+      assert.match(card, /href="\/proof-lab#graph"/);
     } else {
       assert.match(card, /class="integration-status">Coming soon<\/p>/);
       assert.match(card, /class="integration-placeholder" aria-hidden="true"/);
       assert.doesNotMatch(card, /<img\b|<svg\b|<a\b/, `${name} has no logo or live action`);
     }
   }
-  assert.equal([...section.matchAll(/<img\b/g)].length, 3, 'Classroom, Dropbox and GitHub integrations have logos');
+  assert.equal([...section.matchAll(/<img\b/g)].length, 4, 'All live integrations have logos');
   assert.match(section, /Other product names belong to their respective owners/);
 
   const css = read('styles.css');

@@ -706,10 +706,15 @@ function mountClassroomShare(graph) {
   }
   const exportStatus = node('p', 'graph-share-export-status');
   exportStatus.setAttribute('role', 'status');
-  const githubDirect = node('button', 'graph-share-export-button');
+  const githubDirect = node('button', 'graph-share-export-button graph-direct-export');
   githubDirect.type = 'button';
   githubDirect.hidden = true;
-  githubDirect.append(node('strong', '', 'Save to GitHub'), node('span', '', 'Create an unlisted Gist with gist permission'));
+  const githubMark = node('img', 'graph-export-logo');
+  githubMark.src = './images/github-mark.svg';
+  githubMark.alt = '';
+  const githubCopy = node('span', 'graph-export-copy');
+  githubCopy.append(node('strong', '', 'Save to GitHub'), node('span', '', 'Create an unlisted Gist with gist permission'));
+  githubDirect.append(githubMark, githubCopy);
   githubDirect.addEventListener('click', () => {
     try {
       const url = buildDirectExportUrl('github', graph.getState());
@@ -725,9 +730,14 @@ function mountClassroomShare(graph) {
   notionInput.placeholder = 'https://www.notion.so/...';
   notionInput.autocomplete = 'off';
   notionLabel.append(notionInput);
-  const notionButton = node('button', 'graph-share-export-button');
+  const notionButton = node('button', 'graph-share-export-button graph-direct-export');
   notionButton.type = 'button';
-  notionButton.append(node('strong', '', 'Save to Notion'), node('span', '', 'Create a child page under this destination'));
+  const notionMark = node('img', 'graph-export-logo');
+  notionMark.src = 'https://www.notion.so/front-static/logo-ios.png';
+  notionMark.alt = '';
+  const notionCopy = node('span', 'graph-export-copy');
+  notionCopy.append(node('strong', '', 'Save to Notion'), node('span', '', 'Create a child page under this destination'));
+  notionButton.append(notionMark, notionCopy);
   notionButton.addEventListener('click', () => {
     try {
       const url = buildDirectExportUrl('notion', graph.getState(), notionInput.value.trim());
