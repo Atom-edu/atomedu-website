@@ -15,6 +15,7 @@ test('Graph presents a truthful provider handoff below Copy graph link', () => {
   assert.match(app, /buildDirectExportUrl\('notion', graph\.getState\(\), notionInput\.value\.trim\(\)\)/);
   assert.match(app, /images\/github-mark\.svg/);
   assert.match(app, /front-static\/logo-ios\.png/);
+  assert.ok(app.indexOf("['github', 'GitHub'") < app.indexOf("['notion', 'Notion'"));
   assert.match(app, /status\?\.providers\?\.github\?\.available/);
   assert.match(app, /status\?\.providers\?\.notion\?\.available/);
   assert.match(css, /\.graph-share-export-button\[hidden\]/);

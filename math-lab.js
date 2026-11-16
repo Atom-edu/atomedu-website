@@ -757,11 +757,11 @@ function mountClassroomShare(graph) {
       .catch(() => { githubDirect.hidden = true; notionDirect.hidden = true; });
   });
   const destinations = [
-    ['google-drive', 'Google Drive', 'Download file for upload'],
-    ['notion', 'Notion', 'Copy notes to paste'],
-    ['zapier', 'Zapier', 'Copy JSON for a configured Zap'],
-    ['dropbox', 'Dropbox', 'Save graph file to Dropbox'],
     ['github', 'GitHub', 'Copy text for a Gist'],
+    ['notion', 'Notion', 'Copy notes to paste'],
+    ['dropbox', 'Dropbox', 'Save graph file to Dropbox'],
+    ['google-drive', 'Google Drive', 'Download file for upload'],
+    ['zapier', 'Zapier', 'Copy JSON for a configured Zap'],
   ];
   for (const [provider, name, action] of destinations) {
     const button = node('button', 'graph-share-export-button');
