@@ -53,14 +53,14 @@ export function contestSchedule(now = new Date()) {
   const local = parts(now);
   const today = dayString(local);
   const minutes = local.hour * 60 + local.minute;
-  const phase = minutes < 19 * 60 ? 'open'
+  const phase = minutes < 18 * 60 ? 'open'
     : minutes < 20 * 60 + 30 ? 'judging'
       : minutes < 21 * 60 + 30 ? 'results_pending' : 'open';
   const contestDate = minutes >= 21 * 60 + 30 ? nextDay(today) : today;
   return {
     phase,
     contestDate,
-    deadlineUtc: localToUtc(contestDate, 19),
+    deadlineUtc: localToUtc(contestDate, 18),
     nextOpenUtc: localToUtc(minutes >= 21 * 60 + 30 ? nextDay(today) : today, 21, 30),
   };
 }
@@ -377,7 +377,7 @@ async function scoreSubmission(env, id, scores, currentTime) {
   const scoredAt = currentTime();
   const schedule = contestSchedule(scoredAt);
   if (!['judging', 'results_pending'].includes(schedule.phase)) {
-    throw new ApiError(409, 'judging_closed', 'Scoring is only available 19:00–21:30 Chicago time for today');
+    throw new ApiError(409, 'judging_closed', 'Scoring is only available 18:00–21:30 Chicago time for today');
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
     throw new ApiError(400, 'invalid_id', 'Invalid submission ID');
@@ -405,7 +405,7 @@ async function selectWinner(env, id, date, currentTime, origin, expectedRunnerUp
   const selectedAt = currentTime();
   const schedule = contestSchedule(selectedAt);
   if (!['judging', 'results_pending'].includes(schedule.phase) || date !== schedule.contestDate) {
-    throw new ApiError(409, 'judging_closed', 'Winner selection is only available 19:00–21:30 Chicago time for today');
+    throw new ApiError(409, 'judging_closed', 'Winner selection is only available 18:00–21:30 Chicago time for today');
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new ApiError(400, 'invalid_id', 'Invalid submission ID');
   if (await env.DB.prepare('SELECT submission_id FROM winners WHERE contest_date = ?').bind(date).first()) {

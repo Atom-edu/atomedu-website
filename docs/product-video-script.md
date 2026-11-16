@@ -1,109 +1,142 @@
 # atomEDU product demo script
 
-Target length: about 12 minutes, within a 10 to 15 minute recording. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avuthu. Rahul opens, and the three speakers share the narration evenly. Rahul covers the student-work checks, Pritam covers solving and the engine, and Aryan covers the editor, practice, graph, and sharing. The [15-slide presentation](../product-video.html) follows the scenes below. Timing includes time to click, scroll, and let the audience read the screen.
+Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avuthu. Rahul opens. The [20-slide presentation](../product-video.html) follows the scenes below. Each scene has about one minute for narration, screen actions, and a short pause for the viewer to read. Rehearse with the live site and adjust the pauses rather than rushing through the math.
 
-## 0:00 to 0:40 | Slide 1 | Rahul opens
+## 0:00 to 1:00 | Slide 1 | Rahul opens
 
-**Rahul:** "Hi, I'm Rahul Awasthi. This is atomEDU, and today we're going to show you Proof Lab. We started building it in O'Fallon, Missouri, after watching students work hard on a problem and get only a right or wrong mark at the end. That mark doesn't say where the reasoning changed. We wanted to give students a useful next step, even when their final answer was wrong. I'll show you the idea, then we'll take you through the product together."
+**Rahul:** "Hi, I'm Rahul Awasthi. Welcome to atomEDU. We built Proof Lab because a right or wrong mark at the end of a math problem rarely tells you what to do next. A student may understand most of an equation and make one small mistake that changes the answer. We wanted a tool that could find that moment, explain it, and let the student keep going. Today Aryan, Pritam, and I will show you the actual product. We'll enter a problem, solve one, check our own work, generate practice, and explore the graph. We'll also show you what the engine verifies and where its limits are. You can follow along at atom-edu.org."
 
-**Screen:** Rahul on camera for the first sentence, then the atomEDU logo and title. Hold the cover briefly before moving on.
+**Screen:** Begin on camera. Show the atomEDU cover and logo, then open Proof Lab. Leave a beat before the first screen share.
 
-## 0:40 to 1:20 | Slide 2 | Rahul explains the problem
+## 1:00 to 2:00 | Slide 2 | Rahul explains the problem
 
-**Rahul:** "Think about a student who distributes a number incorrectly. They can do several more lines of perfectly consistent work and still end up with a wrong answer. If we only grade the last line, we miss the one point where help would matter. Proof Lab lets a student put in their own steps. It checks the transitions between those steps and explains the first one that breaks. Aryan, show us what that looks like."
+**Rahul:** "Here is the sort of mistake that started this project. A student sees three x plus two equals two times x plus four. They write the next line as three x plus two equals two x plus four. It looks close. But the two outside the parentheses has to multiply both terms inside. The right side should be two x plus eight. If the student keeps solving from the mistaken line, later steps may be internally consistent, but the final answer still belongs to a different equation. A plain answer checker would say wrong. We want to show the student which line changed the problem. Keep this example in mind. We will come back and submit those steps."
 
-**Screen:** Show [the submitted lines before checking](./product-video-assets/check-input-screen.png). Move the pointer down the student's steps without submitting yet.
+**Screen:** Show [the submitted lines before checking](./product-video-assets/check-input-screen.png). Trace the right side of the first equation with the pointer.
 
-## 1:20 to 2:10 | Slide 3 | Aryan shows the visual editor
+## 2:00 to 3:00 | Slide 3 | Aryan enters math
 
-**Aryan:** "I'm Aryan Patel. I want to start with how you enter a problem, because if that feels awkward, the rest of the tool doesn't matter. Here is the visual math field. I can type directly, or open the math pad for a fraction, square root, exponent, inequality, or symbol. The gray boxes are places to fill in. I click the box I want, enter my value, and move to the next one. If I need the raw notation, I can open the LaTeX source, but I don't have to type LaTeX just to use Proof Lab."
+**Aryan:** "I'm Aryan Patel. First, let me put a problem into Proof Lab. The main field is a visual math editor, so I can type an equation directly. When I need a fraction or a square root, I can open the math pad. These gray spaces are fill-in boxes. I click the numerator, enter a value, then move to the denominator. The same idea works for exponents and other templates. I can also open the LaTeX source if I want to inspect the notation, but ordinary use doesn't require writing LaTeX code. Watch me enter the rational function we're going to solve. I'll leave the pad closed afterward so we can focus on the result."
 
-**Screen:** Use the [editor and math pad](./product-video-assets/editor-screen.png). On the live site, insert a fraction and move between its two placeholders. Close the pad before the next scene.
+**Screen:** Use the [editor and math pad](./product-video-assets/editor-screen.png). Insert a fraction, move between placeholders, enter `f(x)=2/(x-3)+1`, and close the pad.
 
-## 2:10 to 2:55 | Slide 4 | Pritam solves a function
+## 3:00 to 4:00 | Slide 4 | Pritam solves a function
 
-**Pritam:** "I'm Pritam Avuthu. Let's try this function: f of x equals two over x minus three, plus one. I press Solve. The result shows the function, its domain, intercepts, asymptotes, and other supported features. The important detail is x cannot equal three. That restriction is part of the mathematical answer. If we simplify a rational expression and forget where the original denominator was zero, we can accidentally claim a value that was never allowed. Proof Lab keeps that boundary visible."
+**Pritam:** "I'm Pritam Avuthu. This is f of x equals two over x minus three, plus one. I press Solve and the engine works through the supported features of that function. Start with the domain. The denominator is zero at x equals three, so x equals three has to stay out of the answer. We can see the vertical asymptote at the same x value. We can also inspect the intercepts and the horizontal behavior. The point is to keep the conditions attached to the result. If someone cancels or rewrites an expression without checking the original denominator, they may allow a value that was never defined. In a math tool, that detail matters as much as the final formula."
 
-**Screen:** Enter `f(x)=2/(x-3)+1`. Show the [verified function analysis](./product-video-assets/solve-screen.png) and pause on the domain line.
+**Screen:** Show the [verified function analysis](./product-video-assets/solve-screen.png). Pause on the domain and asymptote. Scroll slowly enough to read one result at a time.
 
-## 2:55 to 3:40 | Slide 5 | Pritam follows the proof timeline
+## 4:00 to 5:00 | Slide 5 | Pritam reveals the proof timeline
 
-**Pritam:** "Below the result is the proof timeline. It starts with one step, so I can read it instead of getting a wall of equations at once. I can press Show next step and see the next transformation and its rule. Notice the difference between a displayed formula and a verified step. The math is checked by the engine. The LaTeX badge only tells us that the notation renders properly. We show those separately because a nicely typeset answer can still be mathematically wrong."
+**Pritam:** "There is more below the answer. Proof Lab has a timeline of steps, and it reveals them gradually. I'll click Show next step rather than display the entire solution at once. Each entry names the transformation so a student can ask whether that move makes sense. There are two labels here worth separating. LaTeX validation means the math notation can be read and displayed. Mathematical verification means the supported result or step has been checked against the original problem. A pretty equation is not automatically a valid one. Let me open the next step, read the rule, and compare it with what we started from. That is the habit we want students to practice."
 
-**Screen:** Scroll to the [proof timeline](./product-video-assets/timeline-screen.png). Press Show next step twice. Keep the rule label and verified marker in view.
+**Screen:** On the [proof timeline](./product-video-assets/timeline-screen.png), reveal two steps. Keep the rule text and verification marker visible for several seconds.
 
-## 3:40 to 4:30 | Slide 6 | Rahul checks student work
+## 5:00 to 6:00 | Slide 6 | Rahul checks student work
 
-**Rahul:** "Now let's look at the student's work from the beginning. The problem is three x plus two equals two times x plus four. In the first submitted line, I changed the right side to two x plus four. I multiplied the x by two, but not the four. When I check the work, Proof Lab identifies that first line as invalid and explains the distribution error. The lines after it might follow from the mistaken line. They don't repair the original problem. The correct distribution is two x plus eight, and the actual solution is x equals six."
+**Rahul:** "Now let's return to our student's equation. I put their lines into Check work in the same order they wrote them. The first submitted move claims that two times x plus four becomes two x plus four. When I submit, Proof Lab identifies that line as the first invalid transition. It explains the distribution error and shows the correct expansion, two x plus eight. Notice that it does not simply mark the final answer wrong and leave the student to guess why. It also does not pretend that later steps repair the original equation. The actual solution to this problem is x equals six. We can compare that with the answer the student reached from the altered equation."
 
-**Screen:** Submit the [incorrect first step](./product-video-assets/check-screen.png). Highlight the first-error label, the explanation, and the contrast with later locally valid lines.
+**Screen:** Submit the [incorrect first step](./product-video-assets/check-screen.png). Point to the first-error label and the explanation. Let the result settle before moving on.
 
-## 4:30 to 5:15 | Slide 7 | Rahul shows Ghost steps
+## 6:00 to 7:00 | Slide 7 | Rahul explains Ghost steps
 
-**Rahul:** "Students do not have to write every tiny algebra move. If a jump is valid and the engine can reconstruct what happened, Ghost steps show the missing checkpoints. When a submitted step is wrong, a corrected continuation can also appear. It is labeled as a correction, not as something the student wrote. Here you can see two times x plus four become two x plus eight, then the equation moves toward x equals six. That gives the student a path back into the problem without pretending their original line was correct."
+**Rahul:** "Students don't normally write every single arithmetic move. That is fine. If the jump they made is valid and our engine can reconstruct the missing reasoning, Ghost steps show the checkpoints in between. They are visually separate from what the student actually submitted. In this example, the submitted line was wrong, so the tool can also show a corrected continuation. That correction has its own label. We never want a teacher looking at the screen to think the student wrote a line that the engine supplied. Follow the equation down from the corrected distribution to x equals six. The student gets a way back into the problem, but their original mistake remains visible and understandable."
 
-**Screen:** Scroll to the [verified Ghost steps](./product-video-assets/ghost-screen.png). Pause on the label that distinguishes the correction from submitted work.
+**Screen:** Show the [Ghost-step correction](./product-video-assets/ghost-screen.png). Pause on the label that distinguishes the correction from submitted work.
 
-## 5:15 to 6:00 | Slide 8 | Aryan generates practice
+## 7:00 to 8:00 | Slide 8 | Aryan generates practice
 
-**Aryan:** "Proof Lab can also make practice problems. I choose a supported topic and move the difficulty slider. It runs from zero point zero zero zero to one point zero zero zero, with three decimal places. Then I generate a problem. I can bring that problem into Check work to solve it myself, or open it in Solve to study the engine's method. The seed makes the problem reproducible. If a student asks a teacher about a question, both people can work from the same one. The generator creates these questions locally from our own templates and rules."
+**Aryan:** "After feedback, the next useful move is practice. I'll switch to Generate, choose a supported topic, and create a new question. The difficulty control has values from 0.000 to 1.000 in thousandths. It helps select a family and starting tier, but a single number cannot describe every way a math problem might be difficult. We also have a seed. If I use the same topic, difficulty, and seed again, I can reproduce the question. That is helpful when a student wants to show a teacher exactly what they were working on. The generator uses our own rules and templates. It is creating a question for the engine, not calling an outside chatbot to invent one."
 
-**Screen:** Choose a topic, move the difficulty slider, and [generate one problem](./product-video-assets/generate-screen.png). Point to the seed and the two follow-up buttons.
+**Screen:** Choose a topic and [generate a problem](./product-video-assets/generate-screen.png). Show the difficulty control, seed, and follow-up actions.
 
-## 6:00 to 6:45 | Slide 9 | Aryan explores the graph
+## 8:00 to 9:00 | Slide 9 | Aryan graphs a function
 
-**Aryan:** "The graph helps me see what a function is doing. I'll enter y equals sine of x. I can pan, zoom, compare curves, and change the window. There are logarithmic axis options and a polar grid for selected topics. This is numerical graphing, so the picture is a way to explore. When I say a solution step is verified, that claim comes from the separate rule checker, not from a curve looking right on a screen. We keep that distinction visible in the graph view."
+**Aryan:** "Now let's look at Graph. I can enter y equals sine of x and see the wave across the coordinate plane. I'll add a second expression so we can compare shapes and where they cross. The expressions remain editable on the left. I can pan the plane, zoom in, and zoom back out without changing the underlying formulas. That makes the graph useful for building intuition about a function. I want to be precise about one thing: this view is numerical. A curve that looks like it crosses an axis at a certain place is a clue, not a proof of an exact answer. When we need to call a step verified, the rule checker has to do that separately."
 
-**Screen:** Plot `y=sin(x)` on the [graph](./product-video-assets/graph-screen.png). Zoom once and point to the numerical label.
+**Screen:** Plot `y=sin(x)` in the [graph view](./product-video-assets/graph-screen.png), add a second supported expression, and zoom once.
 
-## 6:45 to 7:30 | Slide 10 | Pritam shows image import and art
+## 9:00 to 10:00 | Slide 10 | Aryan changes the graph window
 
-**Pritam:** "There is also a creative side to the graph. Under Image import, I can choose a picture and ask Proof Lab to approximate it with waves, straight lines, or colored regions. The formulas it uses appear in the expression list, so the result remains math that I can inspect and adjust. A complex photo will only be an approximation. Students can save graph art as a PNG and enter our daily graph-art contest. The art has to come from atomEDU's graph, and the contest has its own rules and judging."
+**Aryan:** "The graph has a few ways to change the view. Here is the window setting. I can choose which x and y values are visible and reset after a zoom. For some questions I can use a logarithmic axis. For others, a polar grid makes the shape easier to understand. These controls change the picture, not the problem. I can hide one expression, turn it back on, or move through several equations without losing the rest of my work. On a phone, the expression list and the graph share the screen, so I can move between them. The aim is to let a student test a visual idea, then go back to the exact math when the question needs proof."
 
-**Screen:** Open [Image import](./product-video-assets/image-import-screen.png). Show the drawing styles without claiming the conversion is exact. Then briefly show Save PNG and the Art contest entry point.
+**Screen:** Use the [wide graph view](./product-video-assets/graph-wide.png). Open window settings, adjust a bound, reset, and briefly show one alternative grid or axis mode.
 
-## 7:30 to 8:20 | Slide 11 | Pritam explains the engine
+## 10:00 to 11:00 | Slide 11 | Pritam explains the engine
 
-**Pritam:** "The mathematical part of Proof Lab is a rule-based engine we build and test ourselves. It parses the expression, selects a supported rule family, computes a candidate result, and checks that result before it marks it verified. The checker can replay the certificate against the input. This matters when a result looks plausible but was reached through an invalid step. We want the verified label to mean something specific. We also test examples that should be rejected, so an unsupported or incorrect step is not silently accepted."
+**Pritam:** "Behind those screens is a rule-based mathematics engine that our team builds and tests. It reads the input, identifies a supported kind of problem, and applies the relevant operations. There is a separate checking path for the result. We don't ask a language model to say whether an equation looks right. A result can carry a certificate that the verifier replays against the input. That is how we try to make the word verified specific and testable. We also write cases the engine must reject, including false steps and unsupported forms. Those tests matter because a checker that accepts a convincing-looking mistake is worse than one that honestly says it cannot verify it."
 
-**Screen:** Show the four terms on the slide: Input, Rule, Result, Verification. Pause on Verification.
+**Screen:** Show Input, Rule, Result, Verification on the slide. Pause on Verification. Do not describe the tiers as separate trained models.
 
-## 8:20 to 9:05 | Slide 12 | Pritam explains routing and limits
+## 11:00 to 12:00 | Slide 12 | Pritam explains the three tiers
 
-**Pritam:** "The difficulty value also helps route a problem. Values below zero point four zero zero start in the first tier. The middle tier runs up to zero point six five zero, and the third tier handles the higher range. If a quick inspection shows a problem needs a higher tier, the router moves it up. These are routing levels over our math modules, not three separately trained models. The tool covers selected Algebra I, Algebra II, Geometry, and Precalculus rule families. It does not cover every question in those courses. When it cannot prove a result, we label the limit."
+**Pritam:** "You may have noticed three difficulty ranges. Below 0.400, a problem starts in the first tier. From 0.400 through 0.649 it starts in the second. From 0.650 through 1.000 it starts in the third. A quick inspection can send a problem higher when the first route is too simple. These are routing tiers over supported math modules. They are not three independent artificial intelligence models. The number helps us choose an efficient starting point, while the proof check decides whether the answer can carry a verified label. Some problems can be easy to state but hard to prove, so the boundaries are practical engineering choices rather than universal rankings of mathematical difficulty."
 
-**Screen:** Show the three difficulty ranges and the coverage note. Do not present the ranges as a universal measure of mathematical difficulty.
+**Screen:** Point to each difficulty band. Hold long enough for the audience to read the decimal boundaries.
 
-## 9:05 to 9:50 | Slide 13 | Aryan shares a graph
+## 12:00 to 13:00 | Slide 13 | Aryan shares a graph
 
-**Aryan:** "Back in Graph, I can copy a link to the current graph. That link includes the expressions and window settings, so somebody opening it sees the same setup. There is also a Share to Google Classroom button. A teacher chooses the class in Google Classroom. This is a simple sharing workflow, and you should avoid putting private information into a graph link. atomEDU is for use with Google Classroom, but we are not claiming an official Google partnership. The graph remains editable when the recipient opens the atomEDU link."
+**Aryan:** "Once I have a useful graph, I can copy a link to this setup. It includes the expressions and window settings, so someone else can open the same view and keep exploring. I'll copy the link and open it in another tab. The curve and the window come back. There is also a Share to Google Classroom control. A teacher can choose a class and place the graph link into their own classroom workflow. We describe this as a feature for use with Google Classroom. It does not mean atomEDU has an official partnership with Google. One practical note: the link contains the graph setup. Don't put private student information in an expression or title you plan to share."
 
-**Screen:** Show the [copyable graph link and Classroom control](./product-video-assets/share-screen.png). Copy the link, open it in a separate tab, and confirm that the expression restores.
+**Screen:** Use the [sharing controls](./product-video-assets/share-screen.png). Copy a graph link, open it in a new tab, and confirm that the expressions restore.
 
-## 9:50 to 10:45 | Slide 14 | Rahul talks about people and progress
+## 13:00 to 14:00 | Slide 14 | Rahul introduces the team and progress
 
-**Rahul:** "We built this in O'Fallon, Missouri, as students ourselves. The tool has reached 3,640-plus users, based on our current count, and VC Boom and MedAestheticsOS are our featured corporate partners. Those facts matter because they show that people are actually using what we're making. We still have more math to cover, and we want teachers and students to tell us where it helps and where it falls short. The first thing we want someone to get from Proof Lab is a clearer picture of their own reasoning. That is how the next attempt gets better."
+**Rahul:** "We started atomEDU in O'Fallon, Missouri, as students who wanted better feedback on our own math. The tool has reached more than 3,640 users based on our current count, and our featured corporate partners are VC Boom and MedAestheticsOS. Those numbers and names matter to us because real people are trying what we've built. They also raise the standard for what we publish. If a result is confusing, or a rule is missing, we want to hear about it. The team behind the product includes me, Pritam, Aryan, and Akshaj Sanikommu. Today three of us are walking through the demo, and all four of us are part of the company."
 
-**Screen:** Show the partner marks and user figure. Verify the current count and permission to use each mark before recording.
+**Screen:** Show the partner marks and user figure. Verify the current user count and permission to display each mark before filming.
 
-## 10:45 to 12:00 | Slide 15 | All three close
+## 14:00 to 15:00 | Slide 15 | Aryan demonstrates a study session
 
-**Rahul:** "Aryan, if someone opens Proof Lab for the first time, where should they begin?"
+**Aryan:** "Let's put the pieces together as one study session. I start in Generate and choose a problem I have not solved yet. Instead of pressing Solve immediately, I bring that problem into Check work and write my first line. I add the next line as I would on paper. Then I check my work. If the checker finds a bad transition, I stop there and try to correct it myself before I reveal the full answer. If I skipped a valid move, Ghost steps can fill in the gap. Only after that do I open Solve to compare methods. This order keeps the student's thinking in the middle of the experience rather than making the tool do every move first."
 
-**Aryan:** "Bring a problem you are already trying to solve. Start in Check work if you have steps written down. Put them in as you wrote them, even if you are unsure. If a line breaks, the feedback should point you to that line. Then try the corrected path yourself. If you want to understand the engine's method first, open Solve and reveal the timeline one step at a time. And if you want a new question, choose a topic in Generate."
+**Screen:** Show the [work-checking view](./product-video-assets/check-work.png). Demonstrate the Generate to Check work handoff, then pause before revealing a solution.
 
-**Pritam:** "Use the graph to explore. Use the checker when you need a supported proof. If the engine says it cannot verify something, take that seriously and tell us what you tried."
+## 15:00 to 16:00 | Slide 16 | Pritam explains verification
 
-**Rahul:** "Proof Lab is free to use. You can start at atom-edu.org."
+**Pritam:** "I want to show what the verified badge means more carefully. The solver can produce an answer and a record of how it got there. The verifier checks that record against the original input. If the certificate does not match, the result cannot simply be promoted to verified because the displayed expression looks plausible. The same separation applies when students submit their own work. We check the transition they made, including restrictions that may be easy to overlook. This is still software, and software can have bugs, which is why we test both accepted and rejected cases. But it gives us a concrete claim we can inspect: this particular supported result passed these particular checks."
 
-**Aryan:** "Bring the math. Show the steps. We'll help you find the place to look again."
+**Screen:** Show the [solved result](./product-video-assets/solve.png). Point out the verification status and contrast it with notation or display validation.
 
-**Screen:** Show Rahul, Aryan, and Pritam on camera, then their individual portraits and the atomEDU logo. Hold the site address for five seconds.
+## 16:00 to 17:00 | Slide 17 | Pritam describes coverage
+
+**Pritam:** "What can it do today? The supported list includes selected rule families from Algebra I and II, Geometry, and Precalculus. That includes common equations and inequalities, functions, coordinate geometry, and several proof patterns with explicit premises. The exact list matters more than a broad course name. A student might see a topic called Geometry and assume every diagram proof is available, but many geometry problems rely on a diagram or an unstated fact that a formal checker cannot safely assume. Inside Proof Lab we show the families the engine knows how to handle. We add new ones by implementing rules and writing tests, not by declaring that a whole textbook has been covered."
+
+**Screen:** Show the [topic choices](./product-video-assets/generate.png) and open the current coverage list in Proof Lab. Do not claim full curriculum coverage.
+
+## 17:00 to 18:00 | Slide 18 | Pritam describes limits
+
+**Pritam:** "There are also clear limits. A graph can suggest where a curve crosses an axis, but a screen pixel is not an exact algebraic proof. A LaTeX expression can render perfectly while the underlying mathematical claim is false. Some operations are valid notation but outside the solver's supported rules."
+
+**Rahul:** "In those cases, we want the product to say partial, unsupported, or unverified, instead of dressing a guess up as a proof. If a student sees that label, they can still use the graph to investigate or ask a teacher to review the work. They should not treat an unsupported case as a verified answer."
+
+**Aryan:** "Being clear about what we cannot yet check is part of making the tool useful."
+
+**Screen:** Compare the [curve view](./product-video-assets/graph-curves.png) with a verified Solve result. Point to the numerical label on Graph.
+
+## 18:00 to 19:00 | Slide 19 | Rahul offers a starting point
+
+**Rahul:** "If this is your first visit, bring one real problem you are already trying to solve. You do not need to learn every mode at once. Open Check work, enter the problem, and write a step you are unsure about. Read the first explanation before you open the complete solution. If you are stuck before the first line, use Solve to see a supported method one step at a time. If you want another attempt, generate a question in the same topic. Teachers can use the graph link when they want a class to compare the same functions. We are building around a simple habit: write the reasoning, check the transition, and try again."
+
+**Screen:** Show the [atomEDU entry point](./product-video-assets/home-screen.png), then return to Proof Lab with Check work selected.
+
+## 19:00 to 20:00 | Slide 20 | All three close
+
+**Rahul:** "That's Proof Lab. We began with a student who had one broken line in an otherwise familiar equation. The tool found that line and gave the student a way to continue. Aryan, what would you tell someone trying it tonight?"
+
+**Aryan:** "Use a problem you care about. Type it in the visual field, show your own steps, and read the first piece of feedback. You can explore a function on the graph or generate a new question after that. Keep the work yours. The tool is here to help you see it more clearly."
+
+**Pritam:** "And check the status labels. A verified step has passed a specific rule check. A numerical graph or an unsupported case has a different purpose. We want you to know which is which. If you find a gap, tell us. That helps us improve the engine."
+
+**Rahul:** "You can start at atom-edu.org. Thanks for spending this time with us."
+
+**Screen:** Show Rahul, Aryan, and Pritam on camera, then the founder portraits and atomEDU logo. Hold the site address for five seconds.
 
 ## Recording notes
 
-- Rahul opens before the first screen share and demonstrates Check work and Ghost steps. Aryan demonstrates the editor, Generate, Graph, and sharing. Pritam demonstrates Solve, the proof timeline, image import, and the engine. Hand off the live product controls between speakers at scene changes.
-- Record the demonstrations at 1024 by 768 or wider. Pause on the first-error explanation, a Ghost step, and a proof timeline rule long enough to read them.
+- Record a rehearsal with a timer. Each scene has one minute, including the listed action and a reading pause. Shorten cursor movement before shortening the math explanation.
+- Hand off the controls between speakers at scene changes. Rahul opens and handles the student's work. Aryan handles the editor, practice, graph, and sharing. Pritam handles Solve, the proof timeline, engine, and limits.
+- Record the demonstrations at 1024 by 768 or wider. Pause on the first-error explanation, a Ghost step, and a proof-timeline rule long enough to read them.
 - Use the actual rule-based product. Do not claim full Algebra I, Algebra II, Geometry, or Precalculus coverage. The [current coverage checklist](./standards-coverage.md) records the limits.
 - Verify the 3,640+ user figure and partner mark permissions before filming. Do not call atomEDU an official Google Classroom partner.
-- The screenshots were captured from the public site on November 15, 2026. Re-record scenes if the interface changes before publication.
+- The product screenshots were captured from the public site on November 15, 2026. Re-record scenes if the interface changes before publication.

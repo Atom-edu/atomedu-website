@@ -26,7 +26,8 @@ test('contest begins with the winner and explains graph export, schedule, consen
   assert.match(page, /id="display-consent"/);
   assert.match(page, /Confirm and submit/);
   assert.match(page, /id="archive-grid"/);
-  assert.match(page, /01:00 next day/);
+  assert.match(page, /00:00 next day/);
+  assert.match(page, /23:00 same day/);
   assert.match(page, /02:30 next day/);
   assert.match(page, /03:30 next day/);
   assert.doesNotMatch(page + read('art-contest.js'), /[—–·]/);

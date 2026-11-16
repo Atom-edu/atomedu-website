@@ -7,7 +7,7 @@ import worker, { contestSchedule, handleRequest, runMaintenance } from '../conte
 const BASE = 'https://api.example.test/api/art-contest';
 const ORIGIN = 'https://atom-edu.org';
 const GIF = new Uint8Array([71, 73, 70, 56, 57, 97, 1, 0, 1, 0, 0, 0]);
-const OPEN = new Date('2026-07-10T23:00:00Z'); // 18:00 CDT
+const OPEN = new Date('2026-07-10T22:00:00Z'); // 17:00 CDT
 const JUDGING = new Date('2026-07-11T00:15:00Z'); // 19:15 CDT
 const DELAY = new Date('2026-07-11T01:31:00Z'); // 20:31 CDT
 
@@ -113,14 +113,17 @@ test('runner-up migration preserves existing submissions and historical winners'
 });
 
 test('Central schedule honors DST and phase boundaries', () => {
-  assert.deepEqual(contestSchedule(new Date('2026-03-08T23:59:00Z')), {
+  assert.deepEqual(contestSchedule(new Date('2026-03-08T22:59:00Z')), {
     phase: 'open', contestDate: '2026-03-08',
-    deadlineUtc: '2026-03-09T00:00:00.000Z', nextOpenUtc: '2026-03-09T02:30:00.000Z',
+    deadlineUtc: '2026-03-08T23:00:00.000Z', nextOpenUtc: '2026-03-09T02:30:00.000Z',
   });
+  assert.equal(contestSchedule(new Date('2026-03-08T23:00:00Z')).phase, 'judging');
   assert.equal(contestSchedule(new Date('2026-03-09T00:00:00Z')).phase, 'judging');
   assert.equal(contestSchedule(new Date('2026-03-09T01:30:00Z')).phase, 'results_pending');
   assert.equal(contestSchedule(new Date('2026-03-09T02:30:00Z')).contestDate, '2026-03-09');
-  assert.equal(contestSchedule(new Date('2026-11-02T00:59:00Z')).deadlineUtc, '2026-11-02T01:00:00.000Z');
+  assert.equal(contestSchedule(new Date('2026-11-02T00:59:00Z')).deadlineUtc, '2026-11-02T00:00:00.000Z');
+  assert.equal(contestSchedule(new Date('2026-11-02T00:00:00Z')).phase, 'judging');
+  assert.equal(contestSchedule(new Date('2026-11-01T23:59:00Z')).phase, 'open');
   assert.equal(contestSchedule(new Date('2026-11-02T03:30:00Z')).contestDate, '2026-11-02');
 });
 
@@ -180,6 +183,8 @@ test('uploads enforce consent, magic bytes, size, and private entrant images', a
   assert.equal(privateImage.status, 200);
   assert.deepEqual(new Uint8Array(await privateImage.arrayBuffer()), GIF);
   assert.equal((await call(env, '/submissions', { method: 'POST', body: form() }, JUDGING)).status, 409);
+  assert.equal((await call(env, '/submissions', { method: 'POST', body: form() },
+    new Date('2026-07-10T23:00:00Z'))).status, 409);
 });
 
 test('failed submission queues an orphaned private image when immediate deletion fails', async () => {

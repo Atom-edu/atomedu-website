@@ -37,7 +37,7 @@ See [graph embedding and controls](./graph/README.md) for connecting the graph w
 See [the engine API and supported inputs](./engine/README.md) and [the product plan](./math-engine-plan.md).
 The [standards coverage checklist](./docs/standards-coverage.md) maps verified subsets and remaining gaps against Missouri DESE Algebra I, Algebra II, Geometry, and AP Precalculus Units 1–4. It is not a claim of complete course coverage.
 
-The [12-minute product demo script](./docs/product-video-script.md) pairs with the [browser presentation](./product-video.html). The [30-day education opportunity map](./docs/education-opportunities-30-days.md) separates actions we can take from approvals controlled by each platform.
+The [20-minute product demo script](./docs/product-video-script.md) pairs with the [20-slide browser presentation](./product-video.html). The [30-day education opportunity map](./docs/education-opportunities-30-days.md) separates actions we can take from approvals controlled by each platform.
 
 ## Pages
 - `index.html` - main page
