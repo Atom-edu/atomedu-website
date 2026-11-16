@@ -48,6 +48,10 @@ function cors(request, env) {
     ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin' }
     : { Vary: 'Origin' };
 }
+// The download URL contains its complete, intentionally public graph payload.
+// Provider widgets may fetch it from a different browser origin; no credentials are sent.
+const publicDownloadCors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Range',
+  'Access-Control-Expose-Headers': 'Cache-Control, Content-Encoding, Content-Range' };
 function requireOrigin(request, env) {
   const origin = originConfig(env);
   if (!origin) throw new ApiError(503, 'service_unavailable', 'missing_config');
@@ -179,7 +183,7 @@ async function download(request, env) {
   return new Response(content, { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8',
     'Content-Disposition': 'attachment; filename="atom-graph.json"', 'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'",
-    ...cors(request, env) } });
+    ...publicDownloadCors } });
 }
 async function start(request, env) {
   if (!driveConfigured(env)) throw new ApiError(503, 'provider_unavailable', 'missing_config');
@@ -250,6 +254,12 @@ export default { async fetch(request, env) {
       return status(request, env, Boolean(auth && driveConfigured(env)), driveConfigured(env) ? auth?.csrf : null);
     }
     if (path === `${BASE}/download` && request.method === 'GET') return await download(request, env);
+    if (path === `${BASE}/download` && request.method === 'OPTIONS') {
+      if (!downloadConfigured(env)) throw new ApiError(503, 'download_unavailable', 'missing_config');
+      return new Response(null, { status: 204, headers: { ...publicDownloadCors,
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Max-Age': '600' } });
+    }
     if (path === `${BASE}/oauth/drive/start` && request.method === 'GET') return await start(request, env);
     if (path === `${BASE}/oauth/drive/callback` && request.method === 'GET') return await callback(request, env);
     if ((path === `${BASE}/exports` || path === `${BASE}/oauth/drive/disconnect`) && request.method === 'OPTIONS') {

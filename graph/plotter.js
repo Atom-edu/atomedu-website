@@ -169,7 +169,12 @@ export function createGraph(container, options = {}) {
   $('.graph-image-import').hidden = !imageImportEnabled;
   const on = (target, name, handler, config) => { target.addEventListener(name, handler, config); listeners.push(() => target.removeEventListener(name, handler, config)); };
   const state = () => ({
-    expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, imported: row.imported, strokeWidth: row.strokeWidth, error: row.error, kind: row.compiled?.kind || null })),
+    // A math-field can update its visible value before its input event reaches
+    // onFieldInput. Read it at export time so a just-entered curve is not lost.
+    expressions: [...rows, ...(draftRow && typeof draftRow.field?.value === 'string' && draftRow.field.value.trim() ? [draftRow] : [])]
+      .map(row => ({ id: row.id, expression: typeof row.field?.value === 'string' ? row.field.value : row.expression,
+        color: row.color, visible: row.visible, imported: row.imported, strokeWidth: row.strokeWidth,
+        error: row.error, kind: row.compiled?.kind || null })),
     viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, xScale, yScale, gridMode, trace: trace ? { ...trace } : null,
   });
   const getExpressions = () => rows.map(({ id, expression, color, visible, imported, strokeWidth }) => ({ id, expression, color, visible, imported, strokeWidth }));

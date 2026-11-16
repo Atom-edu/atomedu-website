@@ -127,7 +127,7 @@ test('valid session still rejects graph fields outside bounded schema', async t 
   assert.deepEqual(await response.json(), { error: 'invalid_graph', reason: 'invalid_graph' });
 });
 
-test('public download returns bounded JSON with attachment headers and exact CORS', async () => {
+test('public download returns bounded JSON with attachment headers and provider CORS', async () => {
   const env = { ...ENV, DOWNLOAD_LIMITER: { async limit({ key }) { assert.equal(key, '203.0.113.4'); return { success: true }; } },
     DOWNLOAD_BUDGET: { async limit({ key }) { assert.equal(key, 'public-download'); return { success: true }; } } };
   const path = `/download?graph=${encodeURIComponent(JSON.stringify(graph))}`;
@@ -137,10 +137,16 @@ test('public download returns bounded JSON with attachment headers and exact COR
   assert.equal(response.headers.get('Content-Disposition'), 'attachment; filename="atom-graph.json"');
   assert.equal(response.headers.get('Content-Type'), 'application/json; charset=utf-8');
   assert.equal(response.headers.get('Cache-Control'), 'no-store');
-  assert.equal(response.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), '*');
+  assert.equal(response.headers.get('Access-Control-Allow-Headers'), 'Range');
+  assert.match(response.headers.get('Access-Control-Expose-Headers'), /Content-Range/);
+  const preflight = await invoke('/download', { method: 'OPTIONS', headers: { Origin: SITE, 'Access-Control-Request-Headers': 'range' } }, env);
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), '*');
+  assert.equal(preflight.headers.get('Access-Control-Allow-Headers'), 'Range');
   const providerFetch = await invoke(path, {}, { ...env, DOWNLOAD_LIMITER: { async limit() { return { success: true }; } } });
   assert.equal(providerFetch.status, 200);
-  assert.equal(providerFetch.headers.get('Access-Control-Allow-Origin'), null);
+  assert.equal(providerFetch.headers.get('Access-Control-Allow-Origin'), '*');
   const status = await (await invoke('/status', {}, env)).json();
   assert.deepEqual(status.download, { available: true });
 });
@@ -176,10 +182,10 @@ test('read-only download and CORS work without OAuth configuration', async () =>
   const response = await invoke(path, { headers: { Origin: SITE } }, env);
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), graph);
-  assert.equal(response.headers.get('Access-Control-Allow-Origin'), SITE);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), '*');
   const other = await invoke(path, { headers: { Origin: 'https://evil.example' } }, env);
   assert.equal(other.status, 200);
-  assert.equal(other.headers.get('Access-Control-Allow-Origin'), null);
+  assert.equal(other.headers.get('Access-Control-Allow-Origin'), '*');
   assert.equal((await invoke('/oauth/drive/start', {}, env)).status, 503);
 });
 

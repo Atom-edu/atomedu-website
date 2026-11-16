@@ -7,6 +7,7 @@ import { prepareGraphExport, buildPublicGraphDownloadUrl } from './graph/share-e
 
 const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
 let dropboxLoader = null;
+let driveSaverLoader = null;
 function loadDropboxSaver() {
   if (window.Dropbox?.save) return Promise.resolve();
   if (dropboxLoader) return dropboxLoader;
@@ -21,6 +22,20 @@ function loadDropboxSaver() {
     document.head.append(script);
   }).catch(error => { dropboxLoader = null; throw error; });
   return dropboxLoader;
+}
+function loadDriveSaver() {
+  if (window.gapi?.savetodrive?.render) return Promise.resolve();
+  if (driveSaverLoader) return driveSaverLoader;
+  window.___gcfg = { ...(window.___gcfg || {}), parsetags: 'explicit' };
+  driveSaverLoader = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/platform.js';
+    script.async = true;
+    script.onload = () => window.gapi?.savetodrive?.render ? resolve() : reject(new Error('Google Save to Drive did not load.'));
+    script.onerror = () => { script.remove(); reject(new Error('Google Save to Drive could not load.')); };
+    document.head.append(script);
+  }).catch(error => { driveSaverLoader = null; throw error; });
+  return driveSaverLoader;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -705,13 +720,15 @@ function mountClassroomShare(graph) {
   }
   const exportStatus = node('p', 'graph-share-export-status');
   exportStatus.setAttribute('role', 'status');
+  const driveWidget = node('div', 'graph-drive-save-widget');
+  driveWidget.hidden = true;
   exportMenu.addEventListener('toggle', () => {
-    if (exportMenu.open) loadDropboxSaver().catch(() => {
-      exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.';
-    });
+    if (!exportMenu.open) return;
+    loadDropboxSaver().catch(() => { exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.'; });
+    loadDriveSaver().catch(() => { /* Manual JSON download remains available. */ });
   });
   const destinations = [
-    ['google-drive', 'Google Drive', 'Download file for upload'],
+    ['google-drive', 'Google Drive', 'Prepare Save to Google Drive'],
     ['notion', 'Notion', 'Copy notes to paste'],
     ['zapier', 'Zapier', 'Copy JSON for a configured Zap'],
     ['dropbox', 'Dropbox', 'Save graph file to Dropbox'],
@@ -725,6 +742,19 @@ function mountClassroomShare(graph) {
       exportFallback.hidden = true;
       exportStatus.textContent = '';
       try {
+        if (provider === 'google-drive') {
+          if (!window.gapi?.savetodrive?.render) {
+            loadDriveSaver().catch(() => {});
+            exportStatus.textContent = 'Google Drive is loading. Please try again in a moment, or download the JSON file below.';
+            return;
+          }
+          const url = buildPublicGraphDownloadUrl(graph.getState());
+          driveWidget.replaceChildren();
+          driveWidget.hidden = false;
+          window.gapi.savetodrive.render(driveWidget, { src: url, filename: 'atom-graph.json', sitename: 'atomEDU' });
+          exportStatus.textContent = 'Click the Google Drive button below to choose your account. Prepare again after editing the graph. The file URL contains your graph and is viewable by anyone who has it.';
+          return;
+        }
         if (provider === 'dropbox') {
           if (!window.Dropbox?.save) {
             loadDropboxSaver().catch(() => {});
@@ -783,7 +813,7 @@ function mountClassroomShare(graph) {
     } catch (error) { exportStatus.textContent = errorMessage(error); }
   });
   exportList.append(downloadJson);
-  exportMenu.append(node('p', '', 'Dropbox saves directly after you approve it in the popup. Other options prepare a file or copyable text for you to upload or paste yourself.'), exportList, exportFallback, exportStatus);
+  exportMenu.append(node('p', '', 'Google Drive and Dropbox save to your account after you approve them. Other options prepare a file or copyable text for you to upload or paste yourself.'), exportList, driveWidget, exportFallback, exportStatus);
   function showGraphLink() {
     try {
       const state = graph.getState();
@@ -823,7 +853,7 @@ function mountClassroomShare(graph) {
     status.textContent = 'Graph link is shown above. Choose a class in Google Classroom to share it.';
   });
   exportMenu.append(link);
-  panel.append(copy, urlRow, exportMenu, status, node('small', '', 'Dropbox Saver opens a Dropbox popup. Classroom sharing opens Google Classroom. Other exports need you to upload or paste their content. atomEDU is not affiliated with these services.'));
+  panel.append(copy, urlRow, exportMenu, status, node('small', '', 'Drive and Dropbox use their own save buttons. Classroom sharing opens Google Classroom. Other exports need you to upload or paste their content. atomEDU is not affiliated with these services.'));
   sidebar.append(panel);
 }
 
@@ -861,7 +891,7 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-26').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-27').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions(sharedGraph?.expressions || [''], {
       sidebarHost: $('graph-sidebar-host'),
@@ -927,7 +957,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js?v=proof-lab-26').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-27').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);
