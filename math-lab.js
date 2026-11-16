@@ -821,7 +821,7 @@ function mountClassroomShare(graph) {
     } catch (error) { exportStatus.textContent = errorMessage(error); }
   });
   exportList.append(downloadJson);
-  exportMenu.append(node('p', '', 'Dropbox saves directly after you approve it in the popup. Other options prepare a file or copyable text for you to upload or paste yourself.'), exportList, exportFallback, exportStatus);
+  exportMenu.append(node('p', '', 'Direct saves ask for your approval. Copy and download options let you transfer the graph yourself.'), exportList, exportFallback, exportStatus);
   function showGraphLink() {
     try {
       const state = graph.getState();
@@ -861,7 +861,7 @@ function mountClassroomShare(graph) {
     status.textContent = 'Graph link is shown above. Choose a class in Google Classroom to share it.';
   });
   exportMenu.append(link);
-  panel.append(copy, urlRow, exportMenu, status, node('small', '', 'Dropbox Saver opens a Dropbox popup. Classroom sharing opens Google Classroom. Other exports need you to upload or paste their content. atomEDU is not affiliated with these services.'));
+  panel.append(copy, urlRow, exportMenu, status, node('small', '', 'Each service controls its own sign-in and permissions. atomEDU is not affiliated with these services.'));
   sidebar.append(panel);
 }
 
