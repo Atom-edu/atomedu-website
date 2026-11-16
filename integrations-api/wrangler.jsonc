@@ -1,0 +1,15 @@
+{
+  "$schema": "../contest-api/node_modules/wrangler/config-schema.json",
+  "name": "atom-integrations-api",
+  "main": "index.js",
+  "compatibility_date": "2026-11-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://atom-edu.org"
+  },
+  "ratelimits": [
+    { "name": "DOWNLOAD_LIMITER", "namespace_id": "34001106", "simple": { "limit": 30, "period": 60 } },
+    { "name": "DOWNLOAD_BUDGET", "namespace_id": "34001107", "simple": { "limit": 1000, "period": 60 } }
+  ],
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

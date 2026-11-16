@@ -236,16 +236,24 @@ h3.sub-title { font-size: 1.25rem; margin: 0; font-weight: 600; }
 .partner-vcboom img { width: min(100%, 13rem); }
 .partner-med img { width: min(100%, 15rem); }
 
-/* Classroom is a product integration, not a featured partner. */
+/* Product integrations are separate from featured partners. */
 .integrations-section { padding: 3.4rem 0 4.4rem; }
-.integrations-section .wrap { max-width: 50rem; }
-.classroom-integration { display: flex; align-items: center; gap: 1.6rem; margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--cream-raised); }
-.classroom-integration img { display: block; width: 80px; height: 80px; flex: none; object-fit: contain; }
-.classroom-integration h3 { margin: 0 0 .35rem; font-family: Roboto, Arial, sans-serif; font-size: 1.15rem; font-weight: 700; }
-.classroom-integration p { margin: 0 0 .7rem; color: var(--ink-soft); font-size: .9rem; }
-.classroom-integration .textlink { font-size: .86rem; }
+.integrations-section .wrap { max-width: 78rem; }
+.integration-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
+.integration-card { display: flex; align-items: flex-start; gap: 1.4rem; min-width: 0; padding: 1.5rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--cream-raised); }
+.integration-card > div { min-width: 0; }
+.integration-card img, .integration-placeholder { display: block; width: 80px; height: 80px; flex: none; }
+.integration-card img { object-fit: contain; }
+.integration-placeholder { display: grid; place-items: center; border: 1px solid var(--line); border-radius: .8rem; color: var(--muted); font-size: 2rem; font-weight: 400; }
+.integration-card h3 { margin: 0 0 .35rem; font-family: Roboto, Arial, sans-serif; font-size: 1.15rem; font-weight: 700; }
+.integration-card p { margin: 0 0 .7rem; color: var(--ink-soft); font-size: .9rem; }
+.integration-card p:last-child { margin-bottom: 0; }
+.integration-card .textlink { font-size: .86rem; }
+.integration-card .integration-status { display: inline-block; margin: .1rem 0 .65rem; padding: .25rem .55rem; border-radius: .35rem; background: #ece6dc; color: var(--ink); font-size: .75rem; font-weight: 600; }
 .integration-attribution { margin: 1rem 0 0; color: var(--muted); font-size: .7rem; }
-@media (max-width: 520px) { .classroom-integration { align-items: flex-start; gap: 1rem; } .classroom-integration img { width: 56px; height: 56px; } }
+.integration-attribution + .integration-attribution { margin-top: .35rem; }
+@media (max-width: 760px) { .integration-grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .integration-card { gap: 1rem; padding: 1.1rem; } .integration-card img, .integration-placeholder { width: 56px; height: 56px; } }
 
 /* founders */
 .founder-grid {

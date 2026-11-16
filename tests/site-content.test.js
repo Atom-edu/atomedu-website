@@ -165,6 +165,42 @@ test('Classroom integration is separate from featured partners and uses the offi
   assert.match(read('proof-lab.html'), /id="graph"/);
 });
 
+test('home integration cards use a responsive grid and label unavailable connections', () => {
+  const home = read('index.html');
+  const section = home.match(/<section class="section integrations-section"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(section);
+  assert.match(section, /class="integration-grid"/);
+  const cards = [...section.matchAll(/<article class="integration-card(?: classroom-integration| dropbox-integration)?">([\s\S]*?)<\/article>/g)].map((match) => match[1]);
+  assert.equal(cards.length, 6);
+  assert.match(cards[0], /For use with Google Classroom™/);
+  assert.match(cards[0], /href="\/proof-lab#graph"/);
+  for (const [index, name] of ['Google Drive', 'Notion', 'Zapier', 'Dropbox', 'GitHub'].entries()) {
+    const card = cards[index + 1];
+    assert.match(card, new RegExp(`<h3>${name}<\\/h3>`));
+    if (name === 'Dropbox') {
+      assert.match(card, /Dropbox Saver/);
+      assert.match(card, /Dropbox logo/);
+      assert.match(card, /href="\/proof-lab#graph"/);
+    } else {
+      assert.match(card, /class="integration-status">Coming soon<\/p>/);
+      assert.match(card, /class="integration-placeholder" aria-hidden="true"/);
+      assert.doesNotMatch(card, /<img\b|<svg\b|<a\b/, `${name} has no logo or live action`);
+    }
+  }
+  assert.equal([...section.matchAll(/<img\b/g)].length, 2, 'Classroom and Dropbox integrations have logos');
+  assert.match(section, /Other product names belong to their respective owners/);
+
+  const css = read('styles.css');
+  assert.match(css, /\.integration-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(css, /@media \(max-width: 760px\)\s*\{\s*\.integration-grid\s*\{\s*grid-template-columns:\s*1fr/);
+
+  const translations = read('site-i18n.js');
+  assert.match(translations, /'Coming soon': 'Próximamente'/);
+  for (const name of ['Google Drive', 'Notion', 'Zapier', 'Dropbox', 'GitHub']) {
+    assert.ok(translations.includes(`'${name}': '${name}'`));
+  }
+});
+
 test('Solve exposes the strict word-problem mode separately from LaTeX and JSON', () => {
   const proof = read('proof-lab.html');
   const app = read('math-lab.js');

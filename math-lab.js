@@ -3,6 +3,25 @@
 import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-18';
 import { latexToInput } from './engine/latex.js?v=proof-lab-18';
 import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=1';
+import { prepareGraphExport, buildPublicGraphDownloadUrl } from './graph/share-export.js?v=2';
+
+const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
+let dropboxLoader = null;
+function loadDropboxSaver() {
+  if (window.Dropbox?.save) return Promise.resolve();
+  if (dropboxLoader) return dropboxLoader;
+  dropboxLoader = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.id = 'dropboxjs';
+    script.src = 'https://www.dropbox.com/static/api/2/dropins.js';
+    script.dataset.appKey = DROPBOX_APP_KEY;
+    script.async = true;
+    script.onload = () => window.Dropbox?.save ? resolve() : reject(new Error('Dropbox Saver did not load.'));
+    script.onerror = () => { script.remove(); reject(new Error('Dropbox Saver could not load.')); };
+    document.head.append(script);
+  }).catch(error => { dropboxLoader = null; throw error; });
+  return dropboxLoader;
+}
 
 const $ = (id) => document.getElementById(id);
 const tabs = [...document.querySelectorAll('.view-tab')];
@@ -646,7 +665,7 @@ function mountClassroomShare(graph) {
   const sidebar = $('graph-sidebar-host').querySelector('.graph-sidebar');
   if (!sidebar || sidebar.querySelector('.graph-classroom-share')) return;
   const panel = node('section', 'graph-classroom-share');
-  panel.setAttribute('aria-label', 'Share graph with Google Classroom');
+  panel.setAttribute('aria-label', 'Share and export graph');
   panel.append(node('h3', '', 'Share this graph'));
   panel.append(node('p', '', 'Copy an editable graph link or send it to Google Classroom. The link contains your expressions and window settings.'));
   const copy = node('button', 'graph-share-copy', 'Copy graph link');
@@ -671,6 +690,100 @@ function mountClassroomShare(graph) {
   link.append(icon, node('span', '', 'Share to Google Classroom'));
   const status = node('p', 'graph-classroom-status');
   status.setAttribute('role', 'status');
+  const exportMenu = node('details', 'graph-share-export');
+  exportMenu.append(node('summary', '', 'Share / export'));
+  const exportList = node('div', 'graph-share-export-list');
+  const exportFallback = node('textarea', 'graph-share-export-fallback');
+  exportFallback.readOnly = true;
+  exportFallback.hidden = true;
+  exportFallback.setAttribute('aria-label', 'Prepared graph export');
+  function selectPreparedContent(content) {
+    exportFallback.value = content;
+    exportFallback.hidden = false;
+    exportFallback.focus();
+    exportFallback.select();
+  }
+  const exportStatus = node('p', 'graph-share-export-status');
+  exportStatus.setAttribute('role', 'status');
+  exportMenu.addEventListener('toggle', () => {
+    if (exportMenu.open) loadDropboxSaver().catch(() => {
+      exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.';
+    });
+  });
+  const destinations = [
+    ['google-drive', 'Google Drive', 'Download file for upload'],
+    ['notion', 'Notion', 'Copy notes to paste'],
+    ['zapier', 'Zapier', 'Copy JSON for a configured Zap'],
+    ['dropbox', 'Dropbox', 'Save graph file to Dropbox'],
+    ['github', 'GitHub', 'Copy text for a Gist'],
+  ];
+  for (const [provider, name, action] of destinations) {
+    const button = node('button', 'graph-share-export-button');
+    button.type = 'button';
+    button.append(node('strong', '', name), node('span', '', action));
+    button.addEventListener('click', async () => {
+      exportFallback.hidden = true;
+      exportStatus.textContent = '';
+      try {
+        if (provider === 'dropbox') {
+          if (!window.Dropbox?.save) {
+            loadDropboxSaver().catch(() => {});
+            exportStatus.textContent = 'Dropbox Saver is loading. Please try Save to Dropbox again in a moment.';
+            return;
+          }
+          const url = buildPublicGraphDownloadUrl(graph.getState());
+          window.Dropbox.save(url, 'atom-graph.json', {
+            success: () => { exportStatus.textContent = 'Graph saved to your Dropbox.'; },
+            cancel: () => { exportStatus.textContent = 'Dropbox save cancelled.'; },
+            error: () => { exportStatus.textContent = 'Dropbox could not save this graph. Download the JSON file instead.'; },
+          });
+          exportStatus.textContent = 'Choose a Dropbox destination in the popup. The file URL contains your graph and is viewable by anyone who has it.';
+          return;
+        }
+        const prepared = prepareGraphExport(provider, graph.getState());
+        if (prepared.delivery === 'download') {
+          const blobUrl = URL.createObjectURL(new Blob([prepared.content], { type: prepared.mimeType }));
+          const download = document.createElement('a');
+          download.href = blobUrl;
+          download.download = prepared.fileName;
+          document.body.append(download);
+          download.click();
+          download.remove();
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+        } else {
+          try {
+            if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+            await navigator.clipboard.writeText(prepared.content);
+          } catch {
+            selectPreparedContent(prepared.content);
+          }
+        }
+        exportStatus.textContent = prepared.instructions;
+      } catch (error) {
+        exportStatus.textContent = errorMessage(error);
+      }
+    });
+    exportList.append(button);
+  }
+  const downloadJson = node('button', 'graph-share-export-button');
+  downloadJson.type = 'button';
+  downloadJson.append(node('strong', '', 'Download graph JSON'), node('span', '', 'For larger graphs or manual upload'));
+  downloadJson.addEventListener('click', () => {
+    try {
+      const prepared = prepareGraphExport('dropbox', graph.getState());
+      const blobUrl = URL.createObjectURL(new Blob([prepared.content], { type: prepared.mimeType }));
+      const download = document.createElement('a');
+      download.href = blobUrl;
+      download.download = prepared.fileName;
+      document.body.append(download);
+      download.click();
+      download.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+      exportStatus.textContent = 'Graph JSON downloaded. Upload it to any service you choose.';
+    } catch (error) { exportStatus.textContent = errorMessage(error); }
+  });
+  exportList.append(downloadJson);
+  exportMenu.append(node('p', '', 'Dropbox saves directly after you approve it in the popup. Other options prepare a file or copyable text for you to upload or paste yourself.'), exportList, exportFallback, exportStatus);
   function showGraphLink() {
     try {
       const state = graph.getState();
@@ -709,7 +822,8 @@ function mountClassroomShare(graph) {
     link.href = classroomUrl.href;
     status.textContent = 'Graph link is shown above. Choose a class in Google Classroom to share it.';
   });
-  panel.append(copy, urlRow, link, status, node('small', '', 'Sharing opens Google Classroom and sends the graph link there. Google Classroom is a trademark of Google LLC; atomEDU is not affiliated with Google.'));
+  exportMenu.append(link);
+  panel.append(copy, urlRow, exportMenu, status, node('small', '', 'Dropbox Saver opens a Dropbox popup. Classroom sharing opens Google Classroom. Other exports need you to upload or paste their content. atomEDU is not affiliated with these services.'));
   sidebar.append(panel);
 }
 

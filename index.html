@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Roboto:wght@700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=proof-lab-10" />
+  <link rel="stylesheet" href="styles.css?v=proof-lab-11" />
 </head>
 <body>
 
@@ -162,15 +162,58 @@
   <section class="section integrations-section" aria-labelledby="integrations-title">
     <div class="wrap">
       <h2 class="partners-title" id="integrations-title">Integrations</h2>
-      <div class="classroom-integration">
-        <img src="images/google-classroom-icon.png" width="80" height="80" alt="Google Classroom icon" />
-        <div>
-          <h3>For use with Google Classroom™</h3>
-          <p>Share a link to the graph you made in Proof Lab. Your teacher can add it to a Classroom assignment, material, or announcement.</p>
-          <a class="textlink" href="/proof-lab#graph">Make and share a graph <span aria-hidden="true">→</span></a>
-        </div>
+      <div class="integration-grid">
+        <article class="integration-card classroom-integration">
+          <img src="images/google-classroom-icon.png" width="80" height="80" alt="Google Classroom icon" />
+          <div>
+            <h3>For use with Google Classroom™</h3>
+            <p>Share a link to the graph you made in Proof Lab. Your teacher can add it to a Classroom assignment, material, or announcement.</p>
+            <a class="textlink" href="/proof-lab#graph">Make and share a graph <span aria-hidden="true">→</span></a>
+          </div>
+        </article>
+        <article class="integration-card">
+          <span class="integration-placeholder" aria-hidden="true">+</span>
+          <div>
+            <h3>Google Drive</h3>
+            <p class="integration-status">Coming soon</p>
+            <p>Direct access to files in Google Drive is not available yet.</p>
+          </div>
+        </article>
+        <article class="integration-card">
+          <span class="integration-placeholder" aria-hidden="true">+</span>
+          <div>
+            <h3>Notion</h3>
+            <p class="integration-status">Coming soon</p>
+            <p>A direct connection to Notion is not available yet.</p>
+          </div>
+        </article>
+        <article class="integration-card">
+          <span class="integration-placeholder" aria-hidden="true">+</span>
+          <div>
+            <h3>Zapier</h3>
+            <p class="integration-status">Coming soon</p>
+            <p>Automated workflows with Zapier are not available yet.</p>
+          </div>
+        </article>
+        <article class="integration-card dropbox-integration">
+          <img src="https://cdn.prod.website-files.com/66c503d081b2f012369fc5d2/674000d6c0a42d41f8c331be_dropbox-2-logo-png-transparent.png" width="80" height="80" alt="Dropbox logo" loading="lazy" />
+          <div>
+            <h3>Dropbox</h3>
+            <p>Save a graph file to your own Dropbox with Dropbox Saver. You choose where it goes.</p>
+            <a class="textlink" href="/proof-lab#graph">Open graph export <span aria-hidden="true">→</span></a>
+          </div>
+        </article>
+        <article class="integration-card">
+          <span class="integration-placeholder" aria-hidden="true">+</span>
+          <div>
+            <h3>GitHub</h3>
+            <p class="integration-status">Coming soon</p>
+            <p>A direct connection to GitHub is not available yet.</p>
+          </div>
+        </article>
       </div>
       <p class="integration-attribution">Google Classroom is a trademark of Google LLC. atomEDU is not affiliated with or endorsed by Google.</p>
+      <p class="integration-attribution">Other product names belong to their respective owners. Their mention does not imply affiliation or endorsement.</p>
     </div>
   </section>
   </main>
@@ -234,7 +277,7 @@
     </div>
   </footer>
 
-  <script src="site-i18n.js?v=founders-4"></script>
+  <script src="site-i18n.js?v=founders-5"></script>
   <script src="site.js?v=proof-lab-4"></script>
   <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 </body>
