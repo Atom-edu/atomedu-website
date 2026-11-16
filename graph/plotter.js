@@ -41,6 +41,10 @@ import {
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
 const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });
 let instanceNumber = 0;
+export function canImportGraphImage(hostname, options = {}) {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(hostname)
+    && options.compact !== true && options.showImageImport !== false;
+}
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const format = n => {
   if (Math.abs(n) < 1e-12) return '0';
@@ -51,6 +55,7 @@ const format = n => {
 export function createGraph(container, options = {}) {
   if (!container?.ownerDocument) throw new TypeError('createGraph requires a DOM container.');
   const doc = container.ownerDocument, win = doc.defaultView, prefix = `atom-graph-${++instanceNumber}`;
+  const imageImportEnabled = canImportGraphImage(win.location.hostname, options);
   const root = doc.createElement('section');
   root.className = `atom-graph${options.compact ? ' graph-compact' : ''}`;
   root.setAttribute('aria-label', options.ariaLabel || 'Graph workspace');
@@ -161,7 +166,7 @@ export function createGraph(container, options = {}) {
   $('.graph-equal').disabled = gridMode === 'polar';
   $('.graph-x-scale').value = xScale; $('.graph-y-scale').value = yScale; $('.graph-grid-mode').value = gridMode;
   $('[data-graph-action="export"]').hidden = options.showExport === false;
-  $('.graph-image-import').hidden = options.compact === true || options.showImageImport === false;
+  $('.graph-image-import').hidden = !imageImportEnabled;
   const on = (target, name, handler, config) => { target.addEventListener(name, handler, config); listeners.push(() => target.removeEventListener(name, handler, config)); };
   const state = () => ({
     expressions: rows.map(row => ({ id: row.id, expression: row.expression, color: row.color, visible: row.visible, imported: row.imported, strokeWidth: row.strokeWidth, error: row.error, kind: row.compiled?.kind || null })),
@@ -237,9 +242,10 @@ export function createGraph(container, options = {}) {
   const imageName = $('.graph-image-name'), imagePreview = $('.graph-image-preview');
   const imageStyle = $('.graph-image-style'), imageConvert = $('.graph-image-convert');
   const imageStatus = $('.graph-image-status');
+  imageFile.disabled = imageStyle.disabled = imageConvert.disabled = !imageImportEnabled;
   let imagePreviewUrl = null, imageAbort = null;
   function selectImage(file) {
-    if (imageImportBusy) return;
+    if (!imageImportEnabled || imageImportBusy) return;
     if (imagePreviewUrl) { URL.revokeObjectURL(imagePreviewUrl); imagePreviewUrl = null; }
     selectedImage = null; imagePreview.hidden = true; imagePreview.removeAttribute('src');
     if (!file) { imageName.textContent = 'No image selected.'; return; }
@@ -289,7 +295,7 @@ export function createGraph(container, options = {}) {
     });
   }
   on(imageConvert, 'click', async () => {
-    if (imageImportBusy) return;
+    if (!imageImportEnabled || imageImportBusy) return;
     if (!selectedImage) { imageStatus.textContent = 'Choose an image first.'; return; }
     imageImportBusy = true; imageFile.disabled = imageStyle.disabled = imageConvert.disabled = true;
     const overlay = showImportOverlay(), started = win.performance.now();

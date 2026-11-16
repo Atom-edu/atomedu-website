@@ -50,7 +50,7 @@ Serve the entire vendor, graph, engine, and editor paths shown above. Copying ju
 - Pointer drag to pan, anchored wheel zoom, touch pinch, and zoom/reset/fit buttons
 - Keyboard arrows to pan, plus/minus to zoom, and Home to reset
 - Coordinate readout, click-to-trace, editable window bounds, and PNG export
-- Browser-only image import below Window settings offers three distinct drawing styles. Wave drawing uses colored, bounded sine functions; Line sketch uses bounded straight-line functions; Balanced mosaic retains the adaptive colored-inequality rectangles. The global graph limit is 768 expressions. Images are not uploaded to a server by this feature.
+- Image import is available only when the graph is opened from `localhost`, `127.0.0.1`, or the IPv6 loopback address. It is hidden and disabled on the public site, including when an embed requests `showImageImport: true`. On localhost, the control below Window settings offers three drawing styles: bounded sine waves, straight-line functions, and adaptive colored-inequality rectangles. The global graph limit is 768 expressions. Images are not uploaded to a server by this feature.
 
 Image import is a color-and-shape approximation, not a photorealistic tracing system. The wave and line styles create actual function paths with bounded domains; the mosaic style creates actual shaded inequalities. The imported formulas are the source of the rendered art; clicking a formula replaces its lightweight preview with a visual math editor. Keep rights to any source image you use, and check the separate art-contest rules before submitting exported work.
 
