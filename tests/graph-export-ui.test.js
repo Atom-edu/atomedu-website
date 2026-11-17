@@ -15,10 +15,10 @@ test('Graph presents a truthful provider handoff below Copy graph link', () => {
   assert.match(app, /buildDirectExportUrl\('notion', graph\.getState\(\), notionInput\.value\.trim\(\)\)/);
   assert.match(app, /images\/github-mark\.svg/);
   assert.match(app, /front-static\/logo-ios\.png/);
-  assert.match(app, /DRIVE_QA = new URLSearchParams\(location\.search\)\.has\('drive-qa'\)/);
   assert.match(app, /requestDriveAccessToken\(window\.google, GOOGLE_DRIVE_CLIENT_ID\)/);
   assert.match(app, /uploadGraphToDrive\(graphState, token\)/);
-  assert.match(app, /driveDirect\.hidden = !DRIVE_QA/);
+  assert.match(app, /exportList\.append\(driveDirect\)/);
+  assert.doesNotMatch(app, /DRIVE_QA|drive-qa/);
   assert.ok(app.indexOf("['github', 'GitHub'") < app.indexOf("['notion', 'Notion'"));
   assert.match(app, /status\?\.providers\?\.github\?\.available/);
   assert.match(app, /status\?\.providers\?\.notion\?\.available/);

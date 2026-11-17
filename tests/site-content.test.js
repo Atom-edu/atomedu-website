@@ -176,8 +176,12 @@ test('home integration cards use a responsive grid and label unavailable connect
   assert.match(cards[0], /href="\/proof-lab#graph"/);
   for (const [index, name] of ['Google Drive', 'Notion', 'Zapier', 'Dropbox', 'GitHub'].entries()) {
     const card = cards[index + 1];
-    assert.match(card, new RegExp(`<h3>${name}<\\/h3>`));
-    if (name === 'Dropbox') {
+    assert.match(card, new RegExp(`<h3>${name}${name === 'Google Drive' ? '™' : ''}<\\/h3>`));
+    if (name === 'Google Drive') {
+      assert.match(card, /directly to your own Google Drive/);
+      assert.match(card, /logo_drive_2026_color/);
+      assert.match(card, /href="\/proof-lab#graph"/);
+    } else if (name === 'Dropbox') {
       assert.match(card, /Dropbox Saver/);
       assert.match(card, /Dropbox logo/);
       assert.match(card, /href="\/proof-lab#graph"/);
@@ -195,7 +199,7 @@ test('home integration cards use a responsive grid and label unavailable connect
       assert.doesNotMatch(card, /<img\b|<svg\b|<a\b/, `${name} has no logo or live action`);
     }
   }
-  assert.equal([...section.matchAll(/<img\b/g)].length, 4, 'All live integrations have logos');
+  assert.equal([...section.matchAll(/<img\b/g)].length, 5, 'All live integrations have logos');
   assert.match(section, /Other product names belong to their respective owners/);
 
   const css = read('styles.css');

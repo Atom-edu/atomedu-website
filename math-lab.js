@@ -8,7 +8,6 @@ import { requestDriveAccessToken, uploadGraphToDrive } from './graph/google-driv
 
 const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
 const GOOGLE_DRIVE_CLIENT_ID = '479371419613-gmcrv9qj8b8o1es36q7gl46ssd0nicv3.apps.googleusercontent.com';
-const DRIVE_QA = new URLSearchParams(location.search).has('drive-qa');
 const INTEGRATION_STATUS_URL = 'https://atom-integrations-api.archimedes-api1.workers.dev/api/integrations/status';
 let dropboxLoader = null;
 let googleIdentityLoader = null;
@@ -726,7 +725,6 @@ function mountClassroomShare(graph) {
   const driveDirect = node('button', 'graph-share-export-button graph-direct-export');
   driveDirect.type = 'button';
   driveDirect.title = 'Save to Google Drive';
-  driveDirect.hidden = !DRIVE_QA;
   driveDirect.disabled = true;
   const driveMark = node('img', 'graph-export-logo');
   driveMark.src = 'https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png';
@@ -792,7 +790,7 @@ function mountClassroomShare(graph) {
   exportMenu.addEventListener('toggle', () => {
     if (!exportMenu.open) return;
     loadDropboxSaver().catch(() => { exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.'; });
-    if (DRIVE_QA) loadGoogleIdentity().then(() => { driveDirect.disabled = false; })
+    loadGoogleIdentity().then(() => { driveDirect.disabled = false; })
       .catch(error => { exportStatus.textContent = errorMessage(error); });
     fetch(INTEGRATION_STATUS_URL, { cache: 'no-store' }).then(response => response.ok ? response.json() : null)
       .then(status => {
