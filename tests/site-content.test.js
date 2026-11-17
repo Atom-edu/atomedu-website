@@ -263,7 +263,7 @@ test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', 
 
 test('legal page defines the free tool and states academic integrity consequences', () => {
   const legal = read('legal.html');
-  assert.match(legal, /Last updated[\s\S]*November 15 2026/);
+  assert.match(legal, /Last updated[\s\S]*November 17 2026/);
   assert.match(legal, /mailto:hello@atom-edu\.org/);
   assert.match(legal, /also called atom, Proof Lab, the tool, we, us, or our/);
   assert.match(legal, /If you use the tool to cheat or break a rule/);

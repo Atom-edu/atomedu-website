@@ -754,6 +754,7 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app .graph-direct-export .graph-export-logo { display: block; width: 28px; height: 28px; object-fit: contain; }
 .lab-app .graph-direct-export .graph-export-copy { display: grid; gap: 3px; min-width: 0; }
 .lab-app .graph-direct-export .graph-export-copy strong { color: #263847; }
+.lab-app .graph-direct-export:disabled { opacity: .55; cursor: wait; }
 .lab-app .graph-share-export-fallback { box-sizing: border-box; width: calc(100% - 24px); min-height: 100px; margin: 0 12px 8px; padding: 8px; border: 1px solid #c8d1d8; border-radius: 6px; background: #fff; color: #263847; font: 11px ui-monospace, monospace; }
 .lab-app .graph-share-export-fallback[hidden] { display: none; }
 .lab-app .graph-share-export .graph-share-export-status { color: #355f4d; }

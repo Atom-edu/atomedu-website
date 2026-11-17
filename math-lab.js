@@ -4,10 +4,27 @@ import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLat
 import { latexToInput } from './engine/latex.js?v=proof-lab-18';
 import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=1';
 import { prepareGraphExport, buildPublicGraphDownloadUrl, buildDirectExportUrl } from './graph/share-export.js?v=4';
+import { requestDriveAccessToken, uploadGraphToDrive } from './graph/google-drive.js?v=1';
 
 const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
+const GOOGLE_DRIVE_CLIENT_ID = '479371419613-gmcrv9qj8b8o1es36q7gl46ssd0nicv3.apps.googleusercontent.com';
+const DRIVE_QA = new URLSearchParams(location.search).has('drive-qa');
 const INTEGRATION_STATUS_URL = 'https://atom-integrations-api.archimedes-api1.workers.dev/api/integrations/status';
 let dropboxLoader = null;
+let googleIdentityLoader = null;
+function loadGoogleIdentity() {
+  if (window.google?.accounts?.oauth2) return Promise.resolve(window.google);
+  if (googleIdentityLoader) return googleIdentityLoader;
+  googleIdentityLoader = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => window.google?.accounts?.oauth2 ? resolve(window.google) : reject(new Error('Google authorization did not load.'));
+    script.onerror = () => { script.remove(); reject(new Error('Google authorization could not load.')); };
+    document.head.append(script);
+  }).catch(error => { googleIdentityLoader = null; throw error; });
+  return googleIdentityLoader;
+}
 function loadDropboxSaver() {
   if (window.Dropbox?.save) return Promise.resolve();
   if (dropboxLoader) return dropboxLoader;
@@ -706,6 +723,32 @@ function mountClassroomShare(graph) {
   }
   const exportStatus = node('p', 'graph-share-export-status');
   exportStatus.setAttribute('role', 'status');
+  const driveDirect = node('button', 'graph-share-export-button graph-direct-export');
+  driveDirect.type = 'button';
+  driveDirect.title = 'Save to Google Drive';
+  driveDirect.hidden = !DRIVE_QA;
+  driveDirect.disabled = true;
+  const driveMark = node('img', 'graph-export-logo');
+  driveMark.src = 'https://www.gstatic.com/images/branding/productlogos/drive_2026/v2/web-64dp/logo_drive_2026_color_2x_web_64dp.png';
+  driveMark.alt = '';
+  const driveCopy = node('span', 'graph-export-copy');
+  driveCopy.append(node('strong', '', 'Save to Google Drive'), node('span', '', 'Choose your account, then save the graph JSON to My Drive'));
+  driveDirect.append(driveMark, driveCopy);
+  driveDirect.addEventListener('click', async () => {
+    try {
+      const graphState = graph.getState();
+      if (!JSON.parse(prepareGraphExport('google-drive', graphState).content).graph.expressions.length)
+        throw new RangeError('Add a graph expression before exporting.');
+      const token = await requestDriveAccessToken(window.google, GOOGLE_DRIVE_CLIENT_ID);
+      exportStatus.textContent = 'Saving the graph directly to your Google Drive…';
+      const saved = await uploadGraphToDrive(graphState, token);
+      const link = node('a', '', 'Open saved file');
+      link.href = saved.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      exportStatus.replaceChildren(document.createTextNode('Saved to Google Drive. '), link);
+    } catch (error) { exportStatus.textContent = errorMessage(error); }
+  });
   const githubDirect = node('button', 'graph-share-export-button graph-direct-export');
   githubDirect.type = 'button';
   githubDirect.hidden = true;
@@ -749,6 +792,8 @@ function mountClassroomShare(graph) {
   exportMenu.addEventListener('toggle', () => {
     if (!exportMenu.open) return;
     loadDropboxSaver().catch(() => { exportStatus.textContent = 'Dropbox Saver could not load. You can still download the graph file below.'; });
+    if (DRIVE_QA) loadGoogleIdentity().then(() => { driveDirect.disabled = false; })
+      .catch(error => { exportStatus.textContent = errorMessage(error); });
     fetch(INTEGRATION_STATUS_URL, { cache: 'no-store' }).then(response => response.ok ? response.json() : null)
       .then(status => {
         githubDirect.hidden = status?.providers?.github?.available !== true;
@@ -763,6 +808,7 @@ function mountClassroomShare(graph) {
     ['google-drive', 'Google Drive', 'Download file for upload'],
     ['zapier', 'Zapier', 'Copy JSON for a configured Zap'],
   ];
+  exportList.append(driveDirect);
   for (const [provider, name, action] of destinations) {
     const button = node('button', 'graph-share-export-button');
     button.type = 'button';
