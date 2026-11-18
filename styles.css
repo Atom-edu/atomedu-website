@@ -261,7 +261,7 @@ h3.sub-title { font-size: 1.25rem; margin: 0; font-weight: 600; }
 .founder-grid {
   max-width: var(--max);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin-top: 2rem;
 }

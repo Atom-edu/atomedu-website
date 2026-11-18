@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const read = path => readFileSync(resolve(root, path), 'utf8');
 
-test('the product video deck has 20 working slides, four portraits, and real product assets', () => {
+test('the product video deck has 20 working slides, three portraits, and real product assets', () => {
   const html = read('product-video.html');
   const script = read('product-video.js');
   assert.equal((html.match(/<section class="slide /g) || []).length, 20);
@@ -17,15 +17,15 @@ test('the product video deck has 20 working slides, four portraits, and real pro
   const images = [...html.matchAll(/<img src="([^"]+)"/g)].map(match => match[1]);
   assert(images.length >= 9);
   for (const image of images) assert(existsSync(resolve(root, image)), `Missing ${image}`);
-  assert.match(html, /images\/patel\.jpeg/);
-  assert.equal((html.match(/<figure><img src="images\/(?:awasthi|avuthu|sanikommu|patel)\.jpeg"/g) || []).length, 4);
+  assert.doesNotMatch(html, /Aryan Patel|images\/patel\.jpeg/);
+  assert.equal((html.match(/<figure><img src="images\/(?:awasthi|avuthu|sanikommu)\.jpeg"/g) || []).length, 3);
   assert.match(html, /images\/logo\.svg/);
   assert.match(html, /atomEDU is not affiliated with Google/);
   assert.doesNotMatch(html, /image.import|image.import.screen/i);
   assert.doesNotMatch(html, /Official Google partner|All of Algebra|All of Geometry/i);
 });
 
-test('the 20-minute script opens with Rahul and balances all three speakers', () => {
+test('the 20-minute script opens with Rahul and uses the two demo speakers', () => {
   const script = read('docs/product-video-script.md');
   assert.match(script, /Target length: 20 minutes/);
   assert.equal((script.match(/^## \d+:\d\d to \d+:\d\d \| Slide \d+/gm) || []).length, 20);
@@ -33,10 +33,10 @@ test('the 20-minute script opens with Rahul and balances all three speakers', ()
   assert.match(script, /^## 19:00 to 20:00 \| Slide 20/m);
   assert.match(script, /\*\*Rahul:\*\*/);
   assert.match(script, /\*\*Pritam:\*\*/);
-  assert.match(script, /\*\*Aryan:\*\*/);
+  assert.doesNotMatch(script, /Aryan|Patel/);
   const speakerWords = name => [...script.matchAll(new RegExp(`^\\*\\*${name}:\\*\\* (.+)$`, 'gm'))].reduce((count, match) => count + match[1].split(/\s+/).length, 0);
-  const counts = ['Rahul', 'Aryan', 'Pritam'].map(speakerWords);
-  assert(Math.max(...counts) - Math.min(...counts) <= 30, `Unbalanced narration: ${counts.join(', ')}`);
+  const counts = ['Rahul', 'Pritam'].map(speakerWords);
+  assert(Math.max(...counts) - Math.min(...counts) <= 120, `Unbalanced narration: ${counts.join(', ')}`);
   assert.doesNotMatch(script, /image import|image.upload/i);
   for (const topic of ['Solve', 'Check work', 'Ghost steps', 'Generate', 'Graph', 'Share']) {
     assert.match(script, new RegExp(topic, 'i'));

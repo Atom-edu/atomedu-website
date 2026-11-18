@@ -223,26 +223,27 @@ test('Solve exposes the strict word-problem mode separately from LaTeX and JSON'
   assert.match(read('engine/index.js'), /parseWordProblem\(input\) \|\| latexToInput/);
 });
 
-test('about page shows four matching founder cards without the old group photo', () => {
+test('about page shows three matching founder cards without the old group photo', () => {
   const about = read('about.html');
   for (const [name, image] of [
     ['Rahul Awasthi', 'awasthi.jpeg'], ['Pritam Avuthu', 'avuthu.jpeg'],
-    ['Akshaj Sanikommu', 'sanikommu.jpeg'], ['Aryan Patel', 'patel.jpeg'],
+    ['Akshaj Sanikommu', 'sanikommu.jpeg'],
   ]) {
     assert.match(about, new RegExp(name));
     assert.match(about, new RegExp(`images/${image.replace('.', '\\.')}`));
     assert.ok(existsSync(resolve(root, `images/${image}`)));
   }
-  assert.equal((about.match(/Co-founder and owner/g) || []).length, 4);
+  assert.equal((about.match(/Co-founder and owner/g) || []).length, 3);
+  assert.doesNotMatch(about, /Aryan Patel|patel\.jpeg/);
   assert.doesNotMatch(about, /founders-group\.jpg|founder-group wrap/);
 });
 
-test('public footers name all four owners consistently', () => {
-  const footer = 'Maintained by Avuthu, Awasthi, Sanikommu, and Patel.';
+test('public footers name all three owners consistently', () => {
+  const footer = 'Maintained by Avuthu, Awasthi, and Sanikommu.';
   for (const page of [...marketingPages, 'art-contest.html', 'judging.html']) {
     assert.match(read(page), new RegExp(footer.replace('.', '\\.')));
   }
-  assert.match(read('site-i18n.js'), /Mantenido por Avuthu, Awasthi, Sanikommu y Patel/);
+  assert.match(read('site-i18n.js'), /Mantenido por Avuthu, Awasthi y Sanikommu/);
 });
 
 test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', () => {

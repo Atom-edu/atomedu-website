@@ -26,7 +26,7 @@
     'Terms': 'Términos',
     'Attributions': 'Atribuciones',
     'atomEDU. Free for students.': 'atomEDU. Gratuito para estudiantes.',
-    'Maintained by Avuthu, Awasthi, Sanikommu, and Patel.': 'Mantenido por Avuthu, Awasthi, Sanikommu y Patel.',
+    'Maintained by Avuthu, Awasthi, and Sanikommu.': 'Mantenido por Avuthu, Awasthi y Sanikommu.',
     'Solve': 'Resolver',
     'Check work': 'Comprobar pasos',
     'Generate': 'Generar',
@@ -214,7 +214,7 @@
     'contact page': 'página de contacto',
     'Team': 'Equipo',
     'Meet the owners': 'Conoce a los fundadores',
-    "We are four student founders from O'Fallon, Missouri, building the math tool we wanted to use ourselves.": 'Somos cuatro estudiantes fundadores de O’Fallon, Misuri, y estamos creando la herramienta matemática que queríamos usar.',
+    "We are three student founders from O'Fallon, Missouri, building the math tool we wanted to use ourselves.": 'Somos tres estudiantes fundadores de O’Fallon, Misuri, y estamos creando la herramienta matemática que queríamos usar.',
     'Co-founder and owner': 'Cofundador y propietario',
 
     // Contact page.

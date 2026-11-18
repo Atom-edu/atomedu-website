@@ -1,10 +1,10 @@
 # atomEDU product demo script
 
-Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avuthu. Rahul opens. The [20-slide presentation](../product-video.html) follows the scenes below. Each scene has about one minute for narration, screen actions, and a short pause for the viewer to read. Rehearse with the live site and adjust the pauses rather than rushing through the math.
+Target length: 20 minutes. Speakers: Rahul Awasthi and Pritam Avuthu. Rahul opens. The [20-slide presentation](../product-video.html) follows the scenes below. Each scene has about one minute for narration, screen actions, and a short pause for the viewer to read. Rehearse with the live site and adjust the pauses rather than rushing through the math.
 
 ## 0:00 to 1:00 | Slide 1 | Rahul opens
 
-**Rahul:** "Hi, I'm Rahul Awasthi. Welcome to atomEDU. We built Proof Lab because a right or wrong mark at the end of a math problem rarely tells you what to do next. A student may understand most of an equation and make one small mistake that changes the answer. We wanted a tool that could find that moment, explain it, and let the student keep going. Today Aryan, Pritam, and I will show you the actual product. We'll enter a problem, solve one, check our own work, generate practice, and explore the graph. We'll also show you what the engine verifies and where its limits are. You can follow along at atom-edu.org."
+**Rahul:** "Hi, I'm Rahul Awasthi. Welcome to atomEDU. We built Proof Lab because a right or wrong mark at the end of a math problem rarely tells you what to do next. A student may understand most of an equation and make one small mistake that changes the answer. We wanted a tool that could find that moment, explain it, and let the student keep going. Today Pritam and I will show you the actual product. We'll enter a problem, solve one, check our own work, generate practice, and explore the graph. We'll also show you what the engine verifies and where its limits are. You can follow along at atom-edu.org."
 
 **Screen:** Begin on camera. Show the atomEDU cover and logo, then open Proof Lab. Leave a beat before the first screen share.
 
@@ -14,9 +14,9 @@ Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avut
 
 **Screen:** Show [the submitted lines before checking](./product-video-assets/check-input-screen.png). Trace the right side of the first equation with the pointer.
 
-## 2:00 to 3:00 | Slide 3 | Aryan enters math
+## 2:00 to 3:00 | Slide 3 | Pritam enters math
 
-**Aryan:** "I'm Aryan Patel. First, let me put a problem into Proof Lab. The main field is a visual math editor, so I can type an equation directly. When I need a fraction or a square root, I can open the math pad. These gray spaces are fill-in boxes. I click the numerator, enter a value, then move to the denominator. The same idea works for exponents and other templates. I can also open the LaTeX source if I want to inspect the notation, but ordinary use doesn't require writing LaTeX code. Watch me enter the rational function we're going to solve. I'll leave the pad closed afterward so we can focus on the result."
+**Pritam:** "First, let me put a problem into Proof Lab. The main field is a visual math editor, so I can type an equation directly. When I need a fraction or a square root, I can open the math pad. These gray spaces are fill-in boxes. I click the numerator, enter a value, then move to the denominator. The same idea works for exponents and other templates. I can also open the LaTeX source if I want to inspect the notation, but ordinary use doesn't require writing LaTeX code. Watch me enter the rational function we're going to solve. I'll leave the pad closed afterward so we can focus on the result."
 
 **Screen:** Use the [editor and math pad](./product-video-assets/editor-screen.png). Insert a fraction, move between placeholders, enter `f(x)=2/(x-3)+1`, and close the pad.
 
@@ -44,21 +44,21 @@ Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avut
 
 **Screen:** Show the [Ghost-step correction](./product-video-assets/ghost-screen.png). Pause on the label that distinguishes the correction from submitted work.
 
-## 7:00 to 8:00 | Slide 8 | Aryan generates practice
+## 7:00 to 8:00 | Slide 8 | Rahul generates practice
 
-**Aryan:** "After feedback, the next useful move is practice. I'll switch to Generate, choose a supported topic, and create a new question. The difficulty control has values from 0.000 to 1.000 in thousandths. It helps select a family and starting tier, but a single number cannot describe every way a math problem might be difficult. We also have a seed. If I use the same topic, difficulty, and seed again, I can reproduce the question. That is helpful when a student wants to show a teacher exactly what they were working on. The generator uses our own rules and templates. It is creating a question for the engine, not calling an outside chatbot to invent one."
+**Rahul:** "After feedback, the next useful move is practice. I'll switch to Generate, choose a supported topic, and create a new question. The difficulty control has values from 0.000 to 1.000 in thousandths. It helps select a family and starting tier, but a single number cannot describe every way a math problem might be difficult. We also have a seed. If I use the same topic, difficulty, and seed again, I can reproduce the question. That is helpful when a student wants to show a teacher exactly what they were working on. The generator uses our own rules and templates. It is creating a question for the engine, not calling an outside chatbot to invent one."
 
 **Screen:** Choose a topic and [generate a problem](./product-video-assets/generate-screen.png). Show the difficulty control, seed, and follow-up actions.
 
-## 8:00 to 9:00 | Slide 9 | Aryan graphs a function
+## 8:00 to 9:00 | Slide 9 | Pritam graphs a function
 
-**Aryan:** "Now let's look at Graph. I can enter y equals sine of x and see the wave across the coordinate plane. I'll add a second expression so we can compare shapes and where they cross. The expressions remain editable on the left. I can pan the plane, zoom in, and zoom back out without changing the underlying formulas. That makes the graph useful for building intuition about a function. I want to be precise about one thing: this view is numerical. A curve that looks like it crosses an axis at a certain place is a clue, not a proof of an exact answer. When we need to call a step verified, the rule checker has to do that separately."
+**Pritam:** "Now let's look at Graph. I can enter y equals sine of x and see the wave across the coordinate plane. I'll add a second expression so we can compare shapes and where they cross. The expressions remain editable on the left. I can pan the plane, zoom in, and zoom back out without changing the underlying formulas. That makes the graph useful for building intuition about a function. I want to be precise about one thing: this view is numerical. A curve that looks like it crosses an axis at a certain place is a clue, not a proof of an exact answer. When we need to call a step verified, the rule checker has to do that separately."
 
 **Screen:** Plot `y=sin(x)` in the [graph view](./product-video-assets/graph-screen.png), add a second supported expression, and zoom once.
 
-## 9:00 to 10:00 | Slide 10 | Aryan changes the graph window
+## 9:00 to 10:00 | Slide 10 | Rahul changes the graph window
 
-**Aryan:** "The graph has a few ways to change the view. Here is the window setting. I can choose which x and y values are visible and reset after a zoom. For some questions I can use a logarithmic axis. For others, a polar grid makes the shape easier to understand. These controls change the picture, not the problem. I can hide one expression, turn it back on, or move through several equations without losing the rest of my work. On a phone, the expression list and the graph share the screen, so I can move between them. The aim is to let a student test a visual idea, then go back to the exact math when the question needs proof."
+**Rahul:** "The graph has a few ways to change the view. Here is the window setting. I can choose which x and y values are visible and reset after a zoom. For some questions I can use a logarithmic axis. For others, a polar grid makes the shape easier to understand. These controls change the picture, not the problem. I can hide one expression, turn it back on, or move through several equations without losing the rest of my work. On a phone, the expression list and the graph share the screen, so I can move between them. The aim is to let a student test a visual idea, then go back to the exact math when the question needs proof."
 
 **Screen:** Use the [wide graph view](./product-video-assets/graph-wide.png). Open window settings, adjust a bound, reset, and briefly show one alternative grid or axis mode.
 
@@ -74,21 +74,21 @@ Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avut
 
 **Screen:** Point to each difficulty band. Hold long enough for the audience to read the decimal boundaries.
 
-## 12:00 to 13:00 | Slide 13 | Aryan shares a graph
+## 12:00 to 13:00 | Slide 13 | Pritam shares a graph
 
-**Aryan:** "Once I have a useful graph, I can copy a link to this setup. It includes the expressions and window settings, so someone else can open the same view and keep exploring. I'll copy the link and open it in another tab. The curve and the window come back. There is also a Share to Google Classroom control. A teacher can choose a class and place the graph link into their own classroom workflow. We describe this as a feature for use with Google Classroom. It does not mean atomEDU has an official partnership with Google. One practical note: the link contains the graph setup. Don't put private student information in an expression or title you plan to share."
+**Pritam:** "Once I have a useful graph, I can copy a link to this setup. It includes the expressions and window settings, so someone else can open the same view and keep exploring. I'll copy the link and open it in another tab. The curve and the window come back. There is also a Share to Google Classroom control. A teacher can choose a class and place the graph link into their own classroom workflow. We describe this as a feature for use with Google Classroom. It does not mean atomEDU has an official partnership with Google. One practical note: the link contains the graph setup. Don't put private student information in an expression or title you plan to share."
 
 **Screen:** Use the [sharing controls](./product-video-assets/share-screen.png). Copy a graph link, open it in a new tab, and confirm that the expressions restore.
 
 ## 13:00 to 14:00 | Slide 14 | Rahul introduces the team and progress
 
-**Rahul:** "We started atomEDU in O'Fallon, Missouri, as students who wanted better feedback on our own math. The tool has reached more than 3,640 users based on our current count, and our featured corporate partners are VC Boom and MedAestheticsOS. Those numbers and names matter to us because real people are trying what we've built. They also raise the standard for what we publish. If a result is confusing, or a rule is missing, we want to hear about it. The team behind the product includes me, Pritam, Aryan, and Akshaj Sanikommu. Today three of us are walking through the demo, and all four of us are part of the company."
+**Rahul:** "We started atomEDU in O'Fallon, Missouri, as students who wanted better feedback on our own math. The tool has reached more than 3,640 users based on our current count, and our featured corporate partners are VC Boom and MedAestheticsOS. Those numbers and names matter to us because real people are trying what we've built. They also raise the standard for what we publish. If a result is confusing, or a rule is missing, we want to hear about it. The team behind the product includes me, Pritam, and Akshaj Sanikommu. Pritam and I are walking through the demo, and all three of us are part of the company."
 
 **Screen:** Show the partner marks and user figure. Verify the current user count and permission to display each mark before filming.
 
-## 14:00 to 15:00 | Slide 15 | Aryan demonstrates a study session
+## 14:00 to 15:00 | Slide 15 | Rahul demonstrates a study session
 
-**Aryan:** "Let's put the pieces together as one study session. I start in Generate and choose a problem I have not solved yet. Instead of pressing Solve immediately, I bring that problem into Check work and write my first line. I add the next line as I would on paper. Then I check my work. If the checker finds a bad transition, I stop there and try to correct it myself before I reveal the full answer. If I skipped a valid move, Ghost steps can fill in the gap. Only after that do I open Solve to compare methods. This order keeps the student's thinking in the middle of the experience rather than making the tool do every move first."
+**Rahul:** "Let's put the pieces together as one study session. I start in Generate and choose a problem I have not solved yet. Instead of pressing Solve immediately, I bring that problem into Check work and write my first line. I add the next line as I would on paper. Then I check my work. If the checker finds a bad transition, I stop there and try to correct it myself before I reveal the full answer. If I skipped a valid move, Ghost steps can fill in the gap. Only after that do I open Solve to compare methods. This order keeps the student's thinking in the middle of the experience rather than making the tool do every move first."
 
 **Screen:** Show the [work-checking view](./product-video-assets/check-work.png). Demonstrate the Generate to Check work handoff, then pause before revealing a solution.
 
@@ -110,7 +110,7 @@ Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avut
 
 **Rahul:** "In those cases, we want the product to say partial, unsupported, or unverified, instead of dressing a guess up as a proof. If a student sees that label, they can still use the graph to investigate or ask a teacher to review the work. They should not treat an unsupported case as a verified answer."
 
-**Aryan:** "Being clear about what we cannot yet check is part of making the tool useful."
+**Pritam:** "Being clear about what we cannot yet check is part of making the tool useful."
 
 **Screen:** Compare the [curve view](./product-video-assets/graph-curves.png) with a verified Solve result. Point to the numerical label on Graph.
 
@@ -120,22 +120,20 @@ Target length: 20 minutes. Speakers: Rahul Awasthi, Aryan Patel, and Pritam Avut
 
 **Screen:** Show the [atomEDU entry point](./product-video-assets/home-screen.png), then return to Proof Lab with Check work selected.
 
-## 19:00 to 20:00 | Slide 20 | All three close
+## 19:00 to 20:00 | Slide 20 | Rahul and Pritam close
 
-**Rahul:** "That's Proof Lab. We began with a student who had one broken line in an otherwise familiar equation. The tool found that line and gave the student a way to continue. Aryan, what would you tell someone trying it tonight?"
+**Rahul:** "That's Proof Lab. We began with a student who had one broken line in an otherwise familiar equation. The tool found that line and gave the student a way to continue. Pritam, what would you tell someone trying it tonight?"
 
-**Aryan:** "Use a problem you care about. Type it in the visual field, show your own steps, and read the first piece of feedback. You can explore a function on the graph or generate a new question after that. Keep the work yours. The tool is here to help you see it more clearly."
-
-**Pritam:** "And check the status labels. A verified step has passed a specific rule check. A numerical graph or an unsupported case has a different purpose. We want you to know which is which. If you find a gap, tell us. That helps us improve the engine."
+**Pritam:** "Use a problem you care about. Type it in the visual field, show your own steps, and read the first piece of feedback. You can explore a function on the graph or generate a new question after that. Keep the work yours. The tool is here to help you see it more clearly. And check the status labels. A verified step has passed a specific rule check. A numerical graph or an unsupported case has a different purpose. We want you to know which is which. If you find a gap, tell us. That helps us improve the engine."
 
 **Rahul:** "You can start at atom-edu.org. Thanks for spending this time with us."
 
-**Screen:** Show Rahul, Aryan, and Pritam on camera, then the founder portraits and atomEDU logo. Hold the site address for five seconds.
+**Screen:** Show Rahul and Pritam on camera, then the three founder portraits and atomEDU logo. Hold the site address for five seconds.
 
 ## Recording notes
 
 - Record a rehearsal with a timer. Each scene has one minute, including the listed action and a reading pause. Shorten cursor movement before shortening the math explanation.
-- Hand off the controls between speakers at scene changes. Rahul opens and handles the student's work. Aryan handles the editor, practice, graph, and sharing. Pritam handles Solve, the proof timeline, engine, and limits.
+- Hand off the controls between speakers at scene changes. Rahul opens and handles the student's work, practice, and the graph window. Pritam handles the editor, Solve, the proof timeline, graphing, sharing, the engine, and limits.
 - Record the demonstrations at 1024 by 768 or wider. Pause on the first-error explanation, a Ghost step, and a proof-timeline rule long enough to read them.
 - Use the actual rule-based product. Do not claim full Algebra I, Algebra II, Geometry, or Precalculus coverage. The [current coverage checklist](./standards-coverage.md) records the limits.
 - Verify the 3,640+ user figure and partner mark permissions before filming. Do not call atomEDU an official Google Classroom partner.
