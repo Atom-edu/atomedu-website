@@ -4,12 +4,12 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('teacher hub names both accountless products and states browser boundaries honestly', () => {
+test('teacher hub names both accountless products without the former browser disclaimer', () => {
   const html = read('teachers.html');
   assert.match(html, /Orbit Room/);
   assert.match(html, /Atom Lockdown Browser/);
   assert.match(html, /no account required/i);
-  assert.match(html, /cannot close arbitrary tabs or disable operating-system shortcuts/i);
+  assert.doesNotMatch(html, /Browser security, stated honestly/i);
 });
 
 test('makers and live consoles expose required classroom controls', () => {
@@ -18,6 +18,8 @@ test('makers and live consoles expose required classroom controls', () => {
   const console = read('teacher-console.js');
   for (const type of ['multiple-choice', 'multi-select', 'true-false', 'free-response', 'fill-blank']) assert.match(maker, new RegExp(type));
   assert.match(host, /Show leaderboard/);
+  assert.match(host, /Scan to join/);
+  assert.match(host, /save-grade/);
   assert.match(host, /Question analysis/);
   assert.match(console, /STUDENT REMOVED FOR CHEATING/);
   assert.match(console, /Allow back in/);

@@ -62,7 +62,7 @@ export function createGraph(container, options = {}) {
   if (Number.isFinite(options.height)) root.style.setProperty('--graph-height', `${clamp(options.height, 240, 1600)}px`);
   root.innerHTML = `
     <header class="graph-toolbar">
-      <div class="graph-heading"><strong>Graph</strong><span class="graph-numerical-badge">Numerical, not proof</span></div>
+      <div class="graph-heading"><strong>Graph</strong></div>
       <div class="graph-actions">
         <button type="button" data-graph-action="zoom-in" aria-label="Zoom in" title="Zoom in (+)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
         <button type="button" data-graph-action="zoom-out" aria-label="Zoom out" title="Zoom out (−)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>

@@ -36,6 +36,9 @@ interface ResponseRecord {
   correct: boolean;
   elapsedMs: number;
   points: number;
+  gradePoints?: number;
+  graded?: boolean;
+  manual?: boolean;
   answeredAt: number;
 }
 
@@ -125,7 +128,7 @@ function sanitizeQuestion(raw: Question, index: number, mode: Mode): Question {
   const correct = (Array.isArray(raw?.correct) ? raw.correct : []).slice(0, 8).map(value => cleanText(value, 500)).filter(Boolean);
   const seconds = Math.max(5, Math.min(300, Number(raw?.seconds) || 30));
   const image = typeof raw?.image === "string" && /^data:image\/(?:png|jpeg|webp|gif);base64,/.test(raw.image) && raw.image.length <= 900_000 ? raw.image : undefined;
-  if (!cleanText(raw?.prompt, 4000) || !correct.length) throw new Error(`Question ${index + 1} needs a prompt and correct answer.`);
+  if (!cleanText(raw?.prompt, 4000) || (type !== "free-response" && !correct.length)) throw new Error(`Question ${index + 1} needs a prompt${type === "free-response" ? "." : " and correct answer."}`);
   if (["multiple-choice", "multi-select", "true-false"].includes(type) && options.length < 2) throw new Error(`Question ${index + 1} needs at least two choices.`);
   return {
     id: cleanText(raw?.id, 80) || crypto.randomUUID(),
@@ -161,14 +164,17 @@ function studentState(state: SessionState, studentId: string) {
   const response = question ? state.responses.find(item => item.studentId === studentId && item.questionId === question.id) : undefined;
   const quizQuestions = state.mode === "quiz" ? state.questions.map(publicQuestion) : undefined;
   const quizResponses = state.mode === "quiz" ? state.responses.filter(item => item.studentId === studentId).map(item => ({ questionId: item.questionId, answer: item.answer })) : undefined;
+  const ranked = state.students.filter(item => !item.removed).sort((a, b) => b.score - a.score || a.joinedAt - b.joinedAt);
+  const position = ranked.findIndex(item => item.id === studentId) + 1;
   return {
     code: state.code, mode: state.mode, title: state.title, phase: state.phase,
     questionIndex: state.questionIndex, questionCount: state.questions.length,
-    question: question && (state.mode === "quiz" || state.phase === "question" || state.phase === "active") ? publicQuestion(question) : null,
+    question: question && (state.mode === "quiz" || state.phase === "question" || state.phase === "result" || state.phase === "active") ? publicQuestion(question) : null,
     questionEndsAt: state.questionEndsAt,
     questions: quizQuestions, responses: quizResponses,
     student: { id: student.id, name: student.name, score: student.score, streak: student.streak, removed: student.removed, finished: student.finished },
-    answered: Boolean(response), lastResult: response ? { correct: response.correct, ratio: response.ratio, points: response.points } : null,
+    position: position || null,
+    answered: Boolean(response), lastResult: response ? { correct: response.correct, ratio: response.ratio, points: response.points, gradePoints: response.gradePoints ?? 0, graded: response.graded !== false, manual: Boolean(response.manual) } : null,
   };
 }
 
@@ -263,7 +269,8 @@ export class ClassroomSession extends DurableObject<Env> {
     if (!question) throw new Error("Question not found.");
     if (state.mode === "orbit" && (state.phase !== "question" || state.questions[state.questionIndex].id !== questionId)) throw new Error("That question is not accepting answers.");
     if (state.mode === "quiz" && (state.phase !== "active" || (state.questionEndsAt && state.questionEndsAt < Date.now()))) throw new Error("This quiz is not accepting answers.");
-    const ratio = gradeAnswer(question, answer);
+    const manual = question.type === "free-response";
+    const ratio = manual ? 0 : gradeAnswer(question, answer);
     const existing = state.responses.find(item => item.studentId === student.id && item.questionId === questionId);
     if (state.mode === "orbit" && existing) return studentState(state, student.id);
     const measuredElapsed = state.mode === "orbit" && state.questionStartedAt ? Date.now() - state.questionStartedAt : Number(elapsedMs) || 0;
@@ -271,14 +278,36 @@ export class ClassroomSession extends DurableObject<Env> {
     let points = 0;
     if (state.mode === "orbit") {
       const timeFactor = 1 - boundedElapsed / (question.seconds * 1000);
-      const nextStreak = ratio === 1 ? student.streak + 1 : 0;
+      const nextStreak = !manual && ratio === 1 ? student.streak + 1 : 0;
       points = Math.round(Math.min(450, 300 + 100 * Math.max(0, timeFactor) + Math.min(50, nextStreak * 10)) * ratio);
       student.streak = nextStreak; student.score += points;
     } else points = Math.round(question.points * ratio * 100) / 100;
-    const record: ResponseRecord = { studentId: student.id, questionId, answer: normalizeAnswer(answer), ratio, correct: ratio === 1, elapsedMs: boundedElapsed, points, answeredAt: Date.now() };
+    const storedAnswer = manual ? (Array.isArray(answer) ? answer : [answer]).map(item => cleanText(item, 4000)).filter(Boolean) : normalizeAnswer(answer);
+    const record: ResponseRecord = { studentId: student.id, questionId, answer: storedAnswer, ratio, correct: ratio === 1, elapsedMs: boundedElapsed, points, gradePoints: manual ? 0 : Math.round(question.points * ratio * 100) / 100, graded: !manual, manual, answeredAt: Date.now() };
     if (existing) Object.assign(existing, record); else state.responses.push(record);
     await this.save(state);
     return studentState(state, student.id);
+  }
+
+  async gradeResponse(token: string, studentId: string, questionId: string, awarded: number): Promise<unknown> {
+    const state = await this.load();
+    if (!state || !(await sameSecret(token, await digest(state.teacherToken)))) throw new Error("Teacher access required.");
+    const student = state.students.find(item => item.id === studentId);
+    const question = state.questions.find(item => item.id === questionId);
+    const response = state.responses.find(item => item.studentId === studentId && item.questionId === questionId);
+    if (!student || !question || !response) throw new Error("Student response not found.");
+    const gradePoints = Math.round(Math.max(0, Math.min(question.points, Number(awarded) || 0)) * 100) / 100;
+    const ratio = question.points ? gradePoints / question.points : 0;
+    const previousGamePoints = response.points;
+    response.gradePoints = gradePoints;
+    response.ratio = ratio;
+    response.correct = ratio === 1;
+    response.graded = true;
+    response.manual = question.type === "free-response";
+    response.points = state.mode === "orbit" ? Math.round(450 * ratio) : gradePoints;
+    if (state.mode === "orbit") student.score = Math.max(0, student.score - previousGamePoints + response.points);
+    await this.save(state);
+    return teacherState(state);
   }
 
   async complete(token: string): Promise<unknown> {
@@ -308,14 +337,18 @@ export class ClassroomSession extends DurableObject<Env> {
     if (!state || !(await sameSecret(token, await digest(state.teacherToken)))) throw new Error("Teacher access required.");
     const students = state.students.map(({ token: _token, ...student }) => {
       const responses = state.responses.filter(item => item.studentId === student.id);
-      const earned = responses.reduce((sum, item) => sum + item.points, 0);
-      const possible = state.mode === "orbit" ? state.questions.length * 450 : state.questions.reduce((sum, question) => sum + question.points, 0);
-      return { ...student, earned, possible, percent: possible ? Math.round(earned / possible * 1000) / 10 : 0, averageTimeMs: responses.length ? Math.round(responses.reduce((sum, item) => sum + item.elapsedMs, 0) / responses.length) : 0, responses };
+      const earned = responses.reduce((sum, item) => sum + (item.gradePoints ?? (item.correct ? (state.questions.find(question => question.id === item.questionId)?.points ?? 0) : 0)), 0);
+      const possible = state.questions.reduce((sum, question) => sum + question.points, 0);
+      const graded = responses.filter(item => item.graded !== false);
+      const correctCount = graded.filter(item => item.correct).length;
+      const percent = graded.length ? Math.round(correctCount / graded.length * 1000) / 10 : 0;
+      return { ...student, gameScore: student.score, earned, possible, correctCount, percent, averageTimeMs: responses.length ? Math.round(responses.reduce((sum, item) => sum + item.elapsedMs, 0) / responses.length) : 0, responses };
     });
     const questions = state.questions.map(question => {
       const responses = state.responses.filter(item => item.questionId === question.id);
-      const averageRatio = responses.length ? responses.reduce((sum, item) => sum + item.ratio, 0) / responses.length : 0;
-      return { id: question.id, title: question.title, prompt: question.prompt, correct: question.correct, responseCount: responses.length, accuracy: Math.round(averageRatio * 1000) / 10, averageTimeMs: responses.length ? Math.round(responses.reduce((sum, item) => sum + item.elapsedMs, 0) / responses.length) : 0 };
+      const graded = responses.filter(item => item.graded !== false);
+      const accuracy = graded.length ? graded.filter(item => item.correct).length / graded.length : 0;
+      return { id: question.id, title: question.title, prompt: question.prompt, correct: question.correct, points: question.points, type: question.type, responseCount: responses.length, gradedCount: graded.length, accuracy: Math.round(accuracy * 1000) / 10, averageTimeMs: responses.length ? Math.round(responses.reduce((sum, item) => sum + item.elapsedMs, 0) / responses.length) : 0 };
     });
     return { code: state.code, mode: state.mode, title: state.title, students, questions, averagePercent: students.length ? Math.round(students.reduce((sum, item) => sum + item.percent, 0) / students.length * 10) / 10 : 0 };
   }
@@ -419,7 +452,7 @@ export default {
         }
         throw new Error("Could not allocate a room. Try again.");
       }
-      const match = url.pathname.match(/^\/api\/session\/([A-Z0-9]{6,8})(?:\/(join|state|action|answer|complete|incident|report|ws))?$/i);
+      const match = url.pathname.match(/^\/api\/session\/([A-Z0-9]{6,8})(?:\/(join|state|action|answer|grade|complete|incident|report|ws))?$/i);
       if (!match) return json({ error: "Not found" }, 404, headers);
       const code = match[1].toUpperCase(); const route = match[2] ?? "state"; const stub = env.CLASSROOMS.getByName(code);
       if (route === "ws") return await stub.fetch(request);
@@ -427,6 +460,7 @@ export default {
       if (route === "state" && request.method === "GET") return json(await stub.getState(bearer(request)), 200, headers);
       if (route === "action" && request.method === "POST") { const data = await body(request); return json(await stub.teacherAction(bearer(request), cleanText(data.action, 30), cleanText(data.studentId, 80)), 200, headers); }
       if (route === "answer" && request.method === "POST") { const data = await body(request); return json(await stub.answer(bearer(request), cleanText(data.questionId, 80), data.answer, Number(data.elapsedMs) || 0), 200, headers); }
+      if (route === "grade" && request.method === "POST") { const data = await body(request); return json(await stub.gradeResponse(bearer(request), cleanText(data.studentId, 80), cleanText(data.questionId, 80), Number(data.points) || 0), 200, headers); }
       if (route === "complete" && request.method === "POST") return json(await stub.complete(bearer(request)), 200, headers);
       if (route === "incident" && request.method === "POST") { const data = await body(request); return json(await stub.incident(bearer(request), cleanText(data.type, 60), cleanText(data.key, 40), cleanText(data.combo, 120), Boolean(data.remove)), 200, headers); }
       if (route === "report" && request.method === "GET") return json(await stub.report(bearer(request)), 200, headers);

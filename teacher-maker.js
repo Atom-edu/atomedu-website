@@ -33,12 +33,13 @@
   function drawQuestions() {
     const list = document.getElementById('question-list');
     list.innerHTML = questions.map((q, index) => `<article class="question-card" data-index="${index}"><div class="question-head"><span class="question-number">${index + 1}</span><strong>${A.escapeHtml(q.title || `Question ${index + 1}`)}</strong>${questions.length > 1 ? '<button class="icon-button remove-question" type="button" aria-label="Remove question">×</button>' : ''}</div><div class="question-body"><div class="question-grid">
-      <div class="field"><label>Question title</label><input data-key="title" maxlength="120" value="${A.escapeHtml(q.title)}" placeholder="A short label"></div>
+      ${mode === 'quiz' ? `<div class="field"><label>Question title</label><input data-key="title" maxlength="120" value="${A.escapeHtml(q.title)}" placeholder="A short label"></div>` : ''}
       <div class="field"><label>Answer type</label><select data-key="type">${typeOptions(q.type)}</select></div>
       <div class="field wide"><label>Question</label><textarea data-key="prompt" maxlength="4000" placeholder="What should students solve?">${A.escapeHtml(q.prompt)}</textarea></div>
       ${mode === 'quiz' ? `<div class="field wide"><label>Passage or additional context (optional)</label><textarea data-key="context" maxlength="8000" placeholder="Paste a source, passage, dataset, or instructions. LaTeX such as \\(x^2\\) is supported as text.">${A.escapeHtml(q.context)}</textarea></div>` : ''}
       <div class="field"><label>Attach image (optional)</label><input class="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">${q.image ? `<img class="image-preview" src="${q.image}" alt="Question preview">` : ''}</div>
-      ${mode === 'orbit' ? `<div class="field"><label>Time for this question</label><select data-key="seconds">${[10,15,20,30,45,60,90,120].map(n => `<option value="${n}" ${n === q.seconds ? 'selected' : ''}>${n} seconds</option>`).join('')}</select></div>` : `<div class="field"><label>Points</label><input data-key="points" type="number" min="1" max="100" value="${q.points}"></div>`}
+      ${mode === 'orbit' ? `<div class="field"><label>Time for this question</label><select data-key="seconds">${[10,15,20,30,45,60,90,120].map(n => `<option value="${n}" ${n === q.seconds ? 'selected' : ''}>${n} seconds</option>`).join('')}</select></div>` : ''}
+      <div class="field"><label>Points</label><input data-key="points" type="number" min="1" max="100" value="${q.points}"></div>
     </div><div class="choice-editor">${choiceEditor(q)}</div></div></article>`).join('');
     list.querySelectorAll('[data-key]').forEach(input => input.addEventListener('input', syncInput));
     list.querySelectorAll('[data-option]').forEach(input => input.addEventListener('input', event => { const card = event.target.closest('[data-index]'); const q = questions[Number(card.dataset.index)]; syncOptions(card, q); q.correct = Array.from(card.querySelectorAll('[data-correct="choice"]:checked')).map(choice => q.options[Number(choice.value)]).filter(Boolean); }));
@@ -48,7 +49,8 @@
   }
 
   function choiceEditor(q) {
-    if (q.type === 'free-response' || q.type === 'fill-blank') return `<div class="field"><label>Accepted answer</label><input data-correct="text" maxlength="500" value="${A.escapeHtml(q.correct[0] || '')}" placeholder="Students must match this answer (case-insensitive)"></div>`;
+    if (q.type === 'free-response') return `<div class="manual-answer-note"><strong>Teacher graded</strong><span>Students write a response. You assign points in the report after the session.</span></div>`;
+    if (q.type === 'fill-blank') return `<div class="field"><label>Accepted answer</label><input data-correct="text" maxlength="500" value="${A.escapeHtml(q.correct[0] || '')}" placeholder="Students must match this answer (case-insensitive)"></div>`;
     const options = q.type === 'true-false' ? ['True', 'False'] : q.options;
     const multiple = q.type === 'multi-select';
     return `<span class="field-label">Mark the correct ${multiple ? 'answer(s)' : 'answer'}</span>${options.map((option, index) => `<label class="choice-row"><input data-correct="choice" type="${multiple ? 'checkbox' : 'radio'}" name="correct-${q.id}" value="${index}" ${q.correct.includes(option) ? 'checked' : ''}><input data-option="${index}" type="text" maxlength="300" value="${A.escapeHtml(option)}" ${q.type === 'true-false' ? 'readonly' : ''} placeholder="Choice ${index + 1}"><span class="choice-shape">${String.fromCharCode(65 + index)}</span></label>`).join('')}`;
@@ -77,7 +79,7 @@
   async function launch() {
     syncAll(); const button = document.getElementById('launch-activity'); const title = document.getElementById('activity-title').value.trim();
     if (!title) return showError('Give this activity a title.');
-    const invalid = questions.findIndex(q => !q.prompt.trim() || !q.correct.length || q.correct.some(value => !String(value).trim()));
+    const invalid = questions.findIndex(q => !q.prompt.trim() || (q.type !== 'free-response' && (!q.correct.length || q.correct.some(value => !String(value).trim()))));
     if (invalid >= 0) return showError(`Question ${invalid + 1} needs a prompt and correct answer.`);
     button.disabled = true; button.textContent = 'Creating…';
     try {
