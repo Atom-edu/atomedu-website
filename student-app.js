@@ -10,6 +10,7 @@
 
   function initJoin() {
     const form = document.getElementById('join-form'); const codeInput = document.getElementById('join-code'); const passwordField = document.getElementById('password-field'); const errorBox = document.getElementById('join-error');
+    form.querySelector('button[type="submit"]').textContent = 'Continue';
     codeInput.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
     const update = () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); passwordField.hidden = codeInput.value.length <= 6; document.getElementById('join-password').required = !passwordField.hidden; }; update(); codeInput.addEventListener('input', update);
     form.addEventListener('submit', async event => { event.preventDefault(); errorBox.hidden = true; const code = codeInput.value; const button = form.querySelector('button'); button.disabled = true; button.textContent = 'Joining…'; try { const result = await A.request(`/api/session/${encodeURIComponent(code)}/join`, { method:'POST', body:{ name:document.getElementById('join-name').value, password:document.getElementById('join-password').value } }); A.saveToken(code, result.studentToken, 'student'); location.href = `${result.mode === 'quiz' ? '/students/quiz' : '/students/room'}?room=${encodeURIComponent(code)}`; } catch (error) { errorBox.textContent = error.message; errorBox.hidden = false; button.disabled = false; button.textContent = 'Continue'; } });

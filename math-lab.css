@@ -638,8 +638,9 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app { --lab-header-height: 56px; --lab-rail-width: clamp(350px, 29vw, 450px); height: 100dvh; margin: 0; overflow: hidden; background: #fff; }
 .lab-app .skip-link:focus { top: 62px; }
 .lab-topbar { position: relative; z-index: 120; height: var(--lab-header-height); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: #1f2a36; color: #fff; box-shadow: 0 1px 5px #14202c32; }
-.lab-topbar-brand { position: absolute; left: 50%; transform: translateX(-50%); font-size: 21px; font-weight: 500; letter-spacing: -.035em; line-height: 1; color: #fff; }
+.lab-topbar-brand { position: absolute; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: baseline; gap: 7px; font-size: 21px; font-weight: 500; letter-spacing: -.035em; line-height: 1; color: #fff; white-space: nowrap; }
 .lab-topbar-brand b { font-weight: 700; }
+.lab-topbar-brand em { color: #f0a782; font-size: 13px; font-style: normal; font-weight: 700; letter-spacing: -.015em; }
 .lab-back { display: inline-flex; align-items: center; gap: 7px; min-height: 37px; padding: 0 10px; border: 1px solid #ffffff47; border-radius: 7px; font-size: 12px; font-weight: 600; color: #fff; }
 .lab-back:hover, .lab-topbar-button:hover { background: #ffffff1d; }
 .lab-back > span:first-child { font-size: 25px; line-height: .7; }

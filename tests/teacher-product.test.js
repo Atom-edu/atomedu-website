@@ -38,3 +38,18 @@ test('classroom service uses secure tokens, durable state, caps rooms, and never
   assert.match(worker, /Math\.min\(450/);
   assert.doesNotMatch(worker, /Math\.random/);
 });
+
+test('teacher product inherits the Proof Lab header and flat atomEDU design language', () => {
+  const teacherCss = read('teacher.css');
+  const teacher = read('teachers.html');
+  const proofLab = read('proof-lab.html');
+  const proofCss = read('math-lab.css');
+  assert.match(teacherCss, /--header-h: 56px/);
+  assert.match(teacherCss, /background: var\(--ink\)/);
+  assert.match(teacherCss, /\.product-card \{[^}]*background: transparent/s);
+  assert.doesNotMatch(teacherCss, /\.product-card:hover[^}]*transform/);
+  assert.match(teacher, /brand-core">atom<b>EDU<\/b>/);
+  assert.match(teacher, /brand-context">for Teachers/);
+  assert.match(proofLab, /<em>Proof Lab<\/em>/);
+  assert.match(proofCss, /\.lab-topbar-brand em \{ color: #f0a782/);
+});

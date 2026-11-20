@@ -4,6 +4,19 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+  document.querySelectorAll('.teacher-brand').forEach(brand => {
+    const label = brand.textContent.replace(/atomEDU/i, '').trim() || 'for Teachers';
+    brand.innerHTML = `<span class="brand-core">atom<b>EDU</b></span><span class="brand-context">${escapeHtml(label)}</span>`;
+  });
+  document.querySelectorAll('.student-header > span').forEach(brand => {
+    const label = brand.textContent.replace(/atomEDU|Atom/i, '').trim() || 'for Students';
+    brand.innerHTML = `<span class="brand-core">atom<b>EDU</b></span><span class="brand-context">${escapeHtml(label)}</span>`;
+  });
+  document.querySelectorAll('.teacher-back').forEach(link => {
+    if (link.querySelector('svg')) return;
+    const label = link.textContent.replace(/[←]/g, '').trim() || 'Back to site';
+    link.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13.5 5.5-6 6 6 6M8 11.5h11"/></svg><span>${escapeHtml(label)}</span>`;
+  });
   async function request(path, options = {}) {
     const headers = { ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...(options.headers || {}) };
     const response = await fetch(`${apiBase}${path}`, { ...options, headers, body: options.body && typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body });
