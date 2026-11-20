@@ -11,6 +11,7 @@ test('the product video deck has 20 working slides, three portraits, and real pr
   const html = read('product-video.html');
   const script = read('product-video.js');
   assert.equal((html.match(/<section class="slide /g) || []).length, 20);
+  assert.match(html, /<title>atomEDU Product Demo \| 18 Minutes<\/title>/);
   assert.match(html, /id="slide-20"/);
   assert.match(script, /ArrowRight/);
   assert.match(script, /ArrowLeft/);
@@ -25,17 +26,18 @@ test('the product video deck has 20 working slides, three portraits, and real pr
   assert.doesNotMatch(html, /Official Google partner|All of Algebra|All of Geometry/i);
 });
 
-test('the 20-minute script opens with Rahul and uses the two demo speakers', () => {
+test('the 18-minute script follows all 20 slides and balances the three founders', () => {
   const script = read('docs/product-video-script.md');
-  assert.match(script, /Target length: 20 minutes/);
+  assert.match(script, /Target length: approximately 18 minutes/);
   assert.equal((script.match(/^## \d+:\d\d to \d+:\d\d \| Slide \d+/gm) || []).length, 20);
-  assert.match(script, /^## 0:00 to 1:00 \| Slide 1 \| Rahul opens/m);
-  assert.match(script, /^## 19:00 to 20:00 \| Slide 20/m);
+  assert.match(script, /^## 0:00 to 0:55 \| Slide 1 \| Rahul opens/m);
+  assert.match(script, /^## 16:50 to 18:00 \| Slide 20 \| All three close/m);
   assert.match(script, /\*\*Rahul:\*\*/);
   assert.match(script, /\*\*Pritam:\*\*/);
+  assert.match(script, /\*\*Akshaj:\*\*/);
   assert.doesNotMatch(script, /Aryan|Patel/);
   const speakerWords = name => [...script.matchAll(new RegExp(`^\\*\\*${name}:\\*\\* (.+)$`, 'gm'))].reduce((count, match) => count + match[1].split(/\s+/).length, 0);
-  const counts = ['Rahul', 'Pritam'].map(speakerWords);
+  const counts = ['Rahul', 'Pritam', 'Akshaj'].map(speakerWords);
   assert(Math.max(...counts) - Math.min(...counts) <= 120, `Unbalanced narration: ${counts.join(', ')}`);
   assert.doesNotMatch(script, /image import|image.upload/i);
   for (const topic of ['Solve', 'Check work', 'Ghost steps', 'Generate', 'Graph', 'Share']) {
@@ -43,13 +45,16 @@ test('the 20-minute script opens with Rahul and uses the two demo speakers', () 
   }
 });
 
-test('the opportunity memo separates controllable actions from approvals', () => {
+test('the opportunity memo measures potential replies, not applications or logo claims', () => {
   const memo = read('docs/education-opportunities-30-days.md');
-  for (const [heading, minimum] of [['Today, November 15', 3], ['Within 3 days', 3], ['Within 7 days', 3], ['Within 14 days', 5], ['Within 21 days', 5], ['Within 30 days', 5]]) {
-    const section = memo.split(`## ${heading}`)[1]?.split('\n## ')[0];
-    assert(section, `Missing ${heading}`);
-    assert((section.match(/^\| \[/gm) || []).length >= minimum, `Too few options in ${heading}`);
-  }
-  assert.match(memo, /not promises of approval/i);
-  assert.match(memo, /does not certify a standalone math tool/i);
+  assert.match(memo, /Monday, November 16, 2026/);
+  assert.match(memo, /a substantive human reply or written decision received by that date/);
+  assert.match(memo, /An automatic receipt does not count/);
+  for (const date of ['Nov 16', 'Nov 19', 'Nov 23', 'Nov 30', 'Dec 7', 'Dec 16']) assert.match(memo, new RegExp(date));
+  assert.match(memo, /None with a verifiable same-day partner decision and logo license/);
+  assert.match(memo, /follow-up threshold.*not a promise of a reply/);
+  assert.match(memo, /written approval/);
+  assert.match(memo, /three qualifying integrations/i);
+  assert.match(memo, /not permission to put a Microsoft partner logo/i);
+  assert.match(memo, /reviews full courses, not standalone math tools/);
 });

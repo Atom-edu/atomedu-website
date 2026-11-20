@@ -100,6 +100,7 @@ test('all local public-page links point to real pages and valid anchors', () => 
       const [pathname, fragment] = target.split('#');
       const cleanPath = pathname.split('?')[0];
       const destination = cleanPath === '' ? page : cleanPath === '/' ? 'index.html'
+        : cleanPath.startsWith('/') && /\.[a-z0-9]+$/i.test(cleanPath) ? cleanPath.slice(1)
         : cleanPath.startsWith('/') ? `${cleanPath.slice(1)}.html` : cleanPath;
       assert.ok(existsSync(resolve(root, destination)), `${page}: missing ${target}`);
       if (fragment) assert.match(read(destination), new RegExp(`\\bid="${fragment}"`), `${page}: missing #${fragment}`);
@@ -120,9 +121,11 @@ test('legacy demos forward into the current proof tool', () => {
 
 test('home carousel uses three distinct backgrounds', () => {
   const home = read('index.html');
-  assert.match(home, /Official release \| Friday, November 20, 2026/);
-  assert.match(home, /The official atomEDU release is almost here\./);
-  assert.match(home, /On November 20, atomEDU officially launches with Proof Lab\./);
+  assert.match(home, /Live launch \| Friday, November 20, 2026 \| 7:00 PM CST/);
+  assert.match(home, /atomEDU launches tonight at 7 PM CST\./);
+  assert.match(home, /Join the launch stream for the official release of Proof Lab\./);
+  assert.match(home, /id="launch"/);
+  assert.match(home, /Online launch stream/);
   assert.match(home, /images\/bg1\.png/);
   assert.match(home, /images\/bg2\.jpg/);
   assert.match(home, /images\/bg3\.jpg/);
@@ -131,6 +134,41 @@ test('home carousel uses three distinct backgrounds', () => {
   assert.ok(existsSync(resolve(root, 'images/bg3.jpg')));
   assert.match(home, /Cosmic Cliffs in the Carina Nebula\. NASA, ESA, CSA, STScI\. Accessed November 11 2026 by Awasthi\./);
   assert.match(home, /Cape Mallow by AJ Higgs, CC BY 4\.0, via Wikimedia Commons\. Accessed November 11 2026 by Awasthi\./);
+});
+
+test('public pages expose canonical discovery metadata and a crawlable site map', () => {
+  const canonicalByPage = new Map([
+    ['index.html', 'https://atom-edu.org/'],
+    ['features.html', 'https://atom-edu.org/features'],
+    ['learn.html', 'https://atom-edu.org/learn'],
+    ['about.html', 'https://atom-edu.org/about'],
+    ['contact.html', 'https://atom-edu.org/contact'],
+    ['legal.html', 'https://atom-edu.org/legal'],
+    ['proof-lab.html', 'https://atom-edu.org/proof-lab'],
+    ['art-contest.html', 'https://atom-edu.org/art-contest'],
+  ]);
+  for (const [page, canonical] of canonicalByPage) {
+    const html = read(page);
+    assert.match(html, new RegExp(`<link rel="canonical" href="${canonical.replaceAll('.', '\\.')}`));
+    assert.match(html, /property="og:title"/);
+    assert.match(html, /property="og:image" content="https:\/\/atom-edu\.org\/images\/atomedu-social\.png"/);
+    assert.match(html, /name="robots" content="index, follow/);
+  }
+  assert.ok(existsSync(resolve(root, '404.html')));
+  assert.match(read('404.html'), /This step does not follow\./);
+  assert.match(read('404.html'), /name="robots" content="noindex, follow"/);
+  assert.match(read('robots.txt'), /Sitemap: https:\/\/atom-edu\.org\/sitemap\.xml/);
+  assert.match(read('sitemap.xml'), /<loc>https:\/\/atom-edu\.org\/proof-lab<\/loc>/);
+  assert.match(read('llms.txt'), /not an AI chat wrapper/i);
+});
+
+test('home explains the in-house engine and the role of partners and integrations', () => {
+  const home = read('index.html');
+  assert.match(home, /Proof Lab is not a chat interface placed over somebody else's model/);
+  assert.match(home, /Partners build trust\. Integrations prove utility\./);
+  assert.match(home, /Is atomEDU an AI wrapper\?/);
+  assert.match(home, /"@type": "FAQPage"/);
+  assert.match(home, /"@type": "Event"/);
 });
 
 test('home presents compact partner logos without the former VC Boom pill', () => {

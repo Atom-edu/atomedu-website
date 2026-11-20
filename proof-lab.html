@@ -4,18 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1f2a36">
-  <meta name="description" content="Proof Lab is a free math proof tool for solving supported problems, checking your steps, generating practice, and exploring graphs in your browser.">
-  <title>Proof Lab | atomEDU</title>
+  <meta name="description" content="Use atomEDU Proof Lab to solve supported math exactly, verify your steps, generate practice, and graph functions with a free in-house browser engine.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <title>Proof Lab | Free Math Solver and Step Checker | atomEDU</title>
+  <link rel="canonical" href="https://atom-edu.org/proof-lab">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="atomEDU"><meta property="og:title" content="Proof Lab | Free Math Solver and Step Checker"><meta property="og:description" content="Solve, verify, practice, and graph with atomEDU's own deterministic math engine."><meta property="og:url" content="https://atom-edu.org/proof-lab"><meta property="og:image" content="https://atom-edu.org/images/atomedu-social.png"><meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="images/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Roboto:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=proof-lab-17">
+  <link rel="stylesheet" href="./styles.css?v=launch-1">
   <link rel="stylesheet" href="./vendor/katex/katex.min.css">
   <link rel="stylesheet" href="./graph/plotter.css?v=proof-lab-22">
-  <link rel="stylesheet" href="./math-lab.css?v=proof-lab-28">
-  <script defer src="./site-i18n.js?v=founders-5"></script>
+  <link rel="stylesheet" href="./math-lab.css?v=launch-3">
+  <script defer src="./site-i18n.js?v=launch-1"></script>
   <script type="module" src="./math-lab.js?v=proof-lab-36"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Proof Lab",
+    "alternateName": "atomEDU Proof Lab",
+    "url": "https://atom-edu.org/proof-lab",
+    "description": "A free browser-based math solver, step checker, practice generator, and graphing workspace powered by atomEDU's own deterministic symbolic engine.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any modern web browser",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "creator": { "@type": "Organization", "name": "atomEDU", "url": "https://atom-edu.org/" },
+    "featureList": ["Exact math solving", "Step verification", "Ghost step reconstruction", "Seeded practice generation", "Interactive graphing"]
+  }
+  </script>
 </head>
 <body class="lab-app">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -80,28 +99,37 @@
           <form id="solve-form">
             <label class="field-label" for="solve-input">Expression, equation, or problem</label>
             <div class="math-field-mount" id="solve-field-mount"></div>
-            <details class="panel-options" id="solve-options">
-              <summary>Options and advanced input</summary>
-              <div class="field-row">
+            <details class="panel-options solve-options" id="solve-options">
+              <summary><span class="option-summary-icon" aria-hidden="true">⌁</span><span class="option-summary-copy"><strong>Fine-tune this problem</strong><small>Task, difficulty, domain, and specialized input</small></span></summary>
+              <div class="solve-options-body">
+              <div class="field-row solve-settings-grid">
                 <div class="field"><label class="field-label" for="solve-task">Task</label><select id="solve-task"><option value="">Auto-detect</option><option value="solve">Solve</option><option value="simplify">Simplify</option><option value="factor">Factor</option><option value="analyze">Analyze function</option><option value="conic">Analyze conic</option></select></div>
                 <div class="field"><label class="field-label" for="solve-difficulty">Difficulty</label><select id="solve-difficulty"><option value="">Auto-detect</option><option value="0.250">0.250 Foundation</option><option value="0.500">0.500 Developing</option><option value="0.750">0.750 Challenging</option></select></div>
                 <div class="field"><label class="field-label" for="solve-variable">Solve for</label><select id="solve-variable" aria-describedby="solve-variable-help"><option value="">Auto-detect</option><option value="x">x</option><option value="y">y</option><option value="l">l</option><option value="w">w</option><option value="a">a</option><option value="b">b</option><option value="c">c</option><option value="h">h</option><option value="n">n</option><option value="r">r</option><option value="t">t</option><option value="z">z</option></select><p class="field-help" id="solve-variable-help">Choose a target to rearrange a formula.</p></div>
                 <div class="field"><label class="field-label" for="solve-domain">Equation solutions</label><select id="solve-domain"><option value="real">Real numbers</option><option value="complex">Complex numbers</option></select></div>
               </div>
+              <div class="advanced-mode-heading"><span>Specialized input</span><small>Use only when a standard expression is not enough.</small></div>
+              <div class="advanced-mode-grid">
               <details class="advanced-input" id="structured-mode">
-                <summary>Structured geometry, systems, and matrices</summary>
-                <label class="structured-toggle"><input id="use-structured" type="checkbox"> Solve a structured JSON request</label>
+                <summary><span class="advanced-mode-icon" aria-hidden="true">{ }</span><span><strong>Structured request</strong><small>Geometry, systems, and matrices</small></span></summary>
+                <div class="advanced-input-body">
+                <label class="structured-toggle"><input id="use-structured" type="checkbox"> Use structured JSON input</label>
                 <label class="field-label" for="structured-input">Structured request</label>
                 <textarea id="structured-input" class="structured-input" rows="5" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="structured-help" maxlength="20000" placeholder='{"kind":"matrix","operation":"inverse","matrix":[[1,2],[3,4]]}'></textarea>
                 <p class="field-help" id="structured-help">Use this mode for geometry givens, matrices, and other structured requests. The mathematical result is still typeset.</p>
+                </div>
               </details>
               <details class="advanced-input" id="word-mode">
-                <summary>Supported word problems</summary>
-                <label class="structured-toggle"><input id="use-word-problem" type="checkbox"> Solve an English word problem</label>
+                <summary><span class="advanced-mode-icon advanced-mode-icon-word" aria-hidden="true">Aa</span><span><strong>Word problem</strong><small>Supported English templates</small></span></summary>
+                <div class="advanced-input-body">
+                <label class="structured-toggle"><input id="use-word-problem" type="checkbox"> Use word-problem input</label>
                 <label class="field-label" for="word-problem-input">Word problem</label>
                 <textarea id="word-problem-input" class="word-problem-input" rows="4" maxlength="512" placeholder="A taxi charges a $5 flat fee plus $2 per mile. If the total cost is $17, how many miles were traveled?"></textarea>
                 <p class="field-help">This uses strict fee/rate, consecutive-integer, discount, or mixture templates. Other wording is reported as unsupported, not guessed.</p>
+                </div>
               </details>
+              </div>
+              </div>
             </details>
             <div class="form-error" id="solve-error" role="alert" hidden></div>
             <button class="button button-primary run-button" id="solve-submit" type="submit"><span>Solve problem</span><span aria-hidden="true">↗</span></button>

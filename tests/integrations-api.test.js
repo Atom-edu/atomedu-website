@@ -12,6 +12,7 @@ const req = (path, options = {}) => new Request(`${API}/api/integrations${path}`
 const invoke = (path, options = {}, env = ENV) => worker.fetch(req(path, options), env);
 const cookieValue = (response, name) => response.headers.getSetCookie().find(c => c.startsWith(`${name}=`))?.split(';')[0];
 
+
 async function connect(t) {
   const start = await invoke('/oauth/drive/start');
   assert.equal(start.status, 302);

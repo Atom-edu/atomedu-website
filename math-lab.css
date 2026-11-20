@@ -905,6 +905,39 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
 .lab-app .panel-options > .field-row { margin: 8px 0 0; padding: 11px; border: 1px solid #e0e6ed; border-radius: 9px; background: #f8fafc; }
 .lab-app .panel-options > .field-help, .lab-app .panel-options > .field { margin-left: 0; margin-right: 0; }
 .lab-app .panel-options .advanced-input { margin: 9px 0 0; }
+.lab-app .solve-options { margin-top: 18px; overflow: hidden; border: 1px solid #dce4ed; border-radius: 12px; background: #f8fafc; }
+.lab-app .solve-options > summary { min-height: 58px; justify-content: flex-start; gap: 11px; padding: 11px 13px; color: #263e58; }
+.lab-app .solve-options > summary::after { margin-left: auto; }
+.lab-app .solve-options[open] > summary { border-bottom: 1px solid #dce4ed; background: #f3f7fb; }
+.option-summary-icon { display: grid; place-items: center; width: 31px; height: 31px; flex: none; border: 1px solid #cbd9e8; border-radius: 8px; background: #fff; color: #2d6ed0; font-size: 18px; font-weight: 500; }
+.option-summary-copy { display: grid; gap: 1px; min-width: 0; }
+.option-summary-copy strong { font-size: 12px; font-weight: 700; color: #263e58; }
+.option-summary-copy small { color: #74869a; font-size: 9px; font-weight: 500; line-height: 1.35; }
+.solve-options-body { padding: 13px; }
+.lab-app .solve-options .solve-settings-grid { margin: 0; padding: 0; border: 0; background: transparent; }
+.solve-settings-grid .field { padding: 8px; border: 1px solid #e0e6ed; border-radius: 9px; background: #fff; }
+.solve-settings-grid select { min-width: 0; padding: 9px 20px 9px 8px; font-size: 11px; }
+.solve-settings-grid .field-help { margin-bottom: 0; }
+.advanced-mode-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 15px; padding-top: 14px; border-top: 1px solid #e1e7ed; }
+.advanced-mode-heading span { color: #3c5268; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.advanced-mode-heading small { color: #8190a0; font-size: 9px; text-align: right; }
+.advanced-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.lab-app .panel-options .advanced-input { margin: 0; overflow: hidden; border: 1px solid #dce4ed; border-radius: 10px; background: #fff; }
+.lab-app .advanced-input > summary { display: flex; align-items: center; gap: 9px; min-height: 55px; padding: 9px 10px; list-style: none; color: #2d4054; }
+.lab-app .advanced-input > summary::-webkit-details-marker { display: none; }
+.lab-app .advanced-input > summary::after { content: '+'; margin-left: auto; color: #73869a; font-size: 15px; }
+.lab-app .advanced-input[open] > summary { border-bottom: 1px solid #e1e7ed; background: #f7f9fc; }
+.lab-app .advanced-input[open] { grid-column: 1 / -1; }
+.lab-app .advanced-input[open] > summary::after { content: '−'; }
+.lab-app .advanced-input > summary > span:not(.advanced-mode-icon) { display: grid; gap: 1px; min-width: 0; }
+.lab-app .advanced-input > summary strong { font-size: 10px; font-weight: 700; }
+.lab-app .advanced-input > summary small { color: #7b8998; font-size: 8px; font-weight: 500; line-height: 1.3; }
+.advanced-mode-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 7px; background: #eaf2fc; color: #2d6ed0; font: 700 10px/1 'SFMono-Regular', Consolas, monospace; }
+.advanced-mode-icon-word { background: #f3eee8; color: #9c522f; font-family: Georgia, serif; }
+.advanced-input-body { padding: 11px; }
+.lab-app .advanced-input .structured-toggle { margin: 0 0 12px; padding: 9px; border-radius: 7px; background: #f3f7fb; color: #344b62; }
+.lab-app .advanced-input textarea { border-color: #dce4ed; background: #fbfcfe; }
+.lab-app .advanced-input textarea:focus { border-color: #5f8fc8; box-shadow: 0 0 0 3px #2d6ed018; }
 .lab-app .math-keypad { max-height: none; overflow: hidden; background: #edf2f7; }
 .lab-app .keypad-target { max-width: 150px; }
 .lab-app .keypad-done { min-width: 56px; }
@@ -933,6 +966,9 @@ body.math-keypad-open .coverage-fab { bottom: calc(min(48dvh, 440px) + 16px); }
   .lab-app .view-tab { flex-direction: column; gap: 2px; min-height: 49px; font-size: 9px; }
   .lab-app .workbench { grid-template-rows: minmax(210px, 38%) minmax(0, 62%); }
   .lab-app .workbench.graph-mode { grid-template-rows: minmax(170px, 38%) minmax(0, 62%); }
+  .advanced-mode-grid { grid-template-columns: 1fr; }
+  .advanced-mode-heading { display: grid; gap: 2px; }
+  .advanced-mode-heading small { text-align: left; }
   .lab-app .input-column { overflow: hidden; }
   .lab-app .input-panel { min-height: 0; }
   .lab-app .graph-editor { min-height: 0; }

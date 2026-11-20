@@ -1,70 +1,39 @@
-# Education platform opportunities for atomEDU
+# Corporate partnership and logo plan for atomEDU
 
-Updated November 15, 2026. These dates are targets for work atomEDU can control. They are **not promises of approval, directory placement, certification, or permission to display a partner badge**. A link in a learning platform is useful to a teacher, but it is not a platform partnership. Apply only with accurate product and usage evidence. Some programs require a registered business and an authorized signer; atomEDU must check those requirements before applying.
+Updated November 15, 2026. Outreach starts **Monday, November 16, 2026**. The dates below mean **a substantive human reply or written decision received by that date**, not the date atomEDU can submit a form. An automatic receipt does not count. The dates are calendar-day checkpoints from Monday, not promises from the companies. A reply is not an approval, and an approved partnership does not automatically grant permission to put a company's logo under “Our Featured Partners.” Use a partner mark only after the applicable agreement or written brand approval says atomEDU can.
 
-## Today, November 15
+## By / Options
 
-| Name | Action atomEDU can take | What atomEDU can claim afterward |
+| By (reply received, not form submitted) | Real corporate partner options | What the evidence actually supports |
 | --- | --- | --- |
-| [Google Classroom](https://developers.google.com/workspace/classroom/guides/integration-paths/integration-paths) | Demonstrate the live graph share link with a teacher. Google lists Share as an official integration path. | “For use with Google Classroom™” under its [branding rules](https://developers.google.com/workspace/classroom/brand). Do not claim a Google partnership or add-on. |
-| [ISTE EdTech Index](https://iste.org/edtech-index-faqs) | Register in the Learning Technology Directory and submit Proof Lab. ISTE says registration is free and requires a privacy policy. | “Submitted to ISTE” privately. Public listing follows ISTE review; submission does not confer the ISTE Seal. |
-| [Microsoft for Startups](https://learn.microsoft.com/en-us/startups/microsoft-for-startups/overview) | Apply if atomEDU meets the private, for-profit software-startup requirements. Microsoft says typical review takes about three business days. | “Application submitted.” Program benefits and name usage depend on acceptance and terms. |
-| [AWS Partner Network](https://aws.amazon.com/education/ed-tech/) | Register for the free Partner Network path if the team plans to build an AWS-backed education service. | Registration or membership under its terms, not an AWS education endorsement or validated software badge. |
+| **Monday, Nov 16 (same day)** | **None with a verifiable same-day partner decision and logo license.** | A warm introduction might produce a conversation today, but no program below promises this. Do not count an automated acknowledgment as a partnership result. |
+| **Thursday, Nov 19 (3 calendar days)** | [Instructure partner program](https://www.instructure.com/partners/become-a-partner); [PowerSchool partner inquiry](https://partners.powerschool.com/English/register_email.aspx). | A human response is possible if an application is complete and reaches the right team. Instructure says it will reach out “shortly,” but gives no three-day service level. PowerSchool gives no reply deadline. This is an **outreach target, not a predicted approval**. |
+| **Monday, Nov 23 (7 calendar days)** | [Blackboard Integration Partnerships](https://www.blackboard.com/integration-partnerships); [D2L Integration Partners](https://www.d2l.com/partners/); Instructure. | Blackboard says to [follow up after five or more business days](https://www.blackboard.com/integration-partnerships/program-faqs) without a reply. Five business days after Monday is Monday, Nov 23, assuming no holiday delay. That is a **follow-up threshold**, not a promise of a reply. D2L and Instructure publish no exact turnaround. |
+| **Monday, Nov 30 (14 calendar days)** | [Google for Education Partner Advantage Build](https://developers.google.com/workspace/classroom/guides/partnerships); D2L; PowerSchool. | A qualification question or partner-team reply is possible by this point, but none publishes a two-week decision deadline. Google's Build track requires a qualifying education integration; the current graph-share link must be checked against that requirement. |
+| **Monday, Dec 7 (21 calendar days)** | [Moodle Certified Integration](https://moodle.com/become-moodle-partner/); Google; Blackboard; Instructure. | These are genuine partner or certification routes, but we found no published 21-day decision promise. A finished integration, privacy evidence, and the company's review determine the timing. |
+| **Wednesday, Dec 16 (30 calendar days)** | The same active applications, plus [AWS Partner Network](https://aws.amazon.com/partners/) **only if atomEDU actually deploys a relevant product on AWS**. | A reply or request for more evidence may arrive within 30 days. Logo rights still depend on formal acceptance and program rules. Do not move an unanswered prospect into the featured-partner row just because 30 days have passed. |
 
-## Within 3 days, by November 18
+The table deliberately does **not** list three supposed same-day wins or five guaranteed 30-day logos. No official source supports those claims. Thanksgiving falls in this window in the United States, so even ordinary business-day estimates can slip.
 
-| Name | Action atomEDU can take | Gate |
+## Which logo would a real partnership allow?
+
+| Company and actual path | Fit for atomEDU | Website logo gate |
 | --- | --- | --- |
-| [Microsoft Teams for Education](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/share-to-teams-from-web-apps) | Add and test Share to Teams for a Proof Lab link. Microsoft documents a teacher option to create an assignment from that link. | Supported desktop Edge/Chrome and an eligible Teams account. This is compatibility, not a Microsoft partnership. |
-| [Canvas LMS](https://community.instructure.com/en/kb/articles/660907-how-do-i-add-an-external-url-as-a-module-item) | Give a teacher a ready-to-use Proof Lab activity link and have them add it to a Canvas module. | A teacher must choose to publish it. This is an external URL, not LTI or an Instructure-approved app. |
-| [PowerSchool Schoology](https://uc.powerschool-docs.com/en/schoology/latest/course-materials-files-links-instructors) | Give a teacher the same activity as a course File/Link item. Test opening in a new window if framing blocks the site. | Teacher access and school settings. This is a course link, not an App Center listing. |
+| [Instructure Partner Program](https://www.instructure.com/partners/become-a-partner) for a Canvas integration | Strong education fit if atomEDU builds and tests a real LTI or other supported integration. | Its [partner terms](https://www.instructure.com/policies/partners/terms-and-conditions) require **written approval** for Instructure names and logos in marketing. The [partner brand kit](https://www.instructure.com/about/brand-guide/partner-brand-kit) is for participating partners, not applicants. |
+| [Blackboard Integration Partnerships](https://www.blackboard.com/integration-partnerships) for Blackboard Learn | Strong fit if atomEDU can show a functioning LTI integration and teacher use case. | Blackboard's [program FAQ](https://www.blackboard.com/integration-partnerships/program-faqs) says Bronze, Silver, and Gold partners receive a marketing toolkit, and all press and marketing materials require approval. Ask for the approved mark and exact website placement in writing. |
+| [D2L Integration Partners](https://www.d2l.com/partners/) for Brightspace | Strong fit after a working integration and pilot. | D2L's [tier guide](https://www.d2l.com/wp-content/uploads/2024/06/D2L-Partner-Integration-Tiers.pdf) distinguishes a non-partner integration from paid or certified partner tiers and places partner-page logo benefits at a higher tier. Confirm atomEDU's own right to display D2L's mark in the agreement. |
+| [Google for Education Partner Advantage Build](https://developers.google.com/workspace/classroom/guides/partnerships) | Relevant, but first verify that atomEDU's existing Classroom workflow is a qualifying integration. | Build partners may advertise an approved partnership. The **Google for Education partner badge** belongs to the higher Integrated Solutions Initiative, which requires at least **three qualifying integrations** and additional conditions. Do not use that badge after Build acceptance alone. |
+| [PowerSchool Partner Program](https://partners.powerschool.com/English/) | Relevant if atomEDU can offer a real PowerSchool or Schoology integration. | Its portal describes partner marketing templates and brand guidelines. Ask which mark a new partner may use and obtain the program agreement before displaying it. An [inquiry](https://partners.powerschool.com/English/register_email.aspx) is not membership. |
+| [Moodle Certified Integration](https://moodle.com/become-moodle-partner/) | Relevant after a working Moodle integration that meets certification requirements. | Moodle's [trademark guidelines](https://moodle.com/wp-content/uploads/2024/01/Moodle-Trademark-Guidelines-2023.pdf) reserve certified-partner and certified-integration marks for licensees. A working Moodle link alone does not grant the badge. |
+| [AWS Partner Network](https://aws.amazon.com/partners/) | Conditional, not a priority while atomEDU's product runs elsewhere. | AWS [distinguishes](https://aws.amazon.com/partners/branding/) a partner badge, “Powered by AWS,” and a Marketplace logo. The allowed mark depends on the actual relationship and deployment. Do not imply AWS infrastructure or partnership that atomEDU does not have. |
 
-## Within 7 days, by November 22
+## What not to count
 
-| Name | Action atomEDU can take | Gate |
-| --- | --- | --- |
-| [Google for Education Partner Advantage Build](https://developers.google.com/workspace/classroom/guides/partnerships) | Apply on the Build track and submit evidence of a qualifying Classroom or Workspace integration. Ask Google whether the current Share workflow qualifies. | Google controls solution qualification. Its Build level calls for at least one qualifying integration; a submitted application is not approval. |
-| [Instructure Partner Program](https://www.instructure.com/partners/become-a-partner) | Submit the partner interest form with a teacher pilot and a concrete Canvas LTI plan. | Instructure decides whether to engage or approve. Do not use a partner logo from an inquiry alone. |
-| [Digital Promise Product Certifications](https://digitalpromise.org/product-certifications/how-it-works/) | Pick a matching certification, assemble required evidence, and apply if the evidence is ready. | Digital Promise says it returns results within four weeks of submission. A submitted product has no certification badge. |
-| [ISTE Seal](https://info.iste.org/iste-seal) | Request a consultation and scope the evidence required for independent review. | Review and licensing have costs and take longer than an inquiry. No Seal until ISTE awards one. |
+- [Microsoft for Startups](https://learn.microsoft.com/en-us/microsoft-for-startups/application/) says it normally responds within **three business days**. Applied Monday, that points to Thursday, November 19, subject to verification delays. It is a startup-benefits application, **not permission to put a Microsoft partner logo on atomEDU's website**. This is why it is not a quick win in the table.
+- A teacher posting a Proof Lab link in Google Classroom, Canvas, Schoology, or Teams is product compatibility, not a corporate partnership.
+- [Atlassian Marketplace](https://developer.atlassian.com/platform/marketplace/creating-a-marketplace-listing/) publishes a **5–10 business-day window to start reviewing a submitted app**, but atomEDU does not currently have an Atlassian app. It would be misleading to use that timeline as an education partnership prospect.
+- The [College Board AP Course Audit](https://apcentral.collegeboard.org/courses/ap-course-audit/explore-by-role/online-distance-learning-providers) reviews full courses, not standalone math tools. AP branding cannot be treated as a partner logo.
 
-## Within 14 days, by November 29
+## Monday outreach package
 
-These five use one carefully implemented LTI 1.3 core, followed by platform-specific tests. A pilot needs a willing teacher or administrator with a test tenant. Building all five in two weeks is an ambitious target, not a commitment that each school will install them.
-
-| Name | Action atomEDU can take | Gate |
-| --- | --- | --- |
-| [Canvas LMS LTI](https://developerdocs.instructure.com/services/canvas/external-tools/lti/file.lti_dev_key_config) | Test a signed LTI 1.3 launch and provide registration details to a Canvas pilot. | Canvas administrator installs it. No official marketplace status follows automatically. |
-| [Moodle LTI](https://docs.moodle.org/501/en/LTI_consumer) | Test the same tool in a Moodle course with a teacher or site administrator. | Site policy and administrator configuration. Moodle compatibility is not a Moodle partnership. |
-| [D2L Brightspace LTI](https://community.d2l.com/brightspace/kb/articles/23662-tool-registration-deployment-and-links) | Register and test a launch in a Brightspace pilot tenant. | Brightspace administrator controls deployment. |
-| [Blackboard Learn LTI](https://docs.blackboard.com/docs/blackboard/lti/1.3/register-an-application) | Register the tool and test its client ID with a Learn pilot. | Blackboard administrator controls placement and availability. |
-| [Schoology LTI](https://developers.schoology.com/app-platform/lti-apps/) | Test a Schoology LTI launch and prepare its app review materials. | App Center review and school install are separate steps. |
-
-## Within 21 days, by December 6
-
-| Name | Action atomEDU can take | Gate |
-| --- | --- | --- |
-| [Google Classroom CourseWork API](https://developers.google.com/workspace/classroom/guides/coursework-integration) | Prototype teacher-authorized creation of an assignment linking to a Proof Lab activity. | OAuth consent, teacher access, and any required verification. The current share link does not grant API access. |
-| [Microsoft Teams custom tab](https://learn.microsoft.com/en-us/microsoftteams/platform/get-started/build-basic-tab-app) | Package a Proof Lab tab and test it privately with a school tenant. | School policies govern custom app upload. A private pilot is not a Teams Store listing. |
-| [ClassLink OneClick](https://help.classlink.com/s/article/pp-about-oc-rs) | Register in the Partner Portal, prototype SSO, and prepare a Global App Library request. | ClassLink certification and district authorization follow review. |
-| [Clever developer platform](https://dev.clever.com/docs/getting-started) | Create a development app and test SSO with sandbox data. | Clever requires its agreement and [certification](https://dev.clever.com/docs/certification-overview) before live district data. Clever Library integrations are no longer offered. |
-| [1EdTech LTI Diagnostics](https://www.1edtech.org/certification/lti) | Run the LTI tool through conformance diagnostics and fix failed checks. | Diagnostic success is not certification; official recognition requires eligible membership and review. |
-
-## Within 30 days, by December 15
-
-| Name | Action atomEDU can take | Gate |
-| --- | --- | --- |
-| [Google Classroom add-on](https://developers.google.com/workspace/classroom/add-ons/get-started/get-started-overview) | Build an assignment attachment flow and submit a complete add-on for OAuth and Marketplace review if ready. | Google review and teacher licensing; neither publication nor partner status is guaranteed in 30 days. |
-| [Microsoft Teams Store](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish) | Validate a production tab in Partner Center and submit it. | Microsoft tests the app and may require revisions before publication. |
-| [1EdTech LTI certification](https://www.1edtech.org/certification/lti) | Submit passing LTI 1.3 results if the tool and membership are ready. | 1EdTech manually validates results. Do not use its certified mark before approval. |
-| [1EdTech TrustEd Apps Data Privacy](https://www.1edtech.org/certification/data-privacy) | Complete the privacy self-assessment and submit policies for review if eligible. | Membership, policy changes, and independent review may be required. |
-| [ISTE Seal full review](https://info.iste.org/iste-seal) | Submit the evidence package after the consultation if the criteria and budget fit. | A review is not an award. ISTE controls the decision and mark license. |
-| [Google for Education Integrated Solutions Initiative](https://developers.google.com/workspace/classroom/guides/partnerships) | Apply only if atomEDU has three qualifying integrations and meets its product and privacy conditions. | Google awards the partner badge and App Hub access only at this higher approved level. This is a stretch target, not a likely automatic 30-day result. |
-
-## Where AP fits
-
-The [College Board AP Course Audit](https://apcentral.collegeboard.org/courses/ap-course-audit/explore-by-role/online-distance-learning-providers) approves full courses offered by schools or online course providers. It does not certify a standalone math tool. Its [trademark rules](https://privacy.collegeboard.org/copyright-trademark/guidelines) restrict AP logos and implied endorsement, and prohibit training an AI system on College Board content. The practical AP route is to test Proof Lab with AP Precalculus teachers against the published course description, improve the documented gaps, and request permission before using protected branding or content.
-
-## What to prepare before applying
-
-Use one teacher-ready assignment showing a submitted incorrect step, the first-error explanation, and a verified correction. Add a short demo video, a current privacy policy, named security contact, real retention data, and two or three teacher references with permission to quote them. Present the current [rule-by-rule coverage checklist](./standards-coverage.md) rather than a blanket “all math” claim. A platform team can review this evidence; a logo row alone cannot substitute for it.
+Send each company a short, specific partnership inquiry from an atomEDU business email. Include the live Proof Lab link, the [20-minute product demo](../product-video.html), a one-page product description, current privacy and security details, the exact integration already built or proposed, and a teacher pilot contact if that person has agreed. Ask three direct questions: **Does the current integration qualify for your partner program? When should we expect a human response? If accepted, which exact mark may we use on our website, and what approval is required?** Record the named contact, reply date, agreement, and logo permission separately. Keep prospects off the public partner section until the last two are settled.

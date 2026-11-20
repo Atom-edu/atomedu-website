@@ -4,13 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="google-site-verification" content="kPdAPa3IWQS_MODxNTTW7o3dTl60K0SqGFS_cwct0Gw" />
-  <title>Proof Lab | Free Math Proof Checker | atomEDU</title>
-  <meta name="description" content="Solve supported algebra and geometry problems, check your steps with Ghost steps, generate practice, and graph functions in the free Proof Lab." />
+  <title>atomEDU Proof Lab | Free Math Solver and Step Checker</title>
+  <meta name="description" content="atomEDU Proof Lab is a free, in-house math engine that solves supported problems, verifies each step, generates practice, and graphs functions in your browser." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#1f2a36" />
+  <link rel="canonical" href="https://atom-edu.org/" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="atomEDU" />
+  <meta property="og:title" content="atomEDU Proof Lab | Show the work. Find the step." />
+  <meta property="og:description" content="A free, browser-based math solver and proof checker powered by atomEDU's own deterministic math engine." />
+  <meta property="og:url" content="https://atom-edu.org/" />
+  <meta property="og:image" content="https://atom-edu.org/images/atomedu-social.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="atomEDU Proof Lab, show the work and find the step" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="atomEDU Proof Lab" />
+  <meta name="twitter:description" content="Free exact math solving, step checking, practice generation, and graphing in your browser." />
+  <meta name="twitter:image" content="https://atom-edu.org/images/atomedu-social.png" />
   <link rel="icon" href="images/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Roboto:wght@700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=proof-lab-13" />
+  <link rel="stylesheet" href="styles.css?v=launch-1" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://atom-edu.org/#organization",
+        "name": "atomEDU",
+        "url": "https://atom-edu.org/",
+        "logo": "https://atom-edu.org/images/logo.svg",
+        "description": "atomEDU builds Proof Lab, a free browser-based math solver and step checker powered by an in-house deterministic math engine.",
+        "foundingLocation": { "@type": "Place", "name": "O'Fallon, Missouri" },
+        "founder": [
+          { "@type": "Person", "name": "Pritam Avuthu" },
+          { "@type": "Person", "name": "Rahul Awasthi" },
+          { "@type": "Person", "name": "Akshaj Sanikommu" }
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://atom-edu.org/#website",
+        "url": "https://atom-edu.org/",
+        "name": "atomEDU",
+        "publisher": { "@id": "https://atom-edu.org/#organization" },
+        "inLanguage": ["en", "es"]
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://atom-edu.org/proof-lab#app",
+        "name": "Proof Lab",
+        "alternateName": "atomEDU Proof Lab",
+        "url": "https://atom-edu.org/proof-lab",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any modern web browser",
+        "browserRequirements": "JavaScript enabled",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "creator": { "@id": "https://atom-edu.org/#organization" },
+        "featureList": ["Exact math solving", "Step-by-step proof checking", "Practice generation", "Interactive graphing", "English and Spanish interface"]
+      },
+      {
+        "@type": "Event",
+        "name": "atomEDU Proof Lab Launch Stream",
+        "description": "The official atomEDU launch stream introducing Proof Lab.",
+        "startDate": "2026-11-20T19:00:00-06:00",
+        "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+        "eventStatus": "https://schema.org/EventScheduled",
+        "location": { "@type": "VirtualLocation", "url": "https://atom-edu.org/#launch" },
+        "organizer": { "@id": "https://atom-edu.org/#organization" },
+        "offers": { "@type": "Offer", "url": "https://atom-edu.org/#launch", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What is atomEDU?", "acceptedAnswer": { "@type": "Answer", "text": "atomEDU is the team behind Proof Lab, a free browser-based math tool that solves supported problems, checks student reasoning, generates practice, and graphs functions." } },
+          { "@type": "Question", "name": "Is atomEDU an AI wrapper?", "acceptedAnswer": { "@type": "Answer", "text": "No. Proof Lab uses atomEDU's own deterministic symbolic math engine. It parses expressions, applies explicit mathematical rules, tracks restrictions, and replays proof certificates before showing a verified result." } },
+          { "@type": "Question", "name": "What is Proof Lab?", "acceptedAnswer": { "@type": "Answer", "text": "Proof Lab is atomEDU's free math solver, step checker, practice generator, and graphing workspace for selected Algebra 1, Algebra 2, Geometry, and Precalculus topics." } },
+          { "@type": "Question", "name": "Is Proof Lab free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Proof Lab is free, requires no account, and runs its supported symbolic math workflows directly in the browser." } }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -54,12 +134,12 @@
       <div class="slide-bg" style="background-image:url('images/bg1.png')"></div>
       <div class="slide-scrim"></div>
       <div class="slide-content"><div class="inner">
-        <p class="slide-label">Official release | Friday, November 20, 2026</p>
-        <h1 class="slide-title heading-display">The official atomEDU release is almost here.</h1>
-        <p class="slide-sub">On November 20, atomEDU officially launches with Proof Lab. Bring a problem, show your work, and find the step where your reasoning changes.</p>
+        <p class="slide-label">Live launch | Friday, November 20, 2026 | 7:00 PM CST</p>
+        <h1 class="slide-title heading-display">atomEDU launches tonight at 7 PM CST.</h1>
+        <p class="slide-sub">Join the launch stream for the official release of Proof Lab. See the in-house math engine solve, verify, generate, and graph in real time.</p>
         <div class="slide-actions">
           <a class="btn btn-accent" href="/proof-lab">Start math</a>
-          <a class="btn btn-light" href="/features">See how it works</a>
+          <a class="btn btn-light" href="#launch">Launch details</a>
         </div>
       </div></div>
     </article>
@@ -112,6 +192,13 @@
     </div>
   </section>
 
+  <section class="launch-strip" id="launch" aria-labelledby="launch-title">
+    <div class="wrap launch-strip-inner">
+      <div><p class="kicker">Launch stream</p><h2 class="heading-display" id="launch-title">Proof Lab goes live today.</h2></div>
+      <dl class="launch-facts"><div><dt>Date</dt><dd>Friday, November 20, 2026</dd></div><div><dt>Time</dt><dd>7:00 PM CST</dd></div><div><dt>Where</dt><dd>Online launch stream</dd></div></dl>
+    </div>
+  </section>
+
   <section class="section home-explainer-section">
     <div class="wrap home-dual">
       <article>
@@ -143,6 +230,27 @@
       <h2 class="block-title heading-display">What it checks today</h2>
       <p class="classes"><span class="now">Selected Algebra 1, Algebra 2, Geometry, and Precalculus families are supported.</span> That includes equations, inequalities, functions, systems, conics, coordinate geometry, exact unit-circle and vector rules, and explicit-premise geometry proofs. Coverage is rule-by-rule, not a promise to solve every textbook problem. Proof Lab lists its supported topics inside the tool.</p>
       <a class="textlink" href="/proof-lab#coverage" style="margin-top:1.3rem;display:inline-flex">See current coverage →</a>
+    </div>
+  </section>
+
+  <section class="section band credibility-section" aria-labelledby="credibility-title">
+    <div class="wrap home-dual">
+      <article>
+        <p class="kicker">Built, not wrapped</p>
+        <h2 class="block-title heading-display" id="credibility-title">Our engine does the mathematics.</h2>
+        <div class="prose">
+          <p>Proof Lab is not a chat interface placed over somebody else's model. atomEDU built the parser, exact arithmetic, solver routes, step verifier, proof certificates, practice generator, and graphing workspace that power the product.</p>
+          <p>Each supported result must survive explicit mathematical rules and certificate replay. If the engine cannot verify a case, Proof Lab labels the limit instead of inventing an answer.</p>
+        </div>
+      </article>
+      <article>
+        <p class="kicker">Connected by choice</p>
+        <h2 class="block-title heading-display">Partners build trust. Integrations prove utility.</h2>
+        <div class="prose">
+          <p>Official partners show that outside organizations are willing to work with atomEDU. Product integrations show that Proof Lab fits into the tools students and teachers already use.</p>
+          <p>The logos are supporting evidence, not borrowed credibility. Google, GitHub, Notion, Dropbox, and other integrations do not perform or certify the math. The verification engine remains atomEDU's own technology.</p>
+        </div>
+      </article>
     </div>
   </section>
 
@@ -217,6 +325,19 @@
       <p class="integration-attribution">Other product names belong to their respective owners. Their mention does not imply affiliation or endorsement.</p>
     </div>
   </section>
+
+  <section class="section faq-section" aria-labelledby="faq-title">
+    <div class="wrap col">
+      <p class="kicker">Questions, answered</p>
+      <h2 class="block-title heading-display" id="faq-title">What makes atomEDU different?</h2>
+      <div class="qa">
+        <div><h3>What is atomEDU?</h3><p>atomEDU is the team behind Proof Lab, a free browser-based learning tool for solving supported math, checking student reasoning, generating practice, and exploring graphs.</p></div>
+        <div><h3>Is atomEDU an AI wrapper?</h3><p>No. Proof Lab uses atomEDU's own deterministic symbolic math engine. It parses the problem, applies explicit rules, tracks restrictions, and replays proof certificates before it displays a verified result.</p></div>
+        <div><h3>What is Proof Lab?</h3><p>Proof Lab is a math solver, step checker, practice generator, and graphing workspace for selected Algebra 1, Algebra 2, Geometry, and Precalculus topics.</p></div>
+        <div><h3>Is Proof Lab free and private?</h3><p>Yes. Proof Lab requires no account, and supported symbolic work runs directly in your browser. Work stays in the current session unless you choose to export or share it.</p></div>
+      </div>
+    </div>
+  </section>
   </main>
 
   <!-- Footer -->
@@ -278,7 +399,7 @@
     </div>
   </footer>
 
-  <script src="site-i18n.js?v=founders-5"></script>
+  <script src="site-i18n.js?v=launch-1"></script>
   <script src="site.js?v=proof-lab-4"></script>
   <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 </body>
