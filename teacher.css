@@ -209,6 +209,9 @@ img, svg { display: block; max-width: 100%; }
 .orbit-question-stage > .stage-image { position: absolute; top: 20px; right: 150px; max-width: 220px; max-height: 135px; margin: 0; background: #fff; }
 .orbit-option-grid { min-height: 46vh; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 8px; align-self: end; }
 .orbit-option-grid, .orbit-written-box { grid-row: 3; }
+.orbit-option-grid.option-count-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.orbit-option-grid.option-count-2 { grid-template-rows: 1fr; }
+.orbit-option-grid.option-count-3 > :last-child { grid-column: 1 / -1; }
 .orbit-option-grid .answer-choice { min-height: 0; border-radius: 4px; padding: clamp(16px, 3vw, 34px); font-size: clamp(1rem, 2vw, 1.6rem); }
 .orbit-option-grid .choice-shape { width: 42px; height: 42px; font-size: 15px; }
 .orbit-written-box { min-height: 46vh; display: grid; place-items: center; align-content: center; gap: 7px; color: #fff; background: #151d25; text-align: center; }

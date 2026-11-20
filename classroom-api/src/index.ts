@@ -124,7 +124,7 @@ function gradeAnswer(question: Question, submitted: unknown): number {
 function sanitizeQuestion(raw: Question, index: number, mode: Mode): Question {
   const allowedTypes: QuestionType[] = ["multiple-choice", "multi-select", "free-response", "fill-blank", "true-false"];
   const type = allowedTypes.includes(raw?.type) ? raw.type : "multiple-choice";
-  const options = (Array.isArray(raw?.options) ? raw.options : []).slice(0, 8).map(value => cleanText(value, 300));
+  const options = (Array.isArray(raw?.options) ? raw.options : []).slice(0, 8).map(value => cleanText(value, 300)).filter(Boolean);
   const correct = (Array.isArray(raw?.correct) ? raw.correct : []).slice(0, 8).map(value => cleanText(value, 500)).filter(Boolean);
   const seconds = Math.max(5, Math.min(300, Number(raw?.seconds) || 30));
   const image = typeof raw?.image === "string" && /^data:image\/(?:png|jpeg|webp|gif);base64,/.test(raw.image) && raw.image.length <= 900_000 ? raw.image : undefined;

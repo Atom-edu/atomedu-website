@@ -75,7 +75,8 @@
     if (question.type === 'free-response' || question.type === 'fill-blank') {
       return `<div class="orbit-written-box"><span>${question.type === 'free-response' ? 'Written response' : 'Fill in the blank'}</span><strong>${question.points} ${question.points === 1 ? 'point' : 'points'}</strong><small>${question.type === 'free-response' ? 'Teacher graded after the room' : reveal ? `Answer: ${question.correct.map(A.escapeHtml).join(', ')}` : 'Students type their answer'}</small></div>`;
     }
-    return `<div class="orbit-option-grid ${reveal ? 'reveal-grid' : ''}">${question.options.map((option, index) => {
+    const options = question.options.filter(option => String(option).trim());
+    return `<div class="orbit-option-grid option-count-${options.length} ${reveal ? 'reveal-grid' : ''}">${options.map((option, index) => {
       const correct = question.correct.includes(option);
       return `<div class="answer-choice answer-color-${index % 6} ${reveal ? (correct ? 'is-correct' : 'is-muted') : ''}"><span class="choice-shape">${reveal && correct ? '✓' : String.fromCharCode(65 + index)}</span><span>${A.escapeHtml(option)}</span></div>`;
     }).join('')}</div>`;

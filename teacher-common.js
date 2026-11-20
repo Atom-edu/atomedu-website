@@ -48,7 +48,8 @@
   function answerControl(question, selected = []) {
     const chosen = new Set(Array.isArray(selected) ? selected : [selected]);
     if (question.type === 'free-response' || question.type === 'fill-blank') return `<textarea class="student-response" id="student-answer" rows="4" placeholder="Type your answer"></textarea>`;
-    return `<div class="answer-grid">${question.options.map((option, index) => `<label class="answer-choice answer-color-${index % 6}"><input type="${question.type === 'multi-select' ? 'checkbox' : 'radio'}" name="answer" value="${escapeHtml(option)}" ${chosen.has(option) ? 'checked' : ''}><span class="choice-shape">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(option)}</span></label>`).join('')}</div>`;
+    const options = question.options.filter(option => String(option).trim());
+    return `<div class="answer-grid option-count-${options.length}">${options.map((option, index) => `<label class="answer-choice answer-color-${index % 6}"><input type="${question.type === 'multi-select' ? 'checkbox' : 'radio'}" name="answer" value="${escapeHtml(option)}" ${chosen.has(option) ? 'checked' : ''}><span class="choice-shape">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(option)}</span></label>`).join('')}</div>`;
   }
   window.atomClassroom = { $, $$, escapeHtml, request, saveToken, getToken, roomCode, socket, formatTime, answerControl, apiBase };
 })();
