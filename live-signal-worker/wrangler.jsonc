@@ -1,0 +1,28 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "atom-live-signal",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://atom-edu.org",
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "LIVE_ROOM", "class_name": "LiveRoom" }],
+  },
+  "exports": {
+    "LiveRoom": { "type": "durable-object", "storage": "sqlite" },
+  },
+  "ratelimits": [
+    {
+      "name": "HOST_AUTH_LIMITER",
+      "namespace_id": "34001109",
+      "simple": { "limit": 10, "period": 60 },
+    },
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 },
+  },
+}

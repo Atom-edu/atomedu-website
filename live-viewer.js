@@ -1,58 +1,149 @@
-import * as LiveKit from './vendor/livekit-client/livekit-client.esm.mjs';
-
 const config = window.ATOM_LIVE;
-const video = document.getElementById('live-video');
-const empty = document.getElementById('live-empty');
-const stateLabel = document.getElementById('live-state');
-const title = document.getElementById('live-title');
-const count = document.getElementById('viewer-count');
-const dot = document.getElementById('live-dot');
-const sound = document.getElementById('live-sound');
-const message = document.getElementById('live-message');
-let room;
+const video = document.getElementById("live-video");
+const empty = document.getElementById("live-empty");
+const stateLabel = document.getElementById("live-state");
+const title = document.getElementById("live-title");
+const count = document.getElementById("viewer-count");
+const dot = document.getElementById("live-dot");
+const sound = document.getElementById("live-sound");
+const message = document.getElementById("live-message");
+const peerConfig = {
+  iceServers: [
+    { urls: "stun:stun.cloudflare.com:3478" },
+    { urls: "stun:stun.l.google.com:19302" },
+  ],
+};
 
-function parseMetadata() { try { return JSON.parse(room?.metadata || '{}'); } catch (_) { return {}; } }
-function realViewers() { return room ? 1 + [...room.remoteParticipants.values()].filter(p => p.identity !== 'atomedu-host').length : 0; }
-function updateDetails() {
-  const metadata = parseMetadata();
-  title.textContent = metadata.title || 'atomEDU Live';
-  const override = Number.isInteger(metadata.viewerOverride) ? metadata.viewerOverride : null;
-  count.textContent = String(override ?? realViewers());
+let signal;
+let peer;
+let reconnectTimer;
+let remoteStream;
+
+function socketUrl() {
+  const url = new URL(config.signalBase);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  url.pathname = "/ws";
+  url.searchParams.set("role", "viewer");
+  return url.href;
 }
+
 function setLive(value) {
-  dot.classList.toggle('on', value);
+  dot.classList.toggle("on", value);
   empty.hidden = value;
-  stateLabel.textContent = value ? 'Live now' : 'The stream is not live yet.';
-}
-function attachTrack(track) {
-  if (track.kind === LiveKit.Track.Kind.Video) { track.attach(video); setLive(true); }
-  else if (track.kind === LiveKit.Track.Kind.Audio) {
-    track.attach(video);
-    video.play().catch(() => { sound.hidden = false; });
+  stateLabel.textContent = value ? "Live now" : "The stream is not live yet.";
+  if (!value) {
+    video.srcObject = null;
+    remoteStream = null;
   }
 }
-async function connect() {
+
+function updateState(state) {
+  title.textContent = state.title || "atomEDU Live";
+  count.textContent = String(state.displayViewers ?? state.viewers ?? 0);
+  if (!state.live) setLive(false);
+  else if (!remoteStream)
+    stateLabel.textContent = "Connecting to the live video…";
+}
+
+function closePeer() {
+  peer?.close();
+  peer = null;
+  remoteStream = null;
+  video.srcObject = null;
+}
+
+async function waitForIce(connection) {
+  if (connection.iceGatheringState === "complete") return;
+  await new Promise((resolve) => {
+    const timeout = setTimeout(resolve, 3000);
+    connection.addEventListener("icegatheringstatechange", () => {
+      if (connection.iceGatheringState === "complete") {
+        clearTimeout(timeout);
+        resolve();
+      }
+    });
+  });
+}
+
+async function receiveOffer(data) {
+  closePeer();
+  peer = new RTCPeerConnection(peerConfig);
+  remoteStream = new MediaStream();
+  video.srcObject = remoteStream;
+  peer.addEventListener("track", (event) => {
+    for (const track of event.streams[0]?.getTracks() || [event.track]) {
+      if (!remoteStream.getTracks().some((item) => item.id === track.id))
+        remoteStream.addTrack(track);
+    }
+    setLive(true);
+    video.play().catch(() => {
+      sound.hidden = false;
+    });
+  });
+  peer.addEventListener("icecandidate", (event) => {
+    if (event.candidate && signal?.readyState === WebSocket.OPEN) {
+      signal.send(
+        JSON.stringify({ type: "ice", to: "host", candidate: event.candidate }),
+      );
+    }
+  });
+  peer.addEventListener("connectionstatechange", () => {
+    if (["failed", "closed"].includes(peer?.connectionState)) setLive(false);
+  });
+  await peer.setRemoteDescription(data.sdp);
+  const answer = await peer.createAnswer();
+  await peer.setLocalDescription(answer);
+  await waitForIce(peer);
+  signal.send(
+    JSON.stringify({ type: "answer", to: "host", sdp: peer.localDescription }),
+  );
+}
+
+async function onSignal(event) {
+  let data;
   try {
-    const response = await fetch(`${config.apiBase}/api/token`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ role:'viewer' }) });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'The stream service is unavailable.');
-    room = new LiveKit.Room({ adaptiveStream:true, dynacast:true });
-    room.on(LiveKit.RoomEvent.TrackSubscribed, attachTrack);
-    room.on(LiveKit.RoomEvent.TrackUnsubscribed, track => { track.detach(); if (track.kind === LiveKit.Track.Kind.Video) setLive(false); });
-    room.on(LiveKit.RoomEvent.ParticipantConnected, updateDetails);
-    room.on(LiveKit.RoomEvent.ParticipantDisconnected, updateDetails);
-    room.on(LiveKit.RoomEvent.RoomMetadataChanged, updateDetails);
-    room.on(LiveKit.RoomEvent.Disconnected, () => { setLive(false); message.textContent = 'Reconnecting…'; setTimeout(connect, 1500); });
-    await room.connect(data.serverUrl, data.token, { autoSubscribe:true });
-    updateDetails();
-    room.remoteParticipants.forEach(participant => participant.trackPublications.forEach(publication => { if (publication.track) attachTrack(publication.track); }));
-    message.textContent = '';
-  } catch (error) {
-    stateLabel.textContent = 'The live stream is currently offline.';
-    message.textContent = 'Trying to reconnect…';
-    setTimeout(connect, 4000);
+    data = JSON.parse(event.data);
+  } catch {
+    return;
   }
+  if (data.type === "state") updateState(data);
+  else if (data.type === "offer") await receiveOffer(data);
+  else if (data.type === "ice" && peer && data.candidate)
+    await peer.addIceCandidate(data.candidate).catch(() => {});
 }
-sound.addEventListener('click', async () => { try { await room.startAudio(); await video.play(); sound.hidden = true; } catch (_) {} });
-window.addEventListener('beforeunload', () => room?.disconnect());
+
+function connect() {
+  clearTimeout(reconnectTimer);
+  message.textContent = "Connecting…";
+  signal = new WebSocket(socketUrl());
+  signal.addEventListener("open", () => {
+    message.textContent = "";
+  });
+  signal.addEventListener("message", onSignal);
+  signal.addEventListener("close", () => {
+    closePeer();
+    setLive(false);
+    message.textContent = "Trying to reconnect…";
+    reconnectTimer = setTimeout(connect, 2000);
+  });
+  signal.addEventListener("error", () => {
+    message.textContent = "Trying to reconnect…";
+  });
+}
+
+sound.addEventListener("click", async () => {
+  try {
+    video.muted = false;
+    await video.play();
+    sound.hidden = true;
+  } catch {
+    // The browser will keep the explicit sound control visible.
+  }
+});
+window.addEventListener("beforeunload", () => {
+  clearTimeout(reconnectTimer);
+  signal?.close(1000, "Viewer left");
+  closePeer();
+});
+
 connect();

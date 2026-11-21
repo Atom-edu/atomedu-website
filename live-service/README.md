@@ -1,6 +1,6 @@
 # atomEDU Live service
 
-The public site is static. Live video runs through a self-hosted LiveKit WebRTC SFU so the presenter uploads one screen-share stream and the server relays it to viewers. No video is proxied through Cloudflare and no hosted streaming vendor is required.
+The public site currently uses direct browser-to-browser WebRTC so it can broadcast without a media server. This directory is the scalable self-hosted LiveKit SFU option: the presenter uploads one screen-share stream and this server relays it to viewers. No video is proxied through Cloudflare and no hosted streaming vendor is required.
 
 ## Production
 

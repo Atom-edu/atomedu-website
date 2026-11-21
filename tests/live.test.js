@@ -1,40 +1,53 @@
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
 
-const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test('public live page has a full video stage and viewer count', async () => {
-  const html = await read('live.html');
+test("public live page has a full video stage and viewer count", async () => {
+  const html = await read("live.html");
   assert.match(html, /id="live-video"/);
   assert.match(html, /id="viewer-count"/);
   assert.match(html, /live-viewer\.js/);
   assert.match(html, /canonical[^>]+\/live/);
 });
 
-test('live manager supports screen audio, local recording, titles, and localhost override', async () => {
-  const [html, script] = await Promise.all([read('live-manage.html'), read('live-manage.js')]);
+test("live manager supports screen audio, local recording, titles, and localhost override", async () => {
+  const [html, script] = await Promise.all([
+    read("live-manage.html"),
+    read("live-manage.js"),
+  ]);
   assert.match(html, /Stream title/);
   assert.match(html, /Start local recording/);
   assert.match(script, /getDisplayMedia/);
-  assert.match(script, /audio:true/);
+  assert.match(script, /audio:\s*true/);
   assert.match(script, /new MediaRecorder/);
-  assert.match(script, /event\.key==='\\\\'/);
+  assert.match(script, /event\.key === "\\\\"/);
   assert.match(script, /localhost\|127\\\.0\\\.0\\\.1/);
   assert.match(script, /viewerOverride/);
+  assert.match(script, /new RTCPeerConnection/);
+  assert.match(script, /type: "offer"/);
 });
 
-test('live service keeps broadcast authority server-side', async () => {
-  const service = await read('live-service/server.mjs');
-  assert.match(service, /required\(["']LIVE_STREAM_KEY["']\)/);
-  assert.match(service, /timingSafeEqual/);
-  assert.match(service, /canPublish:\s*host/);
-  assert.match(service, /canSubscribe:\s*!host/);
-  assert.match(service, /X-Stream-Key/i);
+test("deployed signaling keeps broadcast authority server-side and media peer-to-peer", async () => {
+  const [worker, config, viewer] = await Promise.all([
+    read("live-signal-worker/src/index.js"),
+    read("live-config.js"),
+    read("live-viewer.js"),
+  ]);
+  assert.match(worker, /timingSafeEqual/);
+  assert.match(worker, /env\.LIVE_STREAM_KEY/);
+  assert.match(worker, /issueHostTicket/);
+  assert.match(worker, /HOST_AUTH_LIMITER/);
+  assert.match(worker, /acceptWebSocket/);
+  assert.doesNotMatch(worker, /MediaStream|RTCPeerConnection|video\//);
+  assert.match(config, /atom-live-signal\.archimedes-api1\.workers\.dev/);
+  assert.match(viewer, /new RTCPeerConnection/);
+  assert.match(viewer, /new MediaStream/);
 });
 
-test('global navigation adds Live before the primary call to action', async () => {
-  const script = await read('site.js');
+test("global navigation adds Live before the primary call to action", async () => {
+  const script = await read("site.js");
   assert.match(script, /link\.dataset\.nav = '\/live'/);
   assert.match(script, /insertBefore\(link, cta/);
 });
