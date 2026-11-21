@@ -1,0 +1,41 @@
+services:
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    network_mode: host
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    restart: unless-stopped
+  api:
+    build: .
+    network_mode: host
+    environment:
+      PORT: 3001
+      LIVEKIT_API_KEY: "${LIVEKIT_API_KEY}"
+      LIVEKIT_API_SECRET: "${LIVEKIT_API_SECRET}"
+      LIVE_STREAM_KEY: "${LIVE_STREAM_KEY}"
+      LIVEKIT_INTERNAL_URL: http://127.0.0.1:7880
+      LIVEKIT_PUBLIC_URL: "wss://${LIVE_MEDIA_DOMAIN}"
+      LIVE_STATE_PATH: /data/live-state.json
+      ALLOWED_ORIGINS: "https://atom-edu.org,http://localhost:4173,http://127.0.0.1:4173"
+    volumes:
+      - live-state:/data
+    depends_on: [livekit]
+    restart: unless-stopped
+  caddy:
+    image: caddy:2.10.2-alpine
+    network_mode: host
+    environment:
+      LIVE_MEDIA_DOMAIN: "${LIVE_MEDIA_DOMAIN}"
+      LIVE_API_DOMAIN: "${LIVE_API_DOMAIN}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+volumes:
+  live-state:
+  caddy-data:
+  caddy-config:

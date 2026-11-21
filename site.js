@@ -6,6 +6,13 @@
   if (path !== location.pathname) history.replaceState(null, '', path + location.search + location.hash);
 
   var header = document.querySelector('.site-header');
+  document.querySelectorAll('.site-header .nav, .site-header .mobile-nav .inner').forEach(function (nav) {
+    if (nav.querySelector('[data-nav="/live"]')) return;
+    var link = document.createElement('a');
+    link.href = '/live'; link.dataset.nav = '/live'; link.textContent = 'Live';
+    var cta = nav.querySelector('.cta');
+    nav.insertBefore(link, cta || null);
+  });
   function onScroll() { if (header) header.classList.toggle('scrolled', window.scrollY > 10); }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();

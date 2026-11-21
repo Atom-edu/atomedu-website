@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Live | atomEDU</title>
+  <meta name="description" content="Watch the current atomEDU live stream.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="canonical" href="https://atom-edu.org/live">
+  <meta property="og:type" content="video.other"><meta property="og:site_name" content="atomEDU"><meta property="og:title" content="atomEDU Live"><meta property="og:description" content="Watch atomEDU live."><meta property="og:url" content="https://atom-edu.org/live"><meta property="og:image" content="https://atom-edu.org/images/atomedu-social.png">
+  <link rel="icon" href="images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="live.css">
+  <script src="live-config.js"></script><script type="module" src="live-viewer.js"></script><script src="site.js" defer></script>
+</head>
+<body class="live-page">
+  <header class="site-header"><div class="header-inner"><a class="brand" href="/"><img class="mark" src="images/logo.svg" alt=""><span class="word">atom<b>EDU</b></span></a><nav class="nav" aria-label="Main navigation"><a data-nav="/" href="/">Home</a><a data-nav="/features" href="/features">Features</a><a data-nav="/learn" href="/learn">Learn</a><a data-nav="/art-contest" href="/art-contest">Art contest</a><a data-nav="/about" href="/about">About</a><a data-nav="/contact" href="/contact">Contact</a><a class="cta" href="/proof-lab">Start math</a></nav><button class="menu-btn" type="button" aria-label="Menu"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div><div class="mobile-nav"><div class="inner"><a data-nav="/" href="/">Home</a><a data-nav="/features" href="/features">Features</a><a data-nav="/learn" href="/learn">Learn</a><a data-nav="/art-contest" href="/art-contest">Art contest</a><a data-nav="/about" href="/about">About</a><a data-nav="/contact" href="/contact">Contact</a><a class="cta" href="/proof-lab">Start math</a></div></div></header>
+  <main class="live-watch">
+    <section class="live-stage" aria-label="atomEDU live video">
+      <video id="live-video" autoplay playsinline></video>
+      <div class="live-empty" id="live-empty"><span class="live-orbit" aria-hidden="true"></span><strong id="live-state">Connecting to the stream…</strong><small>The broadcast will begin here.</small></div>
+      <button class="live-sound" id="live-sound" type="button" hidden>Turn on sound</button>
+    </section>
+    <div class="live-caption"><div><p class="live-kicker"><span id="live-dot"></span> atomEDU Live</p><h1 id="live-title">atomEDU Live</h1></div><div class="live-viewers"><strong id="viewer-count">0</strong><span>watching</span></div></div>
+    <p class="live-message" id="live-message" role="status" aria-live="polite"></p>
+  </main>
+</body>
+</html>

@@ -70,6 +70,7 @@
         <li>If you choose to save a graph to Google Drive, Google asks you to approve access limited to files created or opened with Proof Lab. Your chosen graph JSON is sent directly from your browser to Google Drive. atomEDU does not store a Google Drive access token or receive the contents of your other Drive files. You can revoke access in your Google Account.</li>
         <li>If you choose the GitHub or Notion export, our integration service briefly processes your graph and the provider's authorization token to create the file or page you requested. It does not store the access or refresh token. An unlisted GitHub Gist is viewable by anyone with its link. Notion page visibility depends on your workspace settings.</li>
         <li>Dropbox Saver uses a temporary graph-file URL that Dropbox can fetch after you approve the save. Anyone who obtains that URL can read the graph it contains. We do not receive your Dropbox password or access token.</li>
+        <li>Watching atomEDU Live connects your browser to our self-hosted real-time media service. It processes short-lived connection credentials and ordinary network information, including an IP address, to deliver the stream and limit abuse. Viewers are not asked for a name or account. A presenter’s optional local recording stays on the presenter’s computer and is not uploaded by atomEDU.</li>
       </ul>
 
       <h3>What we do with messages</h3>
@@ -125,6 +126,9 @@
       <h3>Illustrations</h3>
       <p>The atomEDU logo and the footer artwork are original to atomEDU.</p>
       <p>The Google Classroom icon comes from the <a href="https://developers.google.com/workspace/classroom/brand">official Classroom branding resources</a>. Google Classroom is a trademark of Google LLC. This integration does not make atomEDU a Google partner.</p>
+
+      <h3>Live streaming software</h3>
+      <p>atomEDU Live uses the open-source <a href="https://github.com/livekit/livekit">LiveKit</a> client and server under the Apache License 2.0. The service is self-hosted by atomEDU rather than using LiveKit Cloud.</p>
     </div>
   </section>
   </main>
