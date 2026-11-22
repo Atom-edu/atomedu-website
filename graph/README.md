@@ -50,6 +50,7 @@ Serve the entire vendor, graph, engine, and editor paths shown above. Copying ju
 - Pointer drag to pan, anchored wheel zoom, touch pinch, and zoom/reset/fit buttons
 - Keyboard arrows to pan, plus/minus to zoom, and Home to reset
 - Coordinate readout, click-to-trace, editable window bounds, and PNG export
+- Interactive 3D surface mode for `z=f(x,y)`, with drag rotation, wheel or pinch zoom, multiple colored meshes, camera-aware sharing, and PNG export
 - Image import is available only when the graph is opened from `localhost`, `127.0.0.1`, or the IPv6 loopback address. It is hidden and disabled on the public site, including when an embed requests `showImageImport: true`. On localhost, the control below Window settings offers three drawing styles: bounded sine waves, straight-line functions, and adaptive colored-inequality rectangles. The global graph limit is 768 expressions. Images are not uploaded to a server by this feature.
 
 Image import is a color-and-shape approximation, not a photorealistic tracing system. The wave and line styles create actual function paths with bounded domains; the mosaic style creates actual shaded inequalities. The imported formulas are the source of the rendered art; clicking a formula replaces its lightweight preview with a visual math editor. Keep rights to any source image you use, and check the separate art-contest rules before submitting exported work.
@@ -61,6 +62,8 @@ The Graph view can share a bounded, editable graph link through Google Classroom
 Use `createGraph(container, { xScale: 'log', yScale: 'linear', gridMode: 'cartesian', viewport: { xMin: 0.1, xMax: 100, yMin: -5, yMax: 5 } })` for a logarithmic x axis, or `gridMode: 'polar'` with linear axes for concentric circles and angle rays. Polar grid lines are a viewing aid; Cartesian `x`/`y` expressions keep their original meaning. `getState()` returns the modes, and `setGraphMode({ xScale, yScale, gridMode, viewport })` changes them on an existing graph. A log axis cannot show zero or negative coordinates.
 
 Polar and parametric expressions are separate from the grid choice. Enter `polar(r=2+sin(theta);theta=0..2*pi)` to draw a polar curve, or `parametric(x=cos(t);y=sin(t);t=0..2*pi)` for a parametric curve. Both are sampled numerically within their stated finite intervals. They can be exported or included in a bounded Classroom graph link, but neither drawing is a proof of an identity or a complete equation solution.
+
+Select **3D** in the graph toolbar and enter a surface such as `z=sin(x)+cos(y)` or `z=2*cos(sqrt(x^2+y^2))`. Each visible `z=f(x,y)` row becomes a colored, bounded numerical mesh. Drag to rotate, use the wheel or a pinch gesture to zoom, and combine multiple surfaces for graph art. Undefined samples create gaps instead of being bridged. The 3D view is a numerical visualization, not a proof.
 
 Sampling and contours are bounded. Explicit sampling avoids connecting known poles; implicit contour edges require root-convergence checks rather than sign changes alone. The graph is a numerical exploration tool, not a proof. Features below the sample resolution can be missed; the symbolic verifier remains the authority for mathematical results.
 

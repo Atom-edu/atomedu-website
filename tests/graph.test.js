@@ -4,7 +4,7 @@ import { latexToInput } from '../engine/latex.js';
 import {
   DEFAULT_VIEWPORT, GRAPH_LIMITS, validateViewport, equalizeViewport, niceStep,
   getTicks, getPolarGrid, worldToScreen, screenToWorld, zoomViewport, panViewport,
-  compileGraphExpression, sampleExplicit, sampleParametric, contourSegments,
+  compileGraphExpression, sampleExplicit, sampleParametric, sampleSurface, contourSegments,
 } from '../graph/model.js';
 
 const close = (actual, expected, tolerance = 1e-9) => assert(Math.abs(actual - expected) <= tolerance, `${actual} ≉ ${expected}`);
@@ -153,6 +153,26 @@ test('structured curve syntax rejects unsafe variables, intervals, and malformed
     'parametric(x=t;y=t;t=0..1',
   ]) assert.throws(() => compileGraphExpression(source), undefined, source);
   assert.throws(() => compileGraphExpression('polar(r=1;theta=0..1)'.repeat(200)), /characters/);
+});
+
+test('3D surfaces compile and sample into bounded meshes with honest gaps', () => {
+  const surface = compileGraphExpression('z=a*sin(x)+cos(y)');
+  assert.equal(surface.kind, 'surface');
+  assert.deepEqual(surface.parameters, ['a']);
+  close(surface.sample(Math.PI / 2, 0, { a: 2 }), 3);
+  const mesh = sampleSurface(surface, box(-Math.PI, Math.PI, -Math.PI, Math.PI), { resolution: 17, parameters: { a: 2 } });
+  assert.equal(mesh.vertices.length, 289);
+  assert.equal(mesh.triangles.length, 512);
+  assert(mesh.zMin <= -2.9 && mesh.zMax >= 2.9);
+  assert(mesh.triangles.flat().every(index => index >= 0 && index < mesh.vertices.length));
+  const broken = sampleSurface(compileGraphExpression('z=1/(x+y)'), box(-1, 1, -1, 1), { resolution: 9 });
+  assert(broken.triangles.length < 128, 'triangles touching undefined samples must remain gaps');
+  assert.deepEqual(sampleSurface(compileGraphExpression('y=x'), box()), { vertices: [], triangles: [], zMin: NaN, zMax: NaN, resolution: 0 });
+});
+
+test('3D surface syntax stays explicit and safe', () => {
+  assert.equal(compileGraphExpression('sin(x)+cos(y)=z').kind, 'surface');
+  for (const source of ['z<sin(x)', 'z=z+1', 'z=window.alert(x)', 'z=t+x']) assert.throws(() => compileGraphExpression(source), undefined, source);
 });
 
 test('expression compiler handles both explicit orientations and axis-aligned lines', () => {

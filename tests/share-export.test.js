@@ -32,6 +32,19 @@ test('serializes detached, public graph fields from live state', () => {
   assert.match(text, /Window: x -8 to 8; y -5 to 5/);
 });
 
+test('serializes 3D surfaces and their bounded camera settings', () => {
+  const state = { expressions: [{ expression: 'z=sin(x)+cos(y)', color: '#bf5a2e' }],
+    viewport: { xMin: -5, xMax: 5, yMin: -5, yMax: 5 }, equalAspect: true,
+    xScale: 'linear', yScale: 'linear', gridMode: 'cartesian', dimension: '3d',
+    camera: { azimuth: -.72, elevation: .52, zoom: 1.4 } };
+  const graph = JSON.parse(serializeGraph(state, 'json')).graph;
+  assert.equal(graph.dimension, '3d');
+  assert.deepEqual(graph.camera, state.camera);
+  assert.match(serializeGraph(state), /Dimension: 3D/);
+  assert.match(serializeGraph(state), /3D camera: azimuth -0\.72; elevation 0\.52; zoom 1\.4/);
+  assert.throws(() => serializeGraph({ ...state, camera: { ...state.camera, elevation: 2 } }), RangeError);
+});
+
 test('keeps the original editable link when exporting a valid share URL', () => {
   const graphUrl = buildGraphShareUrl({ ...source, expressions: source.expressions.slice(0, 2) }, 'https://atom-edu.org/');
   const json = JSON.parse(serializeGraph(graphUrl, 'json'));

@@ -2,8 +2,8 @@
 // Engine calls may return values or promises. Typesetting never certifies a proof.
 import { createMathField, createLatexDisclosure, createKeypad, renderMath, toLatex, setMathFieldValue, setDefaultMathField, getActiveMathField, openKeypad, closeKeypad } from './math-editor.js?v=proof-lab-18';
 import { latexToInput } from './engine/latex.js?v=proof-lab-18';
-import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=1';
-import { prepareGraphExport, buildPublicGraphDownloadUrl, buildDirectExportUrl } from './graph/share-export.js?v=4';
+import { buildGraphShareUrl, parseGraphShareUrl } from './classroom/share.js?v=2';
+import { prepareGraphExport, buildPublicGraphDownloadUrl, buildDirectExportUrl } from './graph/share-export.js?v=5';
 import { requestDriveAccessToken, uploadGraphToDrive } from './graph/google-drive.js?v=1';
 
 const DROPBOX_APP_KEY = 'ajyniy3x7a5h1yl'; // Dropbox Saver app keys are public; no app secret is used.
@@ -667,8 +667,8 @@ function graphOptions(expressions, extra = {}) {
   return {
     expressions,
     readExpression: latexToInput,
-    createExpressionField(value, onChange) {
-      return createMathField(value, { ariaLabel: 'Graph expression', placeholder: 'y=x^2', onInput: onChange,
+    createExpressionField(value, onChange, fieldOptions = {}) {
+      return createMathField(value, { ariaLabel: 'Graph expression', placeholder: fieldOptions.dimension === '3d' ? 'z=sin(x)+cos(y)' : 'y=x^2', onInput: onChange,
         latex: typeof value === 'string' && /^\\begin\{cases\}/.test(value.trim()) });
     },
     renderExpression(value) {
@@ -953,7 +953,7 @@ async function ensureGraphWorkspace() {
   const loading = node('div', 'graph-loading');
   loading.append(node('span', 'spinner'), node('p', '', 'Preparing the graphing workspace…'));
   host.replaceChildren(loading);
-  graphLoading = import('./graph/plotter.js?v=proof-lab-28').then(({ createGraph }) => {
+  graphLoading = import('./graph/plotter.js?v=proof-lab-29').then(({ createGraph }) => {
     host.replaceChildren();
     graphWorkspace = createGraph(host, graphOptions(sharedGraph?.expressions || [''], {
       sidebarHost: $('graph-sidebar-host'),
@@ -963,6 +963,8 @@ async function ensureGraphWorkspace() {
       xScale: sharedGraph?.xScale,
       yScale: sharedGraph?.yScale,
       gridMode: sharedGraph?.gridMode,
+      dimension: sharedGraph?.dimension,
+      camera: sharedGraph?.camera,
       onChange: rememberGraphState,
       onShowSidebar: () => setRailCollapsed(false),
     }));
@@ -1019,7 +1021,7 @@ function appendFunctionDetails(container, details) {
     const loading = node('div', 'graph-loading');
     loading.append(node('span', 'spinner'), node('p', '', 'Loading graph…'));
     host.replaceChildren(loading);
-    import('./graph/plotter.js?v=proof-lab-28').then(({ createGraph }) => {
+    import('./graph/plotter.js?v=proof-lab-29').then(({ createGraph }) => {
       host.replaceChildren();
       const graph = createGraph(host, graphOptions([`y=${toLatex(expression)}`], { compact: true, showExport: false }));
       resultGraphs.set(graph, host);

@@ -3,7 +3,7 @@ import { normalizeInput, parseExpression, parseStatement, evaluate, variables } 
 
 export const DEFAULT_VIEWPORT = Object.freeze({ xMin: -10, xMax: 10, yMin: -10, yMax: 10 });
 export const DEFAULT_PARAMETERS = Object.freeze({ a: 1, b: 0, c: 0 });
-export const GRAPH_LIMITS = Object.freeze({ expressionLength: 2048, expressions: 768, pieces: 32, comparisons: 64, samples: 12000, contourSamples: 24000, coordinate: 1e12, minSpan: 1e-9, curveParameter: 1e6, polarSpan: 200 * Math.PI });
+export const GRAPH_LIMITS = Object.freeze({ expressionLength: 2048, expressions: 768, pieces: 32, comparisons: 64, samples: 12000, contourSamples: 24000, surfaceSamples: 4225, coordinate: 1e12, minSpan: 1e-9, curveParameter: 1e6, polarSpan: 200 * Math.PI });
 
 export function validateViewport(viewport, scales = {}) {
   const v = Object.fromEntries(['xMin', 'xMax', 'yMin', 'yMax'].map(key => [key, viewport?.[key]]));
@@ -469,6 +469,21 @@ export function compileGraphExpression(expression, { readExpression = value => v
   const rectangle = parseRectangleRegion(source);
   if (rectangle) return rectangle;
   const environment = (x, y, params) => ({ ...DEFAULT_PARAMETERS, ...params, x, y });
+  const surfaceStatement = /(?<![A-Za-z_])z(?![A-Za-z_])/i.test(source) ? parseStatement(source) : null;
+  if (surfaceStatement?.right) {
+    const leftIsZ = surfaceStatement.left?.type === 'sym' && surfaceStatement.left.name === 'z';
+    const rightIsZ = surfaceStatement.right?.type === 'sym' && surfaceStatement.right.name === 'z';
+    if (leftIsZ || rightIsZ) {
+      if (surfaceStatement.kind === 'inequality' || (leftIsZ && rightIsZ)) throw new Error('Use a 3D surface in the form z=f(x,y).');
+      const formula = leftIsZ ? surfaceStatement.right : surfaceStatement.left;
+      const names = astInfo(formula);
+      const fn = scalar(formula);
+      return {
+        kind: 'surface', source, parameters: names.filter(name => ['a', 'b', 'c'].includes(name)),
+        sample: (x, y, params) => fn(environment(x, y, params)),
+      };
+    }
+  }
   if (pair) {
     const asts = pair.map(parseExpression), names = [...new Set(asts.flatMap(astInfo))];
     if (names.some(n => n === 'x' || n === 'y')) throw new Error('Point coordinates can use numbers and parameters a, b, c.');
@@ -504,6 +519,40 @@ export function compileGraphExpression(expression, { readExpression = value => v
     }
   } else if (!names.includes('y')) return explicit('y', left);
   return { ...base, kind: 'implicit' };
+}
+
+/** Sample a z=f(x,y) surface into a bounded rectangular mesh.
+ * Undefined or non-finite vertices remain gaps and never form triangles.
+ */
+export function sampleSurface(compiled, viewport, options = {}) {
+  if (compiled?.kind !== 'surface') return { vertices: [], triangles: [], zMin: NaN, zMax: NaN, resolution: 0 };
+  const v = validateViewport(viewport);
+  const requested = Math.floor(Number.isFinite(options.resolution) ? options.resolution : 33);
+  const budget = budgetOption(options.maxSamples, GRAPH_LIMITS.surfaceSamples, GRAPH_LIMITS.surfaceSamples);
+  const resolution = Math.max(2, Math.min(65, requested, Math.floor(Math.sqrt(Math.max(4, budget)))));
+  const parameters = options.parameters || {};
+  const vertices = new Array(resolution * resolution);
+  let zMin = Infinity, zMax = -Infinity;
+  for (let row = 0; row < resolution; row++) {
+    const y = v.yMin + (v.yMax - v.yMin) * row / (resolution - 1);
+    for (let column = 0; column < resolution; column++) {
+      const x = v.xMin + (v.xMax - v.xMin) * column / (resolution - 1);
+      let z = NaN;
+      try { z = compiled.sample(x, y, parameters); } catch { /* Undefined samples become mesh gaps. */ }
+      if (!Number.isFinite(z) || Math.abs(z) > GRAPH_LIMITS.coordinate) z = NaN;
+      else { zMin = Math.min(zMin, z); zMax = Math.max(zMax, z); }
+      vertices[row * resolution + column] = { x, y, z };
+    }
+  }
+  const triangles = [];
+  const add = (a, b, c) => {
+    if ([a, b, c].every(index => Number.isFinite(vertices[index].z))) triangles.push([a, b, c]);
+  };
+  for (let row = 0; row < resolution - 1; row++) for (let column = 0; column < resolution - 1; column++) {
+    const a = row * resolution + column, b = a + 1, c = a + resolution, d = c + 1;
+    add(a, c, d); add(a, d, b);
+  }
+  return { vertices, triangles, zMin: zMin === Infinity ? NaN : zMin, zMax: zMax === -Infinity ? NaN : zMax, resolution };
 }
 
 const budgetOption = (n, fallback, max) => Math.max(0, Math.min(max, Math.floor(Number.isFinite(n) ? n : fallback)));

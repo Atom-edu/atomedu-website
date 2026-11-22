@@ -46,6 +46,10 @@ test('accepts a small graph and preserves optional values only when supplied', (
     expressions: [{ expression: 'y=x^2' }, { expression: 'x=2', visible: false }],
   });
   assert.deepEqual(parseGraphShareUrl(buildGraphShareUrl({ expressions: [] }, BASE)), { expressions: [] });
+  const surface = { expressions: [{ expression: 'z=sin(x)+cos(y)', color: '#bf5a2e' }], viewport: viewport(),
+    xScale: 'linear', yScale: 'linear', gridMode: 'cartesian', equalAspect: true, dimension: '3d',
+    camera: { azimuth: -.7, elevation: .5, zoom: 1.2 } };
+  assert.deepEqual(parseGraphShareUrl(buildGraphShareUrl(surface, BASE)), surface);
   const logState = { expressions: ['y=x'], viewport: { xMin: 1, xMax: 100, yMin: 1, yMax: 100 },
     xScale: 'log', yScale: 'log', gridMode: 'cartesian', equalAspect: true };
   assert.deepEqual(parseGraphShareUrl(buildGraphShareUrl(logState, BASE)), {
@@ -71,6 +75,9 @@ test('rejects invalid expressions, styles, viewport, parameters, and oversized s
   for (const row of [{ expression: 'y=x', color: 'red' }, { expression: 'y=x', visible: 'false' }]) {
     assert.throws(() => buildGraphShareUrl(state([row]), BASE));
   }
+  assert.throws(() => buildGraphShareUrl({ expressions: [{ expression: 'z=x+y' }], dimension: '4d' }, BASE));
+  assert.throws(() => buildGraphShareUrl({ expressions: [{ expression: 'z=x+y' }], dimension: '3d', camera: { zoom: 20 } }, BASE));
+  assert.throws(() => buildGraphShareUrl({ expressions: [{ expression: 'z=x+y' }], dimension: '3d', gridMode: 'polar' }, BASE));
   for (const bad of [NaN, Infinity, 101, '2']) {
     assert.throws(() => buildGraphShareUrl({ expressions: [], parameters: { a: bad } }, BASE));
   }

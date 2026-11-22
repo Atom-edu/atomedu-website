@@ -305,6 +305,16 @@ test('Proof Lab keeps the entry surface concise and the keypad viewport-fixed', 
   assert.doesNotMatch(editor, /Active expression|Build it like you write it/);
 });
 
+test('Proof Lab exposes owned interactive 3D surface graphing', () => {
+  const page = read('proof-lab.html');
+  const plotter = read('graph/plotter.js');
+  assert.match(page, /Interactive 2D and 3D graphing/);
+  assert.match(plotter, /data-graph-dimension="3d"/);
+  assert.match(plotter, /add-surface/);
+  assert.match(plotter, /sampleSurface/);
+  assert.match(plotter, /Drag to rotate/);
+});
+
 test('legal page defines the free tool and states academic integrity consequences', () => {
   const legal = read('legal.html');
   assert.match(legal, /Last updated[\s\S]*November 17 2026/);

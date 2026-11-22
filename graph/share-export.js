@@ -95,8 +95,27 @@ function fullState(input) {
     if (input.gridMode !== 'cartesian' && input.gridMode !== 'polar') throw new TypeError('Invalid gridMode.');
     result.gridMode = input.gridMode;
   }
+  if (input.dimension !== undefined) {
+    if (!['2d', '3d'].includes(input.dimension)) throw new TypeError('Invalid graph dimension.');
+    result.dimension = input.dimension;
+  }
+  if (input.camera !== undefined) {
+    if (!record(input.camera)) throw new TypeError('Invalid 3D camera.');
+    const camera = {};
+    for (const [key, min, max] of [['azimuth', -1000, 1000], ['elevation', -1.35, 1.35], ['zoom', .25, 4]]) {
+      const value = input.camera[key];
+      if (value !== undefined) {
+        if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) throw new RangeError(`Invalid 3D camera ${key}.`);
+        camera[key] = value;
+      }
+    }
+    result.camera = camera;
+  }
   if (result.gridMode === 'polar' && (result.xScale === 'log' || result.yScale === 'log' || result.equalAspect === false)) {
     throw new RangeError('Polar grid requires linear axes with equal aspect.');
+  }
+  if (result.dimension === '3d' && (result.xScale === 'log' || result.yScale === 'log' || result.gridMode === 'polar' || result.equalAspect === false)) {
+    throw new RangeError('3D mode requires linear axes, a Cartesian grid, and equal aspect.');
   }
   if ((result.xScale === 'log' || result.yScale === 'log') && input.viewport === undefined) {
     throw new RangeError('Logarithmic axes require an explicit positive viewport.');
@@ -138,6 +157,8 @@ function textContent(state, shareUrl) {
   if (state.parameters) lines.push(`Parameters: ${Object.entries(state.parameters).map(([key, value]) => `${key}=${value}`).join(', ') || '(none)'}`);
   if (state.xScale || state.yScale) lines.push(`Axis scales: x=${state.xScale ?? 'linear'}, y=${state.yScale ?? 'linear'}`);
   if (state.gridMode) lines.push(`Grid: ${state.gridMode}`);
+  if (state.dimension) lines.push(`Dimension: ${state.dimension.toUpperCase()}`);
+  if (state.camera) lines.push(`3D camera: azimuth ${state.camera.azimuth ?? 'default'}; elevation ${state.camera.elevation ?? 'default'}; zoom ${state.camera.zoom ?? 'default'}`);
   if (state.equalAspect !== undefined) lines.push(`Equal aspect: ${state.equalAspect ? 'yes' : 'no'}`);
   if (shareUrl) lines.push('', `Editable graph: ${shareUrl}`);
   return lines.join('\n') + '\n';

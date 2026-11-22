@@ -4,7 +4,8 @@
  *   expressions: ['y=x^2', 'x^2+y^2=9'], readExpression: latexToInput,
  *   createExpressionField(value, onChange) { return createMathField(value, { onInput: onChange }); },
  *   onChange(state) {}, viewport, equalAspect, xScale: 'linear'|'log',
- *   yScale: 'linear'|'log', gridMode: 'cartesian'|'polar', parameters: { a: 1, b: 0, c: 0 },
+ *   yScale: 'linear'|'log', gridMode: 'cartesian'|'polar', dimension: '2d'|'3d',
+ *   camera: { azimuth, elevation, zoom }, parameters: { a: 1, b: 0, c: 0 },
  *   showExport: true, compact: false, height: 520,
  * })
  * Editor values/callbacks are strings (LaTeX with a supplied editor/reader).
@@ -20,7 +21,8 @@
  * getExpressions returns detached entries suitable for setExpressions; the
  * trailing blank editor is UI-only and never appears in state/history.
  * getState/onChange return detached JSON-safe state: expressions (with error/kind),
- * viewport, parameters, equalAspect, xScale, yScale, gridMode, trace. No sampled result is a proof.
+ * viewport, parameters, equalAspect, xScale, yScale, gridMode, dimension, camera, trace.
+ * 3D mode renders bounded z=f(x,y) surface meshes. No sampled result is a proof.
  * Log axes require positive bounds. Polar grid requires linear axes and equal aspect;
  * plotted points use Cartesian x/y world coordinates in either grid mode.
  * zoom(factor, anchor?) uses factor > 1 to zoom in and a WORLD-coordinate anchor.
@@ -35,8 +37,8 @@ import {
   DEFAULT_PARAMETERS, GRAPH_LIMITS, validateViewport,
   niceStep, getTicks, getPolarGrid, worldToScreen as modelWorldToScreen, screenToWorld as modelScreenToWorld,
   zoomViewport as modelZoomViewport, panViewport as modelPanViewport,
-  equalizeViewport as modelEqualizeViewport, compileGraphExpression, sampleExplicit, sampleParametric, contourSegments,
-} from './model.js?v=proof-lab-21';
+  equalizeViewport as modelEqualizeViewport, compileGraphExpression, sampleExplicit, sampleParametric, sampleSurface, contourSegments,
+} from './model.js?v=proof-lab-29';
 
 const COLORS = ['#bf5a2e', '#3265a5', '#398064', '#8952aa', '#be4769', '#8b7426', '#24858a', '#5b59b3'];
 const PLOTTER_DEFAULT_VIEWPORT = Object.freeze({ xMin: -8.89772485081, xMax: 8.89772485081, yMin: -5, yMax: 5 });
@@ -62,7 +64,7 @@ export function createGraph(container, options = {}) {
   if (Number.isFinite(options.height)) root.style.setProperty('--graph-height', `${clamp(options.height, 240, 1600)}px`);
   root.innerHTML = `
     <header class="graph-toolbar">
-      <div class="graph-heading"><strong>Graph</strong></div>
+      <div class="graph-heading"><strong>Graph</strong><div class="graph-dimension-switch" role="group" aria-label="Graph dimension"><button type="button" data-graph-dimension="2d" aria-pressed="true">2D</button><button type="button" data-graph-dimension="3d" aria-pressed="false">3D</button></div></div>
       <div class="graph-actions">
         <button type="button" data-graph-action="zoom-in" aria-label="Zoom in" title="Zoom in (+)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
         <button type="button" data-graph-action="zoom-out" aria-label="Zoom out" title="Zoom out (−)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
@@ -79,8 +81,10 @@ export function createGraph(container, options = {}) {
         <div class="graph-curve-actions" aria-label="Add numerical curve">
           <button type="button" data-graph-action="add-polar">+ Polar r(θ)</button>
           <button type="button" data-graph-action="add-parametric">+ Parametric x(t), y(t)</button>
+          <button type="button" data-graph-action="add-surface" hidden>+ 3D surface z(x,y)</button>
+          <button type="button" data-graph-action="add-ripple" hidden>+ Ripple art</button>
         </div>
-        <p class="graph-curve-note">Polar grid changes only the grid. Polar and parametric curves use bounded numerical samples, which can miss features and are not proofs.</p>
+        <p class="graph-curve-note"><span class="graph-note-2d">Polar grid changes only the grid. Polar and parametric curves use bounded numerical samples, which can miss features and are not proofs.</span><span class="graph-note-3d" hidden>Build surface art with z=f(x,y). Drag the canvas to rotate it, use several colors, and export the view as a PNG.</span></p>
         <section class="graph-parameters" aria-label="Expression parameters" hidden></section>
         <details class="graph-window">
           <summary>Window settings</summary>
@@ -126,7 +130,7 @@ export function createGraph(container, options = {}) {
           <output class="graph-coordinate-readout" aria-label="Pointer coordinates">x: n/a &nbsp; y: n/a</output>
           <div class="graph-trace" role="status" aria-live="polite" hidden></div>
         </div>
-        <div class="graph-plot-help"><span>Drag to pan. Scroll or pinch to zoom. Click a curve to trace.</span><span>Use +, −, arrows, or Home.</span></div>
+        <div class="graph-plot-help"><span class="graph-help-main">Drag to pan. Scroll or pinch to zoom. Click a curve to trace.</span><span class="graph-help-keys">Use +, −, arrows, or Home.</span></div>
       </div>
     </div>`;
   container.append(root);
@@ -142,10 +146,18 @@ export function createGraph(container, options = {}) {
   let rows = [], draftRow = null, rowNumber = 0, width = 800, height = 520, dpr = 1, frame = null, sized = false;
   let destroyed = false, sceneDirty = true, pendingChange = false, pointer = null, drag = null, pinch = null, trace = null;
   let bulkLoading = false, selectedImage = null, importOverlay = null, imageImportBusy = false;
+  let dimension = options.dimension === '3d' ? '3d' : '2d';
+  const defaultCamera = Object.freeze({ azimuth: -.72, elevation: .52, zoom: 1 });
+  let camera = {
+    azimuth: Number.isFinite(options.camera?.azimuth) ? options.camera.azimuth : defaultCamera.azimuth,
+    elevation: clamp(Number.isFinite(options.camera?.elevation) ? options.camera.elevation : defaultCamera.elevation, -1.35, 1.35),
+    zoom: clamp(Number.isFinite(options.camera?.zoom) ? options.camera.zoom : defaultCamera.zoom, .25, 4),
+  };
   let xScale = options.xScale ?? 'linear', yScale = options.yScale ?? 'linear', gridMode = options.gridMode ?? 'cartesian';
+  if (dimension === '3d') { xScale = 'linear'; yScale = 'linear'; gridMode = 'cartesian'; }
   if (!['cartesian', 'polar'].includes(gridMode)) throw new RangeError('Grid mode must be cartesian or polar.');
   if (gridMode === 'polar' && (xScale !== 'linear' || yScale !== 'linear')) throw new RangeError('Polar grid requires linear axes.');
-  let equalAspect = gridMode === 'polar' || options.equalAspect !== false;
+  let equalAspect = dimension === '3d' || gridMode === 'polar' || options.equalAspect !== false;
   const initialViewport = options.viewport || {
     ...PLOTTER_DEFAULT_VIEWPORT,
     ...(xScale === 'log' ? { xMin: .1, xMax: 100 } : {}),
@@ -176,7 +188,8 @@ export function createGraph(container, options = {}) {
         expression: typeof row.field?.value === 'string' && row.field.value.trim() ? row.field.value : row.expression,
         color: row.color, visible: row.visible, imported: row.imported, strokeWidth: row.strokeWidth,
         error: row.error, kind: row.compiled?.kind || null })),
-    viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, xScale, yScale, gridMode, trace: trace ? { ...trace } : null,
+    viewport: { ...viewport }, parameters: { ...parameters }, equalAspect, xScale, yScale, gridMode,
+    dimension, camera: { ...camera }, trace: dimension === '2d' && trace ? { ...trace } : null,
   });
   const getExpressions = () => rows.map(({ id, expression, color, visible, imported, strokeWidth }) => ({ id, expression, color, visible, imported, strokeWidth }));
   function schedule(change = false, scene = true) {
@@ -207,6 +220,9 @@ export function createGraph(container, options = {}) {
   function setGraphMode(next = {}) {
     if (destroyed) return;
     const newX = next.xScale ?? xScale, newY = next.yScale ?? yScale, newGrid = next.gridMode ?? gridMode;
+    if (dimension === '3d' && (newX !== 'linear' || newY !== 'linear' || newGrid !== 'cartesian')) {
+      throw new RangeError('3D mode uses linear x and y axes with a Cartesian floor grid.');
+    }
     if (!['linear', 'log'].includes(newX) || !['linear', 'log'].includes(newY)) throw new RangeError('Axis scales must be linear or log.');
     if (!['cartesian', 'polar'].includes(newGrid)) throw new RangeError('Grid mode must be cartesian or polar.');
     if (newGrid === 'polar' && (newX !== 'linear' || newY !== 'linear')) throw new RangeError('Polar circles require linear x and y axes.');
@@ -218,6 +234,41 @@ export function createGraph(container, options = {}) {
     catch (error) { ({ xScale, yScale, gridMode, equalAspect, viewport } = previous); throw error; }
     $('.graph-x-scale').value = xScale; $('.graph-y-scale').value = yScale; $('.graph-grid-mode').value = gridMode;
     $('.graph-equal').checked = equalAspect; $('.graph-equal').disabled = gridMode === 'polar';
+    return state();
+  }
+  function updateDimensionUI() {
+    const is3D = dimension === '3d';
+    root.classList.toggle('graph-mode-3d', is3D);
+    for (const button of root.querySelectorAll('[data-graph-dimension]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.graphDimension === dimension));
+    }
+    $('[data-graph-action="add-polar"]').hidden = is3D;
+    $('[data-graph-action="add-parametric"]').hidden = is3D;
+    $('[data-graph-action="add-surface"]').hidden = !is3D;
+    $('[data-graph-action="add-ripple"]').hidden = !is3D;
+    $('.graph-note-2d').hidden = is3D; $('.graph-note-3d').hidden = !is3D;
+    $('.graph-image-import').hidden = is3D || !imageImportEnabled;
+    $('.graph-x-scale').disabled = is3D; $('.graph-y-scale').disabled = is3D; $('.graph-grid-mode').disabled = is3D;
+    $('.graph-equal').disabled = is3D || gridMode === 'polar';
+    canvas.setAttribute('aria-label', is3D
+      ? 'Interactive 3D numerical surface graph. Drag to rotate, scroll or pinch to zoom, arrow keys rotate, and Home resets the camera.'
+      : 'Numerical interactive coordinate graph, not a proof. Drag to pan, scroll or pinch to zoom. Plus and minus zoom, arrow keys pan, Home resets.');
+    $('.graph-help-main').textContent = is3D ? 'Drag to rotate. Scroll or pinch to zoom. Add multiple colored z=f(x,y) surfaces.' : 'Drag to pan. Scroll or pinch to zoom. Click a curve to trace.';
+    $('.graph-help-keys').textContent = is3D ? 'Arrow keys rotate. Use +, −, or Home.' : 'Use +, −, arrows, or Home.';
+    readout.textContent = is3D ? '3D surface view' : 'x: n/a   y: n/a';
+    readout.hidden = is3D;
+    clearTrace(); rows.forEach(setRowMessage); schedule(true);
+  }
+  function setDimension(next) {
+    if (!['2d', '3d'].includes(next)) throw new RangeError('Graph dimension must be 2d or 3d.');
+    if (dimension === next) return state();
+    dimension = next;
+    if (dimension === '3d') {
+      xScale = yScale = 'linear'; gridMode = 'cartesian'; equalAspect = true;
+      $('.graph-x-scale').value = xScale; $('.graph-y-scale').value = yScale; $('.graph-grid-mode').value = gridMode; $('.graph-equal').checked = true;
+    }
+    updateDimensionUI();
+    if (draftRow && !draftRow.expression.trim()) { disposeRow(draftRow); draftRow = null; ensureDraft(); }
     return state();
   }
   for (const [key, label] of [['xMin', 'x min'], ['xMax', 'x max'], ['yMin', 'y min'], ['yMax', 'y max']]) {
@@ -398,16 +449,22 @@ export function createGraph(container, options = {}) {
       group.append(label, slider, limits); parameterSection.append(group);
     }
   }
+  function setRowMessage(row) {
+    row.messageNode.textContent = row.error || (row.compiled?.kind === 'surface'
+      ? dimension === '3d' ? '3D numerical surface mesh. Drag the canvas to rotate it.' : '3D surface. Switch the graph to 3D to see it.'
+      : dimension === '3d' && row.compiled ? '2D expression. Switch the graph to 2D to see it.'
+        : ['polar', 'parametric'].includes(row.compiled?.kind)
+          ? 'Numerical curve approximation. Sampling can miss features; this graph is not a proof.'
+          : row.compiled?.kind === 'inequality' ? 'Approximate shading. Undefined samples are omitted, so edges may have gaps.'
+            : row.compiled?.piecewise ? 'Piecewise function. The first matching branch is used, and open endpoints are excluded.' : '');
+  }
   function compileRow(row) {
     row.compiled = null; row.error = null;
     if (row.expression.trim()) {
       try { row.compiled = compileGraphExpression(row.expression, { readExpression: options.readExpression }); }
       catch (error) { row.error = error.message || 'This expression could not be graphed.'; }
     }
-    row.messageNode.textContent = row.error || (['polar', 'parametric'].includes(row.compiled?.kind)
-      ? 'Numerical curve approximation. Sampling can miss features; this graph is not a proof.'
-      : row.compiled?.kind === 'inequality' ? 'Approximate shading. Undefined samples are omitted, so edges may have gaps.'
-        : row.compiled?.piecewise ? 'Piecewise function. The first matching branch is used, and open endpoints are excluded.' : '');
+    setRowMessage(row);
     row.warningIcon.hidden = !row.error;
     row.warningIcon.title = row.error || '';
     row.errorNode.classList.toggle('graph-expression-error', !!row.error);
@@ -456,10 +513,10 @@ export function createGraph(container, options = {}) {
     };
     const createEditable = () => {
       const structured = /^\s*(?:polar|parametric)\s*\(/i.test(row.expression);
-      const input = options.createExpressionField && !structured ? options.createExpressionField(row.expression, onFieldInput) : doc.createElement('input');
+      const input = options.createExpressionField && !structured ? options.createExpressionField(row.expression, onFieldInput, { dimension }) : doc.createElement('input');
       if (!input?.setAttribute || !input?.classList) throw new TypeError('createExpressionField must return an HTMLElement.');
       if (!options.createExpressionField || structured) {
-        input.type = 'text'; input.value = row.expression; input.placeholder = 'e.g. y=x^2';
+        input.type = 'text'; input.value = row.expression; input.placeholder = dimension === '3d' ? 'e.g. z=sin(x)+cos(y)' : 'e.g. y=x^2';
         input.maxLength = GRAPH_LIMITS.expressionLength; input.autocomplete = 'off'; input.spellcheck = false;
         input.addEventListener('input', () => onFieldInput(input.value));
       }
@@ -687,7 +744,90 @@ export function createGraph(container, options = {}) {
     }
     context.stroke(); context.setLineDash([]);
   }
+  function surfaceColor(hex, light) {
+    const rgb = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16));
+    const strength = .48 + .58 * clamp(light, 0, 1);
+    return `rgb(${rgb.map(value => Math.round(clamp(value * strength + 20, 0, 255))).join(',')})`;
+  }
+  function drawScene3D() {
+    bg.clearRect(0, 0, width, height); bg.fillStyle = '#ffffff'; bg.fillRect(0, 0, width, height);
+    geometries.clear();
+    const active = rows.filter(row => row.visible && row.compiled?.kind === 'surface');
+    if (!active.length) {
+      bg.fillStyle = '#65727f'; bg.font = '500 14px system-ui, sans-serif'; bg.textAlign = 'center'; bg.textBaseline = 'middle';
+      bg.fillText('Add a surface such as z=sin(x)+cos(y)', width / 2, height / 2);
+      return;
+    }
+    const resolution = Math.max(4, Math.min(38, Math.floor(Math.sqrt(24000 / Math.max(1, active.length) / 2))));
+    const meshes = active.map(row => ({ row, ...sampleSurface(row.compiled, viewport, { parameters, resolution, maxSamples: resolution ** 2 }) }))
+      .filter(mesh => mesh.triangles.length && Number.isFinite(mesh.zMin) && Number.isFinite(mesh.zMax));
+    if (!meshes.length) {
+      bg.fillStyle = '#8b5b49'; bg.font = '500 14px system-ui, sans-serif'; bg.textAlign = 'center'; bg.textBaseline = 'middle';
+      bg.fillText('No finite surface samples are visible in this window.', width / 2, height / 2);
+      return;
+    }
+    const zValues = meshes.flatMap(mesh => mesh.vertices.filter(vertex => Number.isFinite(vertex.z)).map(vertex => vertex.z)).sort((a, b) => a - b);
+    const trim = zValues.length > 300 ? Math.floor(zValues.length * .01) : 0;
+    let zMin = zValues[trim], zMax = zValues[zValues.length - 1 - trim];
+    if (!(zMax - zMin > GRAPH_LIMITS.minSpan)) { const center = (zMin + zMax) / 2; zMin = center - 1; zMax = center + 1; }
+    const bounds = { xCenter: (viewport.xMin + viewport.xMax) / 2, yCenter: (viewport.yMin + viewport.yMax) / 2,
+      xHalf: (viewport.xMax - viewport.xMin) / 2, yHalf: (viewport.yMax - viewport.yMin) / 2,
+      zCenter: (zMin + zMax) / 2, zHalf: (zMax - zMin) / 2 };
+    const normalized = point => ({ x: (point.x - bounds.xCenter) / bounds.xHalf, y: (point.y - bounds.yCenter) / bounds.yHalf,
+      z: (clamp(point.z, zMin, zMax) - bounds.zCenter) / bounds.zHalf });
+    const project = point => {
+      const value = normalized(point), ca = Math.cos(camera.azimuth), sa = Math.sin(camera.azimuth);
+      const ce = Math.cos(camera.elevation), se = Math.sin(camera.elevation);
+      const horizontal = ca * value.x - sa * value.y, depth = sa * value.x + ca * value.y;
+      const vertical = ce * value.z - se * depth, cameraDepth = se * value.z + ce * depth;
+      const perspective = 3.6 / Math.max(1.6, 3.6 - cameraDepth * .42);
+      const scale = Math.min(width, height) * .34 * camera.zoom;
+      return { x: width / 2 + horizontal * scale * perspective, y: height * .53 - vertical * scale * perspective, depth: cameraDepth };
+    };
+    const floorZ = zMin <= 0 && zMax >= 0 ? 0 : zMin;
+    bg.save(); bg.lineWidth = 1;
+    for (let index = 0; index <= 10; index++) {
+      const ratio = index / 10;
+      const x = viewport.xMin + (viewport.xMax - viewport.xMin) * ratio;
+      const y = viewport.yMin + (viewport.yMax - viewport.yMin) * ratio;
+      const xa = project({ x, y: viewport.yMin, z: floorZ }), xb = project({ x, y: viewport.yMax, z: floorZ });
+      const ya = project({ x: viewport.xMin, y, z: floorZ }), yb = project({ x: viewport.xMax, y, z: floorZ });
+      bg.beginPath(); bg.strokeStyle = index === 5 ? '#aeb8c1' : '#e2e7eb';
+      bg.moveTo(xa.x, xa.y); bg.lineTo(xb.x, xb.y); bg.moveTo(ya.x, ya.y); bg.lineTo(yb.x, yb.y); bg.stroke();
+    }
+    const origin = { x: clamp(0, viewport.xMin, viewport.xMax), y: clamp(0, viewport.yMin, viewport.yMax), z: floorZ };
+    const axes = [
+      ['x', origin, { x: viewport.xMax, y: origin.y, z: floorZ }],
+      ['y', origin, { x: origin.x, y: viewport.yMax, z: floorZ }],
+      ['z', origin, { x: origin.x, y: origin.y, z: zMax }],
+    ];
+    bg.strokeStyle = '#65727f'; bg.fillStyle = '#3d4b58'; bg.font = 'italic 12px system-ui, sans-serif';
+    for (const [label, start, end] of axes) {
+      const a = project(start), b = project(end); bg.beginPath(); bg.moveTo(a.x, a.y); bg.lineTo(b.x, b.y); bg.stroke(); bg.fillText(label, b.x + 5, b.y - 4);
+    }
+    const polygons = [];
+    for (const mesh of meshes) for (const triangle of mesh.triangles) {
+      const points = triangle.map(index => mesh.vertices[index]), unit = points.map(normalized);
+      const u = { x: unit[1].x - unit[0].x, y: unit[1].y - unit[0].y, z: unit[1].z - unit[0].z };
+      const v = { x: unit[2].x - unit[0].x, y: unit[2].y - unit[0].y, z: unit[2].z - unit[0].z };
+      const normal = { x: u.y * v.z - u.z * v.y, y: u.z * v.x - u.x * v.z, z: u.x * v.y - u.y * v.x };
+      const length = Math.hypot(normal.x, normal.y, normal.z) || 1;
+      const light = Math.abs((normal.x * .28 - normal.y * .36 + normal.z * .89) / length);
+      const projected = points.map(project);
+      polygons.push({ projected, depth: projected.reduce((sum, point) => sum + point.depth, 0) / 3,
+        fill: surfaceColor(mesh.row.color, light), edge: `${mesh.row.color}44` });
+    }
+    polygons.sort((a, b) => a.depth - b.depth);
+    bg.lineJoin = 'round'; bg.lineWidth = .45;
+    for (const polygon of polygons) {
+      bg.beginPath(); bg.moveTo(polygon.projected[0].x, polygon.projected[0].y);
+      bg.lineTo(polygon.projected[1].x, polygon.projected[1].y); bg.lineTo(polygon.projected[2].x, polygon.projected[2].y); bg.closePath();
+      bg.fillStyle = polygon.fill; bg.globalAlpha = .86; bg.fill(); bg.globalAlpha = 1; bg.strokeStyle = polygon.edge; bg.stroke();
+    }
+    bg.restore();
+  }
   function drawScene() {
+    if (dimension === '3d') { drawScene3D(); return; }
     grid(bg); geometries.clear();
     const active = rows.filter(row => row.visible && row.compiled), count = Math.max(1, active.length);
     // Total frame work remains bounded even at the expression-count limit.
@@ -740,11 +880,11 @@ export function createGraph(container, options = {}) {
   }
   function drawOverlay() {
     ctx.clearRect(0, 0, width, height); ctx.drawImage(background, 0, 0, width, height);
-    if (pointer && !drag && !pinch) {
+    if (dimension === '2d' && pointer && !drag && !pinch) {
       ctx.save(); ctx.strokeStyle = '#62746d77'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath();
       ctx.moveTo(pointer.x, 0); ctx.lineTo(pointer.x, height); ctx.moveTo(0, pointer.y); ctx.lineTo(width, pointer.y); ctx.stroke(); ctx.restore();
     }
-    if (trace) {
+    if (dimension === '2d' && trace) {
       const p = worldToScreen(trace, viewport, width, height), row = rows.find(row => row.id === trace.expressionId);
       if (row && p.x >= 0 && p.x <= width && p.y >= 0 && p.y <= height) {
         ctx.beginPath(); ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2); ctx.fillStyle = row.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
@@ -775,8 +915,17 @@ export function createGraph(container, options = {}) {
     sized = true; syncWindow(); schedule(viewChanged);
   }
   function zoom(factor, anchor) { if (!destroyed) setView(zoomViewport(viewport, factor, anchor)); }
-  function reset() { if (!destroyed) { clearTrace(); const home = positiveWindow(positiveWindow(homeViewport, 'x', xScale), 'y', yScale); setView(equalAspect ? equalizeFromY(home) : home); } }
+  function zoom3D(factor) { camera.zoom = clamp(camera.zoom * factor, .25, 4); schedule(true); }
+  function resetCamera() { camera = { ...defaultCamera }; schedule(true); }
+  function reset() {
+    if (destroyed) return;
+    clearTrace();
+    if (dimension === '3d') { resetCamera(); return; }
+    const home = positiveWindow(positiveWindow(homeViewport, 'x', xScale), 'y', yScale);
+    setView(equalAspect ? equalizeFromY(home) : home);
+  }
   function fit() {
+    if (dimension === '3d') { resetCamera(); return; }
     if (sceneDirty) { drawScene(); sceneDirty = false; }
     let points = [...geometries.values()].flat(2).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
     // Try a bounded wider survey so offscreen points/ordinary curves can be found.
@@ -871,20 +1020,30 @@ export function createGraph(container, options = {}) {
     schedule(true, false);
   }
   const local = event => { const bounds = canvas.getBoundingClientRect(); return { x: event.clientX - bounds.left, y: event.clientY - bounds.top }; };
-  function showPointer(p) { pointer = p; const world = screenToWorld(p, viewport, width, height); readout.textContent = `x: ${format(world.x)}   y: ${format(world.y)}`; }
+  function showPointer(p) {
+    pointer = p;
+    if (dimension === '3d') return;
+    const world = screenToWorld(p, viewport, width, height); readout.textContent = `x: ${format(world.x)}   y: ${format(world.y)}`;
+  }
   on(canvas, 'wheel', event => {
     event.preventDefault(); const p = local(event); showPointer(p);
     const dy = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? height : 1);
-    zoom(Math.exp(-clamp(dy, -600, 600) * .0018), screenToWorld(p, viewport, width, height)); showPointer(p);
+    const factor = Math.exp(-clamp(dy, -600, 600) * .0018);
+    if (dimension === '3d') zoom3D(factor);
+    else { zoom(factor, screenToWorld(p, viewport, width, height)); showPointer(p); }
   }, { passive: false });
   on(canvas, 'pointerdown', event => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     event.preventDefault(); canvas.focus({ preventScroll: true }); canvas.setPointerCapture?.(event.pointerId);
     const p = local(event); pointers.set(event.pointerId, p);
-    if (pointers.size === 1) drag = { start: p, viewport: { ...viewport }, moved: false };
+    if (pointers.size === 1) drag = dimension === '3d'
+      ? { start: p, camera: { ...camera }, moved: false }
+      : { start: p, viewport: { ...viewport }, moved: false };
     else if (pointers.size === 2) {
       const [a, b] = [...pointers.values()], midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-      pinch = { distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), viewport: { ...viewport }, anchor: screenToWorld(midpoint, viewport, width, height) };
+      pinch = dimension === '3d'
+        ? { distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), camera: { ...camera } }
+        : { distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), viewport: { ...viewport }, anchor: screenToWorld(midpoint, viewport, width, height) };
       if (drag) drag.moved = true;
     }
     root.classList.add('graph-dragging'); schedule(false, false);
@@ -893,7 +1052,19 @@ export function createGraph(container, options = {}) {
     const p = local(event); showPointer(p);
     if (pointers.has(event.pointerId)) {
       pointers.set(event.pointerId, p);
-      if (pinch && pointers.size >= 2) {
+      if (dimension === '3d' && pinch && pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        camera.zoom = clamp(pinch.camera.zoom * Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)) / pinch.distance, .25, 4);
+        schedule(true);
+      } else if (dimension === '3d' && drag) {
+        const dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+        drag.moved ||= Math.hypot(dx, dy) > 3;
+        if (drag.moved) {
+          camera.azimuth = drag.camera.azimuth + dx * .008;
+          camera.elevation = clamp(drag.camera.elevation - dy * .007, -1.35, 1.35);
+          schedule(true);
+        }
+      } else if (pinch && pointers.size >= 2) {
         const [a, b] = [...pointers.values()], midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
         const next = zoomViewport(pinch.viewport, Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)) / pinch.distance, pinch.anchor);
         const currentAnchor = screenToWorld(midpoint, next, width, height);
@@ -916,18 +1087,30 @@ export function createGraph(container, options = {}) {
     pointers.delete(event.pointerId);
     if (canvas.hasPointerCapture?.(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
     if (pointers.size < 2) pinch = null;
-    if (pointers.size === 1) drag = { start: [...pointers.values()][0], viewport: { ...viewport }, moved: true };
+    if (pointers.size === 1) drag = dimension === '3d'
+      ? { start: [...pointers.values()][0], camera: { ...camera }, moved: true }
+      : { start: [...pointers.values()][0], viewport: { ...viewport }, moved: true };
     else { drag = null; root.classList.remove('graph-dragging'); }
-    if (clicked) traceAt(local(event));
+    if (clicked && dimension === '2d') traceAt(local(event));
     if (cancelled || event.pointerType === 'touch') pointer = null;
     schedule(false, false);
   }
   on(canvas, 'pointerup', event => endPointer(event));
   on(canvas, 'pointercancel', event => endPointer(event, true));
   on(canvas, 'lostpointercapture', event => endPointer(event, true));
-  on(canvas, 'pointerleave', () => { if (!pointers.size) { pointer = null; readout.textContent = 'x: n/a   y: n/a'; schedule(false, false); } });
+  on(canvas, 'pointerleave', () => { if (!pointers.size) { pointer = null; if (dimension === '2d') readout.textContent = 'x: n/a   y: n/a'; schedule(false, false); } });
   on(canvas, 'keydown', event => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (dimension === '3d') {
+      const actions = {
+        '+': () => zoom3D(1.2), '=': () => zoom3D(1.2), '-': () => zoom3D(1 / 1.2), '_': () => zoom3D(1 / 1.2), Home: resetCamera,
+        ArrowLeft: () => { camera.azimuth -= .12; schedule(true); }, ArrowRight: () => { camera.azimuth += .12; schedule(true); },
+        ArrowUp: () => { camera.elevation = clamp(camera.elevation + .1, -1.35, 1.35); schedule(true); },
+        ArrowDown: () => { camera.elevation = clamp(camera.elevation - .1, -1.35, 1.35); schedule(true); },
+      };
+      if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
+      return;
+    }
     const dx = (axisNumber(viewport.xMax, xScale) - axisNumber(viewport.xMin, xScale)) * .1;
     const dy = (axisNumber(viewport.yMax, yScale) - axisNumber(viewport.yMin, yScale)) * .1;
     const actions = { '+': () => zoom(1.25), '=': () => zoom(1.25), '-': () => zoom(.8), '_': () => zoom(.8), Home: reset,
@@ -937,6 +1120,8 @@ export function createGraph(container, options = {}) {
     if (actions[event.key]) { event.preventDefault(); actions[event.key](); }
   });
   const handleGraphAction = event => {
+    const requestedDimension = event.target.closest('[data-graph-dimension]')?.dataset.graphDimension;
+    if (requestedDimension) { setDimension(requestedDimension); return; }
     const action = event.target.closest('[data-graph-action]')?.dataset.graphAction;
     if (action === 'add-polar' || action === 'add-parametric') {
       if (rows.length < GRAPH_LIMITS.expressions) {
@@ -945,9 +1130,15 @@ export function createGraph(container, options = {}) {
         const id = addExpression(expression); rows.find(row => row.id === id)?.field.focus();
       }
     }
+    if (action === 'add-surface' || action === 'add-ripple') {
+      if (rows.length < GRAPH_LIMITS.expressions) {
+        const expression = action === 'add-surface' ? 'z=sin(x)+cos(y)' : 'z=2*cos(sqrt(x^2+y^2))';
+        const id = addExpression(expression); rows.find(row => row.id === id)?.field.focus();
+      }
+    }
     if (action === 'window') { options.onShowSidebar?.(); $('.graph-window').open = true; $('.graph-window summary').focus(); }
-    if (action === 'zoom-in') zoom(1.3);
-    if (action === 'zoom-out') zoom(1 / 1.3);
+    if (action === 'zoom-in') dimension === '3d' ? zoom3D(1.3) : zoom(1.3);
+    if (action === 'zoom-out') dimension === '3d' ? zoom3D(1 / 1.3) : zoom(1 / 1.3);
     if (action === 'reset') reset();
     if (action === 'fit') fit();
     if (action === 'export') exportPNG();
@@ -965,11 +1156,11 @@ export function createGraph(container, options = {}) {
   }
   function resolutionChanged() { resize(); observeResolution(); }
   observeResolution();
-  setExpressions(options.expressions || []); resize(); schedule();
+  updateDimensionUI(); setExpressions(options.expressions || []); resize(); schedule();
   return {
     addExpression, getExpressions, setExpressions, setExpressionsInBatches, getState: state,
     setViewport(next) { if (!destroyed) setView(validateViewport(next, scales()), { equalize: true }); },
-    setGraphMode,
+    setGraphMode, setDimension,
     zoom, reset, resize,
     destroy() {
       if (destroyed) return;

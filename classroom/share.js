@@ -1,14 +1,15 @@
 /** A small, public graph snapshot for links handed to Google Classroom. */
 import { latexToInput } from '../engine/latex.js?v=proof-lab-18';
-import { compileGraphExpression, validateViewport } from '../graph/model.js?v=proof-lab-21';
+import { compileGraphExpression, validateViewport } from '../graph/model.js?v=proof-lab-29';
 
 const MAX_URL_LENGTH = 4000;
 const MAX_EXPRESSIONS = 24;
 const MAX_EXPRESSION_LENGTH = 256;
 const VIEWPORT_KEYS = ['xMin', 'xMax', 'yMin', 'yMax'];
 const PARAMETER_KEYS = ['a', 'b', 'c'];
-const STATE_KEYS = new Set(['expressions', 'viewport', 'parameters', 'equalAspect', 'xScale', 'yScale', 'gridMode']);
+const STATE_KEYS = new Set(['expressions', 'viewport', 'parameters', 'equalAspect', 'xScale', 'yScale', 'gridMode', 'dimension', 'camera']);
 const ROW_KEYS = new Set(['expression', 'color', 'visible']);
+const CAMERA_KEYS = new Set(['azimuth', 'elevation', 'zoom']);
 
 function record(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -83,9 +84,28 @@ function sanitizeState(state, strict = false) {
     if (state.gridMode !== 'cartesian' && state.gridMode !== 'polar') throw new TypeError('Invalid gridMode.');
     result.gridMode = state.gridMode;
   }
+  if (state.dimension !== undefined) {
+    if (state.dimension !== '2d' && state.dimension !== '3d') throw new TypeError('Invalid graph dimension.');
+    result.dimension = state.dimension;
+  }
+  if (state.camera !== undefined) {
+    if (!record(state.camera) || (strict && !onlyKeys(state.camera, CAMERA_KEYS))) throw new TypeError('Invalid 3D camera.');
+    const camera = {};
+    for (const [key, min, max] of [['azimuth', -1000, 1000], ['elevation', -1.35, 1.35], ['zoom', .25, 4]]) {
+      const value = state.camera[key];
+      if (value !== undefined) {
+        if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) throw new RangeError(`Invalid 3D camera ${key}.`);
+        camera[key] = value;
+      }
+    }
+    result.camera = camera;
+  }
   if (result.gridMode === 'polar'
     && (result.xScale === 'log' || result.yScale === 'log' || result.equalAspect === false)) {
     throw new RangeError('Polar grid requires linear axes with equal aspect.');
+  }
+  if (result.dimension === '3d' && (result.xScale === 'log' || result.yScale === 'log' || result.gridMode === 'polar' || result.equalAspect === false)) {
+    throw new RangeError('3D mode requires linear axes, a Cartesian grid, and equal aspect.');
   }
   if ((result.xScale === 'log' || result.yScale === 'log') && state.viewport === undefined) {
     throw new RangeError('Logarithmic axes require an explicit positive viewport.');
@@ -100,7 +120,8 @@ function sanitizeState(state, strict = false) {
 /**
  * Build an absolute /proof-lab?graph=...#graph link on baseUrl's public HTTPS host.
  * State: expressions (0..24 strings or rows), optional viewport, a/b/c parameters,
- * equalAspect, xScale/yScale ('linear'|'log'), gridMode ('cartesian'|'polar').
+ * equalAspect, xScale/yScale ('linear'|'log'), gridMode ('cartesian'|'polar'),
+ * dimension ('2d'|'3d'), and a bounded 3D camera.
  * Invalid input or a URL longer than 4000 characters throws.
  */
 export function buildGraphShareUrl(graphState, baseUrl) {
