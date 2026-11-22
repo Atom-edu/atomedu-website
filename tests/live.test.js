@@ -12,7 +12,7 @@ test("public live page has a full video stage and viewer count", async () => {
   assert.match(html, /canonical[^>]+\/live/);
 });
 
-test("live manager supports screen audio, local recording, titles, and localhost override", async () => {
+test("live manager supports screen audio, local recording, titles, and a hidden authenticated override", async () => {
   const [html, script] = await Promise.all([
     read("live-manage.html"),
     read("live-manage.js"),
@@ -23,10 +23,10 @@ test("live manager supports screen audio, local recording, titles, and localhost
   assert.match(script, /audio:\s*true/);
   assert.match(script, /new MediaRecorder/);
   assert.match(script, /event\.key === "\\\\"/);
-  assert.match(script, /localhost\|127\\\.0\\\.0\\\.1/);
   assert.match(script, /viewerOverride/);
+  assert.doesNotMatch(script.match(/document\.addEventListener\("keydown"[\s\S]*?\n\}\);/)?.[0] || "", /\blocal\b/);
   assert.doesNotMatch(html, /Local viewer-count test|This control only appears|press \\\\|backslash/i);
-  assert.match(html, /live-manage\.js\?v=2/);
+  assert.match(html, /live-manage\.js\?v=3/);
   assert.match(script, /new RTCPeerConnection/);
   assert.match(script, /type: "offer"/);
 });

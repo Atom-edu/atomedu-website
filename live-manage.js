@@ -356,7 +356,6 @@ $("stream-title").addEventListener("change", () => {
 
 document.addEventListener("keydown", (event) => {
   if (
-    local &&
     event.key === "\\" &&
     !event.repeat &&
     !event.metaKey &&
