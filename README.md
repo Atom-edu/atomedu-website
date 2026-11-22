@@ -44,7 +44,8 @@ The [20-minute product demo script](./docs/product-video-script.md) pairs with t
 - `features.html` - Proof Lab's four views, visual editor, and verification boundaries
 - `learn.html` - how to use Proof Lab
 - `about.html` - why atomEDU exists
-- `contact.html` - email contact and FAQ
+- `contact.html` - public title and message contact form with no name collection
+- `contact-manage.html` - password-protected contact inbox and acknowledgement tracking
 - `proof-lab.html` - local math engine, work checking, and generated practice
 - `math-lab.html` - redirect for old links
 - `art-contest.html` - public daily graph-art contest

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Contact Manager | atomEDU</title>
+  <link rel="icon" href="images/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=contact-1" />
+  <link rel="stylesheet" href="contact.css?v=contact-1" />
+  <script src="contact-config.js?v=contact-1"></script>
+  <script src="contact-manage.js?v=contact-1" defer></script>
+</head>
+<body class="contact-manage-page">
+  <header class="contact-manage-header">
+    <a class="brand" href="/"><img class="mark" src="images/logo.svg" alt="" /><span class="word">atom<b>EDU</b></span></a>
+    <span>Contact manager</span>
+  </header>
+  <main class="contact-manage-shell">
+    <section class="contact-login" id="contact-login" aria-labelledby="contact-login-title">
+      <p class="kicker">Private workspace</p>
+      <h1 class="heading-display" id="contact-login-title">Open the inbox.</h1>
+      <p>Enter the manager password. The password is sent only to the contact service and is not retained by this page.</p>
+      <form id="contact-login-form">
+        <label for="contact-password">Password</label>
+        <div class="contact-login-row">
+          <input id="contact-password" type="password" autocomplete="current-password" required />
+          <button class="btn btn-accent" id="contact-login-button" type="submit">Open inbox</button>
+        </div>
+        <p class="contact-status" id="contact-login-status" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <section id="contact-dashboard" hidden>
+      <div class="contact-dashboard-heading">
+        <div><p class="kicker">Contact</p><h1 class="heading-display">All messages</h1></div>
+        <div class="contact-dashboard-actions"><button class="btn btn-ghost" id="contact-refresh" type="button">Refresh</button><button class="btn btn-ghost" id="contact-sign-out" type="button">Sign out</button></div>
+      </div>
+      <div class="contact-counts" aria-label="Message totals">
+        <div><span>All</span><strong id="contact-total">0</strong></div>
+        <div><span>Open</span><strong id="contact-open">0</strong></div>
+        <div><span>Acknowledged</span><strong id="contact-acknowledged">0</strong></div>
+      </div>
+      <p class="contact-status" id="contact-dashboard-status" role="status" aria-live="polite" hidden></p>
+      <div class="contact-message-list" id="contact-message-list"></div>
+    </section>
+  </main>
+</body>
+</html>

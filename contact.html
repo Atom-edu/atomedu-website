@@ -12,7 +12,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=proof-lab-4" />
+  <link rel="stylesheet" href="styles.css?v=contact-1" />
+  <link rel="stylesheet" href="contact.css?v=contact-1" />
+  <script src="contact-config.js?v=contact-1"></script>
+  <script src="contact.js?v=contact-1" defer></script>
 </head>
 <body>
 
@@ -59,21 +62,26 @@
   </section>
 
   <section class="section band">
-    <div class="wrap two-col">
-      <div class="col">
-        <p class="kicker">Report a problem</p>
-        <h2 class="block-title heading-display">Email the Proof Lab team</h2>
-        <p class="muted">Include the original problem, the steps you entered, and what you expected. Please do not send passwords or private student information.</p>
-        <a class="btn btn-accent" href="mailto:hello@atom-edu.org?subject=Proof%20Lab%20feedback">Email hello@atom-edu.org</a>
+    <div class="wrap contact-layout">
+      <div class="contact-intro">
+        <p class="kicker">Write to us</p>
+        <h2 class="block-title heading-display">Send a message</h2>
+        <p class="muted">Tell us about a Proof Lab result, a broken step, a topic request, or anything else we should see. Please do not include passwords or private student information.</p>
+        <p class="contact-note">No account or name is required.</p>
       </div>
-      <div class="col">
-        <p class="kicker">Before you send</p>
-        <h2 class="block-title heading-display">Check the coverage first</h2>
-        <div class="prose" style="margin-top:1rem">
-          <p>Proof Lab verifies supported rules, not every math problem. See the <a class="textlink" href="/proof-lab#coverage">live coverage list</a> to check whether your topic is currently included.</p>
-          <p>For questions about privacy or the site itself, see the <a class="textlink" href="/legal#privacy">privacy page</a> or use the same email address.</p>
+      <form class="form contact-form" id="contact-form">
+        <div class="field">
+          <label for="contact-title">Title</label>
+          <input id="contact-title" name="title" type="text" maxlength="120" autocomplete="off" required />
         </div>
-      </div>
+        <div class="field">
+          <label for="contact-body">Message</label>
+          <textarea id="contact-body" name="body" maxlength="5000" required></textarea>
+          <div class="contact-field-meta"><span>Include enough detail for us to reproduce the issue.</span><span id="contact-count">0 / 5000</span></div>
+        </div>
+        <p class="contact-status" id="contact-status" role="status" aria-live="polite" hidden></p>
+        <button class="btn btn-accent" id="contact-submit" type="submit">Submit message</button>
+      </form>
     </div>
   </section>
 
@@ -92,7 +100,7 @@
         </div>
         <div>
           <h3>Can I suggest a rule or report a wrong step?</h3>
-          <p>Yes. Email the problem and the step at issue. A reproducible example makes it easier to investigate.</p>
+          <p>Yes. Send the problem and the step at issue through the form above. A reproducible example makes it easier to investigate.</p>
         </div>
         <div>
           <h3>Does the tool save my work?</h3>

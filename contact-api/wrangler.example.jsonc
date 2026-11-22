@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "atom-contact-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://atom-edu.org"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "atom-contact",
+    "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+    "migrations_dir": "migrations"
+  }],
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.05 }
+  }
+}
