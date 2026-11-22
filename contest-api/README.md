@@ -21,6 +21,8 @@ This package pins Wrangler 4.162.0. Run `npm ci` after a fresh checkout. `wrangl
 
 All time windows use `America/Chicago`, including daylight-saving changes. Submissions for a date open at **21:30 CT the previous day** and close at **18:00 CT**. `phase` is `open` until 18:00, `judging` from 18:00 to 20:30, and `results_pending` from 20:30 to 21:30. Authenticated winner confirmation is permitted from 18:00 until 21:30 to allow a delayed decision. At 21:30 the next contest opens. No winner is selected automatically. If no judge confirms a winner, the latest prior winner remains visible and the current date has no archive entry.
 
+The November 21, 2026 round has a one-time submission deadline of **20:00 CT**. Its judging phase begins at 20:00; later rounds automatically return to the normal 18:00 deadline.
+
 ## API contract
 
 All JSON errors have `{ "error": { "code": "...", "message": "..." } }`. Dates are `YYYY-MM-DD`; timestamps are UTC ISO strings. The `Origin` header, if present, must match `ALLOWED_ORIGIN` for writes. Successful responses include `Access-Control-Allow-Origin` only for that exact origin. Do not use wildcard CORS.

@@ -127,6 +127,19 @@ test('Central schedule honors DST and phase boundaries', () => {
   assert.equal(contestSchedule(new Date('2026-11-02T03:30:00Z')).contestDate, '2026-11-02');
 });
 
+test('November 21 artwork entries stay open until 8 PM Central only', () => {
+  assert.deepEqual(contestSchedule(new Date('2026-11-22T01:59:00Z')), {
+    phase: 'open', contestDate: '2026-11-21',
+    deadlineUtc: '2026-11-22T02:00:00.000Z', nextOpenUtc: '2026-11-22T03:30:00.000Z',
+  });
+  assert.equal(contestSchedule(new Date('2026-11-22T02:00:00Z')).phase, 'judging');
+  assert.equal(contestSchedule(new Date('2026-11-22T03:29:00Z')).phase, 'results_pending');
+  assert.deepEqual(contestSchedule(new Date('2026-11-22T03:30:00Z')), {
+    phase: 'open', contestDate: '2026-11-22',
+    deadlineUtc: '2026-11-23T00:00:00.000Z', nextOpenUtc: '2026-11-23T03:30:00.000Z',
+  });
+});
+
 test('login uses signed expiring bearer tokens, explicit CORS, and rate limits', async () => {
   const { env } = makeEnv();
   const rejected = await call(env, '/judging/login', { method: 'POST', body: { password: 'wrong' } }, JUDGING);
