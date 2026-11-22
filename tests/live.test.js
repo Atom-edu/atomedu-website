@@ -25,6 +25,8 @@ test("live manager supports screen audio, local recording, titles, and localhost
   assert.match(script, /event\.key === "\\\\"/);
   assert.match(script, /localhost\|127\\\.0\\\.0\\\.1/);
   assert.match(script, /viewerOverride/);
+  assert.doesNotMatch(html, /Local viewer-count test|This control only appears|press \\\\|backslash/i);
+  assert.match(html, /live-manage\.js\?v=2/);
   assert.match(script, /new RTCPeerConnection/);
   assert.match(script, /type: "offer"/);
 });

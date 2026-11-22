@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Live Manager | atomEDU</title><meta name="robots" content="noindex,nofollow"><link rel="icon" href="images/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="live.css"><script src="live-config.js"></script><script type="module" src="live-manage.js"></script>
+  <link rel="stylesheet" href="live.css"><script src="live-config.js"></script><script type="module" src="live-manage.js?v=2"></script>
 </head>
 <body class="live-manager-page">
   <header class="live-manager-header"><a href="/" aria-label="atomEDU home">atom<b>EDU</b></a><span>Live Manager</span><strong id="manager-status">Offline</strong></header>
@@ -20,6 +20,6 @@
     </section>
     <section class="live-preview-panel"><div class="live-preview-top"><div><span>Preview</span><strong id="preview-title">atomEDU Live</strong></div><div><b id="manager-viewers">0</b><small>viewers</small></div></div><div class="live-preview"><video id="preview-video" autoplay playsinline muted></video><div id="preview-empty">Your selected screen appears here.</div></div><div class="live-signal"><span id="video-signal">No video</span><span id="audio-signal">No shared audio</span><span id="record-signal">Not recording</span></div></section>
   </main>
-  <dialog class="viewer-override" id="viewer-override"><form method="dialog"><h2>Local viewer-count test</h2><p>This control only appears on localhost. The override is published to every connected viewer.</p><label for="override-count">Displayed viewers</label><input id="override-count" type="number" min="0" max="1000000" placeholder="Blank uses the real count"><div><button value="cancel" class="live-secondary">Cancel</button><button value="default" id="push-override" class="live-primary">Push count</button></div></form></dialog>
+  <dialog class="viewer-override" id="viewer-override" aria-label="Viewer count"><form method="dialog"><label for="override-count">Displayed viewers</label><input id="override-count" type="number" min="0" max="1000000" placeholder="Blank uses the real count"><div><button value="cancel" class="live-secondary">Cancel</button><button value="default" id="push-override" class="live-primary">Push count</button></div></form></dialog>
 </body>
 </html>

@@ -358,9 +358,11 @@ document.addEventListener("keydown", (event) => {
   if (
     local &&
     event.key === "\\" &&
+    !event.repeat &&
     !event.metaKey &&
     !event.ctrlKey &&
-    !event.altKey
+    !event.altKey &&
+    !$("viewer-override").open
   ) {
     event.preventDefault();
     $("override-count").value = Number.isInteger(lastState.viewerOverride)
