@@ -1,7 +1,6 @@
 .contact-layout { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(3rem, 8vw, 7rem); align-items: start; }
 .contact-intro { max-width: 28rem; }
 .contact-intro .muted { margin: 1rem 0; }
-.contact-note { margin: 1.6rem 0 0; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--accent-deep); font-weight: 600; }
 .contact-form { max-width: none; padding-left: clamp(1.5rem, 4vw, 3rem); border-left: 1px solid var(--line); }
 .contact-form .field label { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
 .contact-form .field input, .contact-form .field textarea { border-radius: 0; border-width: 0 0 1px; padding: .8rem .1rem; background: transparent; }
