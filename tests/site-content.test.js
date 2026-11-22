@@ -121,11 +121,12 @@ test('legacy demos forward into the current proof tool', () => {
 
 test('home carousel uses three distinct backgrounds', () => {
   const home = read('index.html');
-  assert.match(home, /Live launch \| Friday, November 20, 2026 \| 7:00 PM CST/);
-  assert.match(home, /atomEDU launches tonight at 7 PM CST\./);
+  assert.match(home, /Live launch \| Saturday, November 21, 2026 \| 8:00 PM CST/);
+  assert.match(home, /atomEDU launches tonight at 8 PM CST\./);
   assert.match(home, /Join the launch stream for the official release of Proof Lab\./);
   assert.match(home, /id="launch"/);
-  assert.match(home, /Online launch stream/);
+  assert.match(home, /href="\/live">Online launch stream<\/a>/);
+  assert.match(home, /"startDate": "2026-11-21T20:00:00-06:00"/);
   assert.match(home, /images\/bg1\.png/);
   assert.match(home, /images\/bg2\.jpg/);
   assert.match(home, /images\/bg3\.jpg/);
