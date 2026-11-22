@@ -155,13 +155,6 @@
     clearEntries('Sign in to view submissions.');
   }
 
-  function formatSubmittedDate(value) {
-    if (typeof value !== 'string') return 'Date unavailable';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Date unavailable';
-    return new Intl.DateTimeFormat('en-US', { timeZone: CENTRAL, month: 'short', day: 'numeric' }).format(date);
-  }
-
   function tiedTotals(entries) {
     const counts = new Map();
     for (const entry of entries) {
@@ -242,8 +235,6 @@
         badge.textContent = 'RUNNER-UP';
         top.append(badge);
       }
-      const meta = document.createElement('p');
-      meta.textContent = `Submitted ${formatSubmittedDate(entry.submittedAt)}`;
       const scoreForm = document.createElement('form');
       scoreForm.className = 'score-form';
       scoreForm.addEventListener('input', () => { $('judge-submit-bar').hidden = true; });
@@ -297,7 +288,7 @@
       remove.setAttribute('aria-label', `Delete submission by ${entry.name}`);
       remove.addEventListener('click', () => deleteEntry(entry, requestedDate));
       actions.append(total, remove);
-      body.append(top, meta, scoreForm, actions);
+      body.append(top, scoreForm, actions);
       card.append(body);
       list.append(card);
     }

@@ -46,8 +46,7 @@ test('judging stays server-backed and neither public page embeds an admin passwo
   assert.match(judgeScript, /createObjectURL/);
   assert.match(page, /Score Beauty, Creativity, and Complexity from 0 to 10/);
   assert.match(judgeScript, /Save scores/);
-  assert.match(judgeScript, /month: 'short', day: 'numeric' \}\)\.format\(date\)/);
-  assert.doesNotMatch(judgeScript.match(/function formatSubmittedDate\(value\) \{[\s\S]*?\n  \}/)?.[0] || '', /hour:|minute:|timeZoneName:/);
+  assert.doesNotMatch(judgeScript, /formatSubmittedDate|Submitted \$\{/);
   assert.match(page, /id="submit-scores"/);
   assert.match(page, /id="results-dialog"/);
   assert.match(page, /id="preview-winner-image"/);
