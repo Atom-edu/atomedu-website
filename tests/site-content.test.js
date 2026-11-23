@@ -317,12 +317,13 @@ test('Proof Lab exposes owned interactive 3D surface graphing', () => {
 
 test('legal page defines the free tool and states academic integrity consequences', () => {
   const legal = read('legal.html');
-  assert.match(legal, /Last updated[\s\S]*November 21 2026/);
+  assert.match(legal, /Last updated[\s\S]*November 22 2026/);
   assert.match(legal, /mailto:hello@atom-edu\.org/);
   assert.match(legal, /also called atom, Proof Lab, the tool, we, us, or our/);
   assert.match(legal, /If you use the tool to cheat or break a rule/);
   assert.match(legal, /disciplinary action, suspension/);
   assert.match(legal, /a link containing your graph expressions and window settings is sent to Google Classroom/);
+  assert.match(legal, /Google Tag Manager container GTM-NTPC3T2K for site analytics/);
   assert.match(legal, /official Classroom branding resources/);
   assert.doesNotMatch(legal, /plain-language draft|needs legal review|terms text is a draft/i);
 });
