@@ -16,12 +16,13 @@
   const CENTRAL = 'America/Chicago';
   const MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
   const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+  const MAX_IMAGES = 15;
   const $ = (id) => document.getElementById(id);
   const form = $('entry-form');
   const fields = $('entry-fields');
   const fileInput = $('art-image');
   const review = $('review-panel');
-  let previewUrl = null;
+  let previewUrls = [];
   let state = null;
   let submitting = false;
   let stateRequest = null;
@@ -37,7 +38,7 @@
 
   function apiError(response, body) {
     if (response.status === 401 || response.status === 403) return 'This action is not authorized.';
-    if (response.status === 413) return 'That image is too large for the contest server. Choose a smaller file.';
+    if (response.status === 413) return 'An image is too large for the contest server. Choose a smaller file.';
     if (response.status === 415) return 'The contest server did not accept this image format.';
     if (response.status === 429) return 'Please wait a moment before trying again.';
     if (body && typeof body.error?.message === 'string' && body.error.message.length < 250) return body.error.message;
@@ -252,40 +253,59 @@
   }
 
   function clearPreview() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewUrl = null;
+    for (const url of previewUrls) URL.revokeObjectURL(url);
+    previewUrls = [];
     $('preview').hidden = true;
-    $('preview-image').removeAttribute('src');
-    $('review-image').removeAttribute('src');
-    $('preview-file-name').textContent = '';
-    $('upload-name').textContent = 'One image per entry';
+    $('preview-list').replaceChildren();
+    $('review-images').replaceChildren();
+    $('preview-count').textContent = '0 images selected';
+    $('review-filename').textContent = '';
+    $('upload-name').textContent = 'Choose one or more images';
   }
 
   fileInput.addEventListener('change', () => {
     clearPreview();
     setMessage($('form-message'), '');
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    if (!MIME_TYPES.has(file.type)) {
+    const files = Array.from(fileInput.files || []);
+    if (!files.length) return;
+    if (files.length > MAX_IMAGES) {
       fileInput.value = '';
-      setMessage($('form-message'), 'Choose a JPG, PNG, WebP, or GIF image.');
+      setMessage($('form-message'), `Choose no more than ${MAX_IMAGES} images at once.`);
       return;
     }
-    if (!file.size || file.size > MAX_IMAGE_BYTES) {
+    const unsupported = files.find(file => !MIME_TYPES.has(file.type));
+    if (unsupported) {
       fileInput.value = '';
-      setMessage($('form-message'), 'Choose an image larger than zero bytes and no more than 8 MiB.');
+      setMessage($('form-message'), `${unsupported.name} is not a supported JPG, PNG, WebP, or GIF image.`);
       return;
     }
-    previewUrl = URL.createObjectURL(file);
-    const image = $('preview-image');
-    image.onerror = () => {
+    const invalidSize = files.find(file => !file.size || file.size > MAX_IMAGE_BYTES);
+    if (invalidSize) {
       fileInput.value = '';
-      clearPreview();
-      setMessage($('form-message'), 'This image could not be previewed. Choose another file.');
-    };
-    image.src = previewUrl;
-    $('preview-file-name').textContent = file.name;
-    $('upload-name').textContent = file.name;
+      setMessage($('form-message'), `${invalidSize.name} must be larger than zero bytes and no more than 8 MiB.`);
+      return;
+    }
+    previewUrls = files.map(file => URL.createObjectURL(file));
+    files.forEach((file, index) => {
+      const figure = document.createElement('figure');
+      figure.className = 'preview-item';
+      const image = document.createElement('img');
+      image.src = previewUrls[index];
+      image.alt = `Preview of ${file.name}`;
+      image.onerror = () => {
+        if (!previewUrls.includes(image.src)) return;
+        fileInput.value = '';
+        clearPreview();
+        setMessage($('form-message'), `${file.name} could not be previewed. Choose another file.`);
+      };
+      const caption = document.createElement('figcaption');
+      caption.textContent = file.name;
+      figure.append(image, caption);
+      $('preview-list').append(figure);
+    });
+    const label = `${files.length} ${files.length === 1 ? 'image' : 'images'} selected`;
+    $('preview-count').textContent = label;
+    $('upload-name').textContent = label;
     $('preview').hidden = false;
   });
 
@@ -299,9 +319,11 @@
     if (deadline && deadline.getTime() <= Date.now()) { loadState(true); return; }
     if (!form.reportValidity()) return;
     const name = $('artist-name').value.trim();
-    const file = fileInput.files?.[0];
-    if (!name || !file || !MIME_TYPES.has(file.type) || !previewUrl) {
-      setMessage($('form-message'), 'Add a display name and a supported image before reviewing.');
+    const files = Array.from(fileInput.files || []);
+    if (!name || !files.length || files.length > MAX_IMAGES
+      || files.some(file => !MIME_TYPES.has(file.type) || !file.size || file.size > MAX_IMAGE_BYTES)
+      || previewUrls.length !== files.length) {
+      setMessage($('form-message'), `Add a display name and 1 to ${MAX_IMAGES} supported images before reviewing.`);
       return;
     }
     if (!$('terms-accepted').checked || !$('display-consent').checked) {
@@ -310,8 +332,14 @@
     }
     $('review-name').setAttribute('data-i18n-ignore', '');
     $('review-name').textContent = name;
-    $('review-filename').textContent = file.name;
-    $('review-image').src = previewUrl;
+    $('review-filename').textContent = `${files.length} ${files.length === 1 ? 'entry' : 'entries'} ready`;
+    $('review-images').replaceChildren();
+    files.forEach((file, index) => {
+      const image = document.createElement('img');
+      image.src = previewUrls[index];
+      image.alt = `Artwork selected for submission: ${file.name}`;
+      $('review-images').append(image);
+    });
     setMessage($('review-message'), '');
     form.hidden = true;
     review.hidden = false;
@@ -327,31 +355,59 @@
   $('confirm-submit').addEventListener('click', async () => {
     if (submitting) return;
     if (!state || state.phase !== 'open') { setMessage($('review-message'), 'Entries are not open right now.'); return; }
-    const file = fileInput.files?.[0];
+    const files = Array.from(fileInput.files || []);
     const name = $('artist-name').value.trim();
-    if (!name || !file || !MIME_TYPES.has(file.type) || !$('terms-accepted').checked || !$('display-consent').checked) {
+    if (!name || !files.length || files.length > MAX_IMAGES
+      || files.some(file => !MIME_TYPES.has(file.type) || !file.size || file.size > MAX_IMAGE_BYTES)
+      || !$('terms-accepted').checked || !$('display-consent').checked) {
       setMessage($('review-message'), 'Your entry changed. Please edit it and review again.');
       return;
     }
-    const body = new FormData();
-    body.append('name', name);
-    body.append('image', file);
-    body.append('termsAccepted', 'true');
-    body.append('displayConsent', 'true');
     submitting = true;
     $('confirm-submit').disabled = true;
     $('edit-entry').disabled = true;
     setMessage($('review-message'), '');
     try {
-      const result = await request(`${API}/submissions`, { method: 'POST', body });
-      if (typeof result?.id !== 'string' || typeof result?.contestDate !== 'string') {
-        throw new Error('The contest server did not confirm this submission. Please check with atomEDU before trying again.');
+      let nextIndex = 0;
+      let completed = 0;
+      const results = Array(files.length);
+      async function uploadNext() {
+        while (nextIndex < files.length) {
+          const index = nextIndex;
+          nextIndex += 1;
+          const body = new FormData();
+          body.append('name', name);
+          body.append('image', files[index]);
+          body.append('termsAccepted', 'true');
+          body.append('displayConsent', 'true');
+          try {
+            const result = await request(`${API}/submissions`, { method: 'POST', body });
+            if (typeof result?.id !== 'string' || typeof result?.contestDate !== 'string') {
+              throw new Error('The contest server did not confirm this entry.');
+            }
+            results[index] = { ok: true };
+          } catch (error) {
+            results[index] = { ok: false, file: files[index].name,
+              message: error instanceof Error ? error.message : 'Submission failed' };
+          }
+          completed += 1;
+          setMessage($('review-message'), `Submitted ${completed} of ${files.length} images...`, 'success');
+        }
       }
+      await Promise.all(Array.from({ length: Math.min(3, files.length) }, () => uploadNext()));
+      const failures = results.filter(result => !result?.ok);
+      const submittedCount = results.length - failures.length;
       review.hidden = true;
       form.hidden = false;
       form.reset();
       clearPreview();
-      setMessage($('form-message'), 'Your artwork was submitted. Thank you for sharing it!', 'success');
+      if (failures.length) {
+        const failedNames = failures.slice(0, 3).map(result => result.file).join(', ');
+        const more = failures.length > 3 ? ` and ${failures.length - 3} more` : '';
+        setMessage($('form-message'), `${submittedCount} of ${results.length} images were submitted. ${failures.length} failed (${failedNames}${more}). Select the failed images and try those again.`);
+      } else {
+        setMessage($('form-message'), `${submittedCount} ${submittedCount === 1 ? 'artwork was' : 'artworks were'} submitted. Thank you for sharing!`, 'success');
+      }
       await loadState(true);
       $('form-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {

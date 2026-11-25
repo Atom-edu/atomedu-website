@@ -479,9 +479,9 @@ test('cleanup retries failed R2 deletion and expires entries with no winner', as
   assert.equal(sqlite.prepare('SELECT count(*) AS n FROM winners').get().n, 1);
 });
 
-test('submission protection limits bursts without an hourly or daily entry cap', async () => {
+test('submission protection allows a 15-image selection but limits larger bursts', async () => {
   const { env } = makeEnv();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
     assert.equal((await call(env, '/submissions', { method: 'POST', body: form() }, OPEN)).status, 201);
   }
   const burst = await call(env, '/submissions', { method: 'POST', body: form() }, OPEN);

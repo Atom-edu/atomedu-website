@@ -21,9 +21,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="art-contest.css?v=contest-4" />
+  <link rel="stylesheet" href="art-contest.css?v=contest-5" />
   <script src="contest-config.js?v=2026-11-15"></script>
-  <script src="art-contest.js?v=contest-4" defer></script>
+  <script src="art-contest.js?v=contest-5" defer></script>
   <script src="site.js" defer></script>
   <script src="site-i18n.js?v=founders-3" defer></script>
 </head>
@@ -75,10 +75,10 @@
                 <input id="artist-name" name="name" type="text" maxlength="60" autocomplete="nickname" placeholder="The name you want shown with your art" required />
                 <p class="field-hint">Use a display name. Please don’t include contact information.</p>
 
-                <label class="field-label" for="art-image">Your artwork <span>Required</span></label>
-                <label class="upload-zone" for="art-image" id="upload-zone"><span class="upload-symbol" aria-hidden="true">↑</span><strong>Upload your atomEDU graph art</strong><span>Use Save PNG in Proof Lab. JPG, PNG, WebP, or GIF, up to 8 MiB.</span><small id="upload-name">One image per entry</small></label>
-                <input class="visually-hidden" id="art-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" required />
-                <div class="preview" id="preview" hidden><img id="preview-image" alt="Preview of your selected artwork" /><div><strong>Preview of your entry</strong><span id="preview-file-name"></span><button type="button" id="remove-image">Choose another image</button></div></div>
+                <label class="field-label" for="art-image">Your artwork <span>1 to 15 images</span></label>
+                <label class="upload-zone" for="art-image" id="upload-zone"><span class="upload-symbol" aria-hidden="true">↑</span><strong>Upload your atomEDU graph art</strong><span>Select up to 15 JPG, PNG, WebP, or GIF files. Each image may be up to 8 MiB.</span><small id="upload-name">Choose one or more images</small></label>
+                <input class="visually-hidden" id="art-image" name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" multiple required />
+                <div class="preview" id="preview" hidden><div class="preview-heading"><div><strong id="preview-count">0 images selected</strong><span>Each image will be submitted as its own contest entry.</span></div><button type="button" id="remove-image">Clear and choose again</button></div><div class="preview-list" id="preview-list"></div></div>
 
                 <div class="consent-group">
                   <label class="consent"><input id="terms-accepted" type="checkbox" required /><span>I am at least 13, have permission from a parent or guardian if I am under 18, and accept the <a href="#rules">contest rules and terms</a>.</span></label>
@@ -88,7 +88,7 @@
                 <button class="btn btn-accent review-button" type="submit">Review my entry <span aria-hidden="true">→</span></button>
               </fieldset>
             </form>
-            <div class="review-panel" id="review-panel" hidden><p class="review-eyebrow">ONE LAST LOOK</p><h3 class="heading-display">Ready to share?</h3><div class="review-art"><img id="review-image" alt="Artwork selected for submission" /><div><strong id="review-name"></strong><span id="review-filename"></span></div></div><p>Your entry is only sent when you choose <strong>Confirm and submit</strong>. Only original art made in atomEDU’s graph is eligible. Your image and display name may be published if selected as winner or runner-up.</p><div class="review-actions"><button class="btn btn-accent" id="confirm-submit" type="button">Confirm and submit</button><button class="btn btn-ghost" id="edit-entry" type="button">Edit entry</button></div><p class="form-message" id="review-message" role="alert" hidden></p></div>
+            <div class="review-panel" id="review-panel" hidden><p class="review-eyebrow">ONE LAST LOOK</p><h3 class="heading-display">Ready to share?</h3><div class="review-art"><div class="review-images" id="review-images"></div><div><strong id="review-name"></strong><span id="review-filename"></span></div></div><p>Your entries are only sent when you choose <strong>Confirm and submit</strong>. Each image becomes its own entry. Only original art made in atomEDU’s graph is eligible. An image and your display name may be published if that entry is selected as winner or runner-up.</p><div class="review-actions"><button class="btn btn-accent" id="confirm-submit" type="button">Confirm and submit</button><button class="btn btn-ghost" id="edit-entry" type="button">Edit entry</button></div><p class="form-message" id="review-message" role="alert" aria-live="polite" hidden></p></div>
           </div>
           <aside class="entry-aside"><p class="section-index">MAKE IT IN PROOF LAB</p><h3 class="heading-display">Graph it. Save it. Upload it.</h3><p>Only artwork created in atomEDU’s Graph view is eligible. A Desmos graph or image made in another app will be disqualified.</p><div class="proof-flow" role="img" aria-label="Illustration of the Proof Lab Graph view: click its PNG save control, then upload that saved image here"><div class="proof-mini"><div class="proof-mini-top"><span>Proof Lab / Graph</span><span class="proof-mini-dots">•••</span></div><div class="proof-mini-grid"><svg viewBox="0 0 180 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 82 Q24 72 42 55 T85 63 T130 35 T180 20" fill="none" stroke="#bf5a2e" stroke-width="4" stroke-linecap="round"/></svg></div><div class="proof-mini-toolbar"><span>Graph view</span><span class="proof-png-control"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg> PNG</span></div></div><div class="proof-flow-arrow"><span>Save PNG</span><b aria-hidden="true">→</b></div><div class="proof-upload"><span aria-hidden="true">↑</span><strong>Upload</strong></div></div><div class="aside-facts"><div><span>01</span><p><a href="/proof-lab">Open Proof Lab</a> and choose Graph.</p></div><div><span>02</span><p>Create your graph art, then use the PNG save control.</p></div><div><span>03</span><p>Upload that saved file here and confirm your entry.</p></div></div></aside>
         </div>
@@ -106,7 +106,7 @@
         </div>
         <div class="rules-grid">
           <div><span class="rule-number">01</span><h3>Use atomEDU’s graph</h3><p>Only original artwork you create in atomEDU Proof Lab’s Graph view is eligible. Use its PNG save control and upload your saved image. Desmos graphs, art from other software, and work you did not create are disqualified, even if submitted in an accepted image format.</p></div>
-          <div><span class="rule-number">02</span><h3>Enter as often as you like</h3><p>You may make unlimited submissions each day while entries are open. Each submission contains one image. Every entry must meet all contest rules.</p></div>
+          <div><span class="rule-number">02</span><h3>Enter as often as you like</h3><p>You may make unlimited submissions each day while entries are open. You can select up to 15 images in one submission action, and each image becomes a separate entry. Every entry must meet all contest rules.</p></div>
           <div><span class="rule-number">03</span><h3>Protect people’s privacy</h3><p>Do not include photos, faces, or other personal imagery. Do not put contact details, identifying information, or private information in the artwork or your display name.</p></div>
           <div><span class="rule-number">04</span><h3>Keep it appropriate</h3><p>No inappropriate or NSFW content, including hateful, violent, sexually explicit, illegal, or harassing material. Such entries may be removed and may lead to a temporary or permanent ban from this and future contest rounds.</p></div>
           <div><span class="rule-number">05</span><h3>Age and permission</h3><p>You must be at least 13 to enter. If you are under 18, you must have permission from a parent or guardian. We do not ask for your birth date. The first checkbox confirms these requirements and your agreement to the rules.</p></div>

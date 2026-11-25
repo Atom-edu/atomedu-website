@@ -258,7 +258,9 @@ async function state(env, now, origin) {
 async function submit(request, env, now, currentTime) {
   const schedule = contestSchedule(now);
   if (schedule.phase !== 'open') throw new ApiError(409, 'submissions_closed', 'Submissions are closed');
-  await rateLimit(request, env, now, 'submission', 60, 10);
+  // The public form may send up to 15 image entries from one confirmation.
+  // Keep a little room for a failed upload retry while still limiting bursts.
+  await rateLimit(request, env, now, 'submission', 60, 20);
   if (!/^multipart\/form-data\s*;/i.test(request.headers.get('Content-Type') || '')) {
     throw new ApiError(415, 'content_type', 'Expected multipart form data');
   }

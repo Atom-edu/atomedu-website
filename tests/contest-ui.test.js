@@ -25,6 +25,11 @@ test('contest begins with the winner and explains graph export, schedule, consen
   assert.match(page, /id="terms-accepted"/);
   assert.match(page, /id="display-consent"/);
   assert.match(page, /Confirm and submit/);
+  assert.match(page, /type="file"[^>]*multiple/);
+  assert.match(page, /1 to 15 images/);
+  assert.match(page, /each image becomes a separate entry/);
+  assert.match(read('art-contest.js'), /MAX_IMAGES = 15/);
+  assert.match(read('art-contest.js'), /Promise\.all/);
   assert.match(page, /id="archive-grid"/);
   assert.match(page, /00:00 next day/);
   assert.match(page, /23:00 same day/);
