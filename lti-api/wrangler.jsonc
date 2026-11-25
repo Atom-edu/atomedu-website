@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "atom-lti-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "SITE_ORIGIN": "https://atom-edu.org",
+    "LTI_KEY_ID": "atomedu-2026-11-25"
+  },
+  "secrets": {
+    "required": ["LTI_PRIVATE_KEY", "LTI_PUBLIC_JWK"]
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "atom-lti",
+    "database_id": "53d90a09-80cf-45a2-8e14-650f68f5f546",
+    "migrations_dir": "migrations"
+  }],
+  "triggers": { "crons": ["0 8 * * *"] },
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}
