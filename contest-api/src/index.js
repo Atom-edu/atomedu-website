@@ -7,7 +7,7 @@ const TOKEN_SECONDS = 8 * 60 * 60;
 const TERMS_VERSION = '2026-11-15-2';
 const TEMPORARY_DEADLINES = new Map([
   ['2026-11-21', 20 * 60],
-  ['2026-11-25', 20 * 60 + 15],
+  ['2026-11-25', 20 * 60 + 30],
 ]);
 const encoder = new TextEncoder();
 const chicagoClock = new Intl.DateTimeFormat('en-CA', {
@@ -59,9 +59,10 @@ export function contestSchedule(now = new Date()) {
   const minutes = local.hour * 60 + local.minute;
   const contestDate = minutes >= 21 * 60 + 30 ? nextDay(today) : today;
   const deadlineMinutes = TEMPORARY_DEADLINES.get(contestDate) || 18 * 60;
+  const judgingEndMinutes = deadlineMinutes >= 20 * 60 + 30 ? 21 * 60 + 30 : 20 * 60 + 30;
   const phase = minutes >= 21 * 60 + 30 ? 'open'
     : minutes < deadlineMinutes ? 'open'
-    : minutes < 20 * 60 + 30 ? 'judging'
+    : minutes < judgingEndMinutes ? 'judging'
       : 'results_pending';
   return {
     phase,
