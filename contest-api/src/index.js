@@ -6,8 +6,8 @@ const MAX_JSON_BYTES = 4096;
 const TOKEN_SECONDS = 8 * 60 * 60;
 const TERMS_VERSION = '2026-11-15-2';
 const TEMPORARY_DEADLINES = new Map([
-  ['2026-11-21', 20],
-  ['2026-11-25', 20],
+  ['2026-11-21', 20 * 60],
+  ['2026-11-25', 20 * 60 + 15],
 ]);
 const encoder = new TextEncoder();
 const chicagoClock = new Intl.DateTimeFormat('en-CA', {
@@ -58,15 +58,15 @@ export function contestSchedule(now = new Date()) {
   const today = dayString(local);
   const minutes = local.hour * 60 + local.minute;
   const contestDate = minutes >= 21 * 60 + 30 ? nextDay(today) : today;
-  const deadlineHour = TEMPORARY_DEADLINES.get(contestDate) || 18;
+  const deadlineMinutes = TEMPORARY_DEADLINES.get(contestDate) || 18 * 60;
   const phase = minutes >= 21 * 60 + 30 ? 'open'
-    : minutes < deadlineHour * 60 ? 'open'
+    : minutes < deadlineMinutes ? 'open'
     : minutes < 20 * 60 + 30 ? 'judging'
       : 'results_pending';
   return {
     phase,
     contestDate,
-    deadlineUtc: localToUtc(contestDate, deadlineHour),
+    deadlineUtc: localToUtc(contestDate, Math.floor(deadlineMinutes / 60), deadlineMinutes % 60),
     nextOpenUtc: localToUtc(minutes >= 21 * 60 + 30 ? nextDay(today) : today, 21, 30),
   };
 }

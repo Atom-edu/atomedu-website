@@ -23,7 +23,7 @@ All time windows use `America/Chicago`, including daylight-saving changes. Submi
 
 The November 21, 2026 round has a one-time submission deadline of **20:00 CT**. Its judging phase begins at 20:00; later rounds automatically return to the normal 18:00 deadline.
 
-The November 25, 2026 round also has a one-time submission deadline of **20:00 CT**. Its judging phase begins at 20:00; subsequent rounds return to the normal 18:00 deadline.
+The November 25, 2026 round also has a one-time submission deadline of **20:15 CT**. Its judging phase begins at 20:15; subsequent rounds return to the normal 18:00 deadline.
 
 ## API contract
 
