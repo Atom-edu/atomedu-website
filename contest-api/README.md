@@ -23,6 +23,8 @@ All time windows use `America/Chicago`, including daylight-saving changes. Submi
 
 The November 21, 2026 round has a one-time submission deadline of **20:00 CT**. Its judging phase begins at 20:00; later rounds automatically return to the normal 18:00 deadline.
 
+The November 25, 2026 round also has a one-time submission deadline of **20:00 CT**. Its judging phase begins at 20:00; subsequent rounds return to the normal 18:00 deadline.
+
 ## API contract
 
 All JSON errors have `{ "error": { "code": "...", "message": "..." } }`. Dates are `YYYY-MM-DD`; timestamps are UTC ISO strings. The `Origin` header, if present, must match `ALLOWED_ORIGIN` for writes. Successful responses include `Access-Control-Allow-Origin` only for that exact origin. Do not use wildcard CORS.

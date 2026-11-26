@@ -140,6 +140,14 @@ test('November 21 artwork entries stay open until 8 PM Central only', () => {
   });
 });
 
+test('November 25 artwork entries stay open until 8 PM Central only', () => {
+  assert.equal(contestSchedule(new Date('2026-11-26T01:59:00Z')).phase, 'open');
+  assert.equal(contestSchedule(new Date('2026-11-26T01:59:00Z')).deadlineUtc, '2026-11-26T02:00:00.000Z');
+  assert.equal(contestSchedule(new Date('2026-11-26T02:00:00Z')).phase, 'judging');
+  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).contestDate, '2026-11-26');
+  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).deadlineUtc, '2026-11-27T00:00:00.000Z');
+});
+
 test('login uses signed expiring bearer tokens, explicit CORS, and rate limits', async () => {
   const { env } = makeEnv();
   const rejected = await call(env, '/judging/login', { method: 'POST', body: { password: 'wrong' } }, JUDGING);

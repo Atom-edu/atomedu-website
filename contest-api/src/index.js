@@ -7,6 +7,7 @@ const TOKEN_SECONDS = 8 * 60 * 60;
 const TERMS_VERSION = '2026-11-15-2';
 const TEMPORARY_DEADLINES = new Map([
   ['2026-11-21', 20],
+  ['2026-11-25', 20],
 ]);
 const encoder = new TextEncoder();
 const chicagoClock = new Intl.DateTimeFormat('en-CA', {
