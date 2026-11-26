@@ -1,42 +1,82 @@
-# atomEDU LTI 1.3 tool
+# atomEDU for Canvas (LTI 1.3)
 
-This Worker provides a Canvas LTI 1.3 login, signed launch, instructor Deep Linking,
-and server-side AGS/NRPS requests. The site remains accountless outside LTI.
-The launch returns an activity picker or resource page directly so Canvas's
-assignment selection iframe does not depend on third-party cookies.
+The Worker at `https://atom-lti-api.archimedes-api1.workers.dev` is atomEDU's
+Canvas LTI 1.3 tool. Canvas authenticates each launch using OpenID Connect and
+a signed JWT. The Worker verifies issuer, audience, deployment, nonce,
+signature, resource link, and one-time launch state. It stores course
+activities and submissions in D1. Outside Canvas, atomEDU stays accountless.
 
-The integration needs a Canvas administrator to install the tool and register
-the institution's issuer, client ID, deployment ID, and service origin. A local
-self-hosted Canvas test installation is registered; no school installation is.
+## Teacher and student flow
 
-## Deployment
+1. In a Canvas course assignment, the teacher selects atomEDU. The Deep
+   Linking picker creates an assessment or chooses one saved in that course.
+   Questions support multiple choice, multi-select, true/false, fill in the
+   blank, and teacher-graded free response, plus passages, images, and points.
+   The signed response gives Canvas the activity ID and total points.
+2. The teacher saves and publishes the assignment. Canvas launches that
+   activity for each student. The verified Canvas user and course IDs identify
+   the submission; the student needs no additional login.
+3. Student work is stored before grading. Objective scores use AGS immediately.
+   Written responses wait for teacher review. Teachers can override any
+   question's points and retry a failed Canvas grade sync from the report.
+4. The assignment report shows submissions and the course roster using NRPS.
 
-1. Create the D1 database and put its ID in `wrangler.jsonc`.
-2. Apply `migrations/0001_initial.sql` to the remote database.
-3. Generate an RSA key pair for RS256. Store the PKCS#8 private PEM in the
-   `LTI_PRIVATE_KEY` Worker secret. Store only the public JWK JSON in the
-   `LTI_PUBLIC_JWK` Worker secret. The configured `LTI_KEY_ID` is the JWK `kid`.
-4. Deploy the Worker. Keep the Worker URL stable; changing it breaks registered
-   redirect and launch URLs.
-5. Give the Canvas administrator `/lti/config/canvas` as the JSON configuration
-   URL and `/lti/launch` as the redirect URI.
+Each assessment currently allows one submission per student, up to 20
+questions, and resized images. Generic Proof Lab and Teachers links open the
+standalone site and do not create Canvas grades.
 
-## Canvas registration
+## Canvas installation
 
-After the administrator has created and enabled the LTI key and installed it,
-record the returned client ID and deployment ID. For Canvas production hosted by
-Instructure, the issuer is `https://canvas.instructure.com`, the authorization
-URL is `https://sso.canvaslms.com/api/lti/authorize_redirect`, and the JWKS URL
-is `https://sso.canvaslms.com/api/lti/security/jwks`. The token URL and service
-origin depend on the institution's Canvas domain. Confirm these exact values
-with the administrator; do not infer the school domain from the issuer.
+Give the school's Canvas administrator these URLs:
 
-Use a prepared SQL command with bound values or a restricted internal admin
-tool. Do not expose a public registration endpoint. Enable the platform and
-deployment only after the values are verified. A registration requires rows
-in `platforms` and `deployments`.
+- JSON configuration: `https://atom-lti-api.archimedes-api1.workers.dev/lti/config/canvas`
+- OIDC initiation: `https://atom-lti-api.archimedes-api1.workers.dev/lti/login`
+- Redirect URI: `https://atom-lti-api.archimedes-api1.workers.dev/lti/launch`
+- JWKS: `https://atom-lti-api.archimedes-api1.workers.dev/lti/jwks`
 
-## Verification
+The administrator creates and enables a Canvas LTI 1.3 registration from the
+JSON configuration, then installs it at the desired account or course. They
+must give atomEDU the resulting client ID and deployment ID, the institution's
+Canvas URL, and the issuer, authorization, token, and JWKS URLs. For
+Instructure-hosted Canvas the issuer is usually
+`https://canvas.instructure.com`, authorization is
+`https://sso.canvaslms.com/api/lti/authorize_redirect`, and JWKS is
+`https://sso.canvaslms.com/api/lti/security/jwks`. The token endpoint and
+service origin use the school's Canvas domain. Confirm each value from the
+actual installation; self-hosted Canvas has different values.
+
+Register verified values in D1 with `scripts/register-canvas.mjs`. Run it
+without `--apply` first to validate and review, then rerun with `--apply`.
+The script writes a restricted temporary SQL file and removes it afterward.
+There is no public registration endpoint. Each school needs its own record.
+
+```sh
+node scripts/register-canvas.mjs \
+  --issuer https://canvas.instructure.com \
+  --client-id CLIENT_ID \
+  --deployment-id DEPLOYMENT_ID \
+  --auth-url https://sso.canvaslms.com/api/lti/authorize_redirect \
+  --token-url https://SCHOOL.instructure.com/login/oauth2/token \
+  --jwks-url https://sso.canvaslms.com/api/lti/security/jwks \
+  --service-origin https://SCHOOL.instructure.com \
+  --institution 'School name'
+```
+
+## OAuth 2.0 and keys
+
+No separate Canvas REST API consent or client secret is needed for LTI
+Advantage. For AGS and NRPS, the Worker signs a short-lived RS256 JWT with
+`iss` and `sub` equal to its Canvas client ID, sends it to Canvas as a
+`client_credentials` assertion, requests a specific scope, and uses the
+returned bearer token only on the server.
+
+`LTI_PRIVATE_KEY` is the PKCS#8 signing secret. `LTI_PUBLIC_JWK` is its public
+JWK; its published `kid` is `LTI_KEY_ID`. During rotation, publish the old
+public JWK (with its old `kid`) in optional `LTI_PREVIOUS_PUBLIC_JWK`, update
+the current signing pair and key ID, deploy, then remove the previous key
+after old responses are no longer accepted. Keep private keys out of Git.
+
+## Verification and status
 
 ```sh
 npm install
@@ -45,21 +85,14 @@ npm test
 npm run dry-run
 ```
 
-The automated tests simulate a signed Canvas launch, nonce failure, replay
-failure, and an iframe Deep Linking response without browser cookies. A real
-self-hosted Canvas installation also completed an HTTPS Resource Link launch
-and a Deep Linking return on November 25, 2026. Its temporary tunnel URL is
-for local testing only and must not be used as a school installation URL.
+Tests use real SQLite migrations and signed JWTs for Deep Linking, student
+submission, teacher grading, OAuth assertions, score posting, invalid grades,
+duplicate submissions, nonce failure, and replay. On November 25, 2026, a
+real self-hosted Canvas instance completed instructor and learner launches,
+Deep Linking, NRPS roster retrieval, automatic score posting, teacher review
+of a written response, and gradebook updates of 5/5 and 5/6. It uses a
+temporary HTTPS tunnel for local testing only.
 
-## Current limits
-
-- Deep Linking currently creates a generic Proof Lab or Teachers resource. It
-  does not select a particular teacher-made activity.
-- The resource page opens the existing accountless site. Activity completion
-  is not attached to the Canvas learner identity, so grades are not posted
-  automatically. The AGS score route is a server-side integration primitive.
-- NRPS reads the roster but does not yet show it in the teacher interface.
-- An instructor Resource Link launch and Deep Linking return have been tested
-  against self-hosted Canvas. A learner launch, roster query, and gradebook
-  update remain to be tested end to end before claiming production
-  interoperability with a school installation.
+No school Canvas installation is registered. A school administrator must
+install the tool and provide its identifiers before school use can be tested.
+The local test cannot cover every school's policies or settings.

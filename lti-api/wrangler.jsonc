@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "atom-lti-api",
   "main": "src/index.ts",
+  "upload_source_maps": true,
   "compatibility_date": "2026-11-25",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {

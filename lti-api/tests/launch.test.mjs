@@ -22,7 +22,8 @@ function db() {
           else if (sql.startsWith('INSERT INTO sessions')) sessionRows.set(args[0], {
             issuer: args[1], client_id: args[2], deployment_id: args[3], subject: args[4],
             roles: args[5], context_id: args[6], resource_link_id: args[7],
-            services_json: args[8], deep_link_json: args[9], expires_at: args[10]
+            services_json: args[8], deep_link_json: args[9], expires_at: args[10],
+            activity_id: args[11], display_name: args[12]
           });
           return { success: true };
         },
@@ -40,6 +41,10 @@ function db() {
             return row && row.expires_at > args[1] ? row : null;
           }
           return null;
+        },
+        async all() {
+          if (sql.startsWith('SELECT * FROM activities')) return { results: [] };
+          return { results: [] };
         }
       };
       return statement;
@@ -112,6 +117,16 @@ test('Canvas config exposes the tool registration endpoints', async () => {
   assert.equal(config.oidc_initiation_url, ORIGIN + '/lti/login');
   assert.equal(config.public_jwk_url, ORIGIN + '/lti/jwks');
   assert.deepEqual(config.redirect_uris, [ORIGIN + '/lti/launch']);
+});
+
+test('JWKS can publish a previous signing key during rotation', async () => {
+  const response = await worker.fetch(new Request(ORIGIN + '/lti/jwks'), {
+    DB: db(), LTI_KEY_ID: 'new-key', LTI_PUBLIC_JWK: JSON.stringify({ kty: 'RSA', n: 'new', e: 'AQAB' }),
+    LTI_PREVIOUS_PUBLIC_JWK: JSON.stringify({ kty: 'RSA', n: 'old', e: 'AQAB', kid: 'old-key' })
+  });
+  assert.equal(response.status, 200);
+  const keys = (await response.json()).keys;
+  assert.deepEqual(keys.map(key => key.kid), ['new-key', 'old-key']);
 });
 
 test('Canvas Deep Linking works in an iframe without cookies', async () => {
