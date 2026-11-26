@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Roboto:wght@700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=launch-1" />
+  <link rel="stylesheet" href="styles.css?v=teachers-release-1" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -77,15 +77,16 @@
         "featureList": ["Exact math solving", "Step-by-step proof checking", "Practice generation", "Interactive graphing", "English and Spanish interface"]
       },
       {
-        "@type": "Event",
-        "name": "atomEDU Proof Lab Launch Stream",
-        "description": "The official atomEDU launch stream introducing Proof Lab.",
-        "startDate": "2026-11-21T20:00:00-06:00",
-        "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "location": { "@type": "VirtualLocation", "url": "https://atom-edu.org/live" },
-        "organizer": { "@id": "https://atom-edu.org/#organization" },
-        "offers": { "@type": "Offer", "url": "https://atom-edu.org/live", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" }
+        "@type": "WebApplication",
+        "@id": "https://atom-edu.org/teachers#app",
+        "name": "atomEDU for Teachers",
+        "url": "https://atom-edu.org/teachers",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any modern web browser",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "creator": { "@id": "https://atom-edu.org/#organization" },
+        "featureList": ["Live Orbit Rooms", "Timed assessments", "Shareable assignments"]
       },
       {
         "@type": "FAQPage",
@@ -142,12 +143,12 @@
       <div class="slide-bg" style="background-image:url('images/bg1.png')"></div>
       <div class="slide-scrim"></div>
       <div class="slide-content"><div class="inner">
-        <p class="slide-label">Live launch | Saturday, November 21, 2026 | 8:00 PM CST</p>
-        <h1 class="slide-title heading-display">atomEDU launches tonight at 8 PM CST.</h1>
-        <p class="slide-sub">Join the launch stream for the official release of Proof Lab. See the in-house math engine solve, verify, generate, and graph in real time.</p>
+        <p class="slide-label">New | atomEDU for Teachers</p>
+        <h1 class="slide-title heading-display">atomEDU for Teachers is here.</h1>
+        <p class="slide-sub">Build live Orbit Rooms, timed quizzes, and shareable assignments. Students join with a link or code; no accounts needed.</p>
         <div class="slide-actions">
-          <a class="btn btn-accent" href="/proof-lab">Start math</a>
-          <a class="btn btn-light" href="#launch">Launch details</a>
+          <a class="btn btn-accent" href="/teachers">Explore for Teachers</a>
+          <a class="btn btn-light" href="#teachers-release">See what you can make</a>
         </div>
       </div></div>
     </article>
@@ -200,10 +201,10 @@
     </div>
   </section>
 
-  <section class="launch-strip" id="launch" aria-labelledby="launch-title">
-    <div class="wrap launch-strip-inner">
-      <div><p class="kicker">Launch stream</p><h2 class="heading-display" id="launch-title">Proof Lab goes live today.</h2></div>
-      <dl class="launch-facts"><div><dt>Date</dt><dd>Saturday, November 21, 2026</dd></div><div><dt>Time</dt><dd>8:00 PM CST</dd></div><div><dt>Where</dt><dd><a href="/live">Online launch stream</a></dd></div></dl>
+  <section class="teacher-release-strip" id="teachers-release" aria-labelledby="teachers-release-title">
+    <div class="wrap teacher-release-inner">
+      <div><p class="kicker">New from atomEDU</p><h2 class="heading-display" id="teachers-release-title">Three ways to teach with atomEDU.</h2></div>
+      <dl class="teacher-release-facts"><div><dt>Live</dt><dd><a href="/teachers-orbit-make">Orbit Rooms</a></dd></div><div><dt>Quiz</dt><dd><a href="/teachers-quiz-make">Timed assessments</a></dd></div><div><dt>Homework</dt><dd><a href="/teachers-assignments">Shareable assignments</a></dd></div></dl>
     </div>
   </section>
 
@@ -408,7 +409,7 @@
     </div>
   </footer>
 
-  <script src="site-i18n.js?v=launch-1"></script>
+  <script src="site-i18n.js?v=teachers-release-1"></script>
   <script src="site.js?v=proof-lab-4"></script>
   <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 </body>

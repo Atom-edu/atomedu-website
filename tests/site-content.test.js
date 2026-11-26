@@ -119,14 +119,16 @@ test('legacy demos forward into the current proof tool', () => {
   assert.match(read('lab-projectile.html'), /http-equiv="refresh" content="0;url=\/proof-lab"/);
 });
 
-test('home carousel uses three distinct backgrounds', () => {
+test('home promotes atomEDU for Teachers with three distinct carousel backgrounds', () => {
   const home = read('index.html');
-  assert.match(home, /Live launch \| Saturday, November 21, 2026 \| 8:00 PM CST/);
-  assert.match(home, /atomEDU launches tonight at 8 PM CST\./);
-  assert.match(home, /Join the launch stream for the official release of Proof Lab\./);
-  assert.match(home, /id="launch"/);
-  assert.match(home, /href="\/live">Online launch stream<\/a>/);
-  assert.match(home, /"startDate": "2026-11-21T20:00:00-06:00"/);
+  assert.match(home, /atomEDU for Teachers is here\./);
+  assert.match(home, /Build live Orbit Rooms, timed quizzes, and shareable assignments\./);
+  assert.match(home, /href="\/teachers">Explore for Teachers<\/a>/);
+  assert.match(home, /id="teachers-release"/);
+  assert.match(home, /href="\/teachers-orbit-make">Orbit Rooms<\/a>/);
+  assert.match(home, /href="\/teachers-assignments">Shareable assignments<\/a>/);
+  assert.match(home, /"@id": "https:\/\/atom-edu\.org\/teachers#app"/);
+  assert.doesNotMatch(home, /atomEDU launches tonight|Proof Lab goes live today|"@type": "Event"/);
   assert.match(home, /images\/bg1\.png/);
   assert.match(home, /images\/bg2\.jpg/);
   assert.match(home, /images\/bg3\.jpg/);
@@ -169,7 +171,7 @@ test('home explains the in-house engine and the role of partners and integration
   assert.match(home, /Partners build trust\. Integrations prove utility\./);
   assert.match(home, /Is atomEDU an AI wrapper\?/);
   assert.match(home, /"@type": "FAQPage"/);
-  assert.match(home, /"@type": "Event"/);
+  assert.match(home, /"@id": "https:\/\/atom-edu\.org\/teachers#app"/);
 });
 
 test('home presents compact partner logos without the former VC Boom pill', () => {
