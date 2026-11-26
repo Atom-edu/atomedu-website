@@ -7,6 +7,7 @@ interface Env {
   LTI_PRIVATE_KEY: string;
   LTI_PUBLIC_JWK: string;
   LTI_PREVIOUS_PUBLIC_JWK?: string;
+  PUBLIC_RATE_SECRET?: string;
 }
 
 type Platform = {
@@ -38,6 +39,15 @@ type Submission = {
   lineitem_url: string; answers_json: string; manual_json: string; score: number;
   score_maximum: number; submitted_at: number; graded_at: number | null;
   grade_status: string; grade_error: string;
+};
+type PublicAssignment = {
+  id: string; teacher_token_hash: string; title: string; questions_json: string;
+  score_maximum: number; created_at: number; expires_at: number;
+};
+type PublicSubmission = {
+  id: string; assignment_id: string; student_name: string; student_name_key: string;
+  answers_json: string; manual_json: string; score: number; score_maximum: number;
+  grade_status: string; receipt: string; submitted_at: number; graded_at: number | null;
 };
 type LtiClaims = {
   nonce?: string;
@@ -228,12 +238,12 @@ async function sessionForToken(value: string, env: Env): Promise<Session | null>
 function instructor(session: Session): boolean {
   return (JSON.parse(session.roles) as string[]).some(role => /#(Instructor|Administrator)$/.test(role));
 }
-function page(content: string, platformOrigin: string, script = ''): Response {
+function page(content: string, platformOrigin: string, script = '', label = 'for Teachers · Canvas'): Response {
   const nonce = script ? token() : '';
   return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>atomEDU in Canvas</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"><style>
   :root{color-scheme:light}*{box-sizing:border-box}body{font:16px 'Space Grotesk',system-ui,-apple-system,sans-serif;background:#fff;color:#1f2a36;margin:0}header{min-height:56px;background:#1f2a36;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px}.brand{font-size:21px;font-weight:500;letter-spacing:-.035em}.brand b{font-weight:700}.brand-label{color:#78aef0;font-size:13px;font-weight:700}main{max-width:1000px;margin:0 auto;padding:clamp(22px,4vw,52px)}h1{font-size:clamp(26px,3vw,40px);line-height:1.1;letter-spacing:-.045em;margin:0 0 18px}h2{font-size:20px;letter-spacing:-.03em}p{line-height:1.55}a{color:#205ba8}button,.button{display:inline-block;padding:11px 17px;color:#fff;background:#1f2a36;border:1px solid #1f2a36;border-radius:5px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}button.secondary,.button.secondary{color:#1f2a36;background:#fff;border-color:#cfd8e1}button:hover,.button:hover{filter:brightness(1.13)}input,textarea,select{font:inherit;padding:10px;border:1px solid #cfd8e1;border-radius:4px;background:#fff;color:#1f2a36;max-width:100%}textarea{width:100%;min-height:95px}input[type=number]{width:110px}label{display:block;font-weight:650;margin:14px 0 6px}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.rule{border:0;border-top:1px solid #dce2e8;margin:24px 0}.muted{color:#687887}.question{border-top:1px solid #dce2e8;padding:18px 0}.option{display:flex;align-items:center;gap:9px;margin:8px 0}.option input{margin:0}.option label{margin:0;font-weight:400}.notice{border-left:4px solid #bf5a2e;padding:8px 14px;background:#f8eee4}.error{color:#a34338}.success{color:#28745a}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #dce2e8;text-align:left;vertical-align:top}img.question-image{max-width:min(100%,500px);max-height:350px;object-fit:contain}pre{white-space:pre-wrap;overflow-wrap:anywhere}
-  </style><header><span class="brand">atom<b>EDU</b></span><span class="brand-label">for Teachers · Canvas</span></header><main>${content}</main>${script ? `<script nonce="${nonce}">${script}</script>` : ''}</html>`,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Security-Policy': framePolicy(platformOrigin, nonce), 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' } });
+  </style><header><span class="brand">atom<b>EDU</b></span><span class="brand-label">${htmlEscape(label)}</span></header><main>${content}</main>${script ? `<script nonce="${nonce}">${script}</script>` : ''}</html>`,
+    { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Security-Policy': framePolicy(platformOrigin, nonce), 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Robots-Tag': 'noindex' } });
 }
 async function platformFor(session: Session, env: Env): Promise<Platform> {
   const platform = await env.DB.prepare('SELECT * FROM platforms WHERE issuer = ? AND client_id = ? AND active = 1')
@@ -415,8 +425,8 @@ async function activityPage(sessionToken: string, session: Session, env: Env): P
   if (instructor(session)) return instructorReport(sessionToken, session, activity, questions, env);
   const submission = await env.DB.prepare('SELECT * FROM submissions WHERE activity_id = ? AND subject = ?')
     .bind(activity.id, session.subject).first<Submission>();
-  if (submission) return page(`<h1>${htmlEscape(activity.title)}</h1><p class="notice">Your work was submitted. ${submission.grade_status === 'awaiting_review' ? 'Your teacher will grade the written response.' : submission.grade_status === 'posted' ? `Score: ${submission.score} / ${activity.score_maximum}.` : 'The grade is saved and is waiting to sync with Canvas.'}</p>`, platform.service_origin);
-  return page(`<h1>${htmlEscape(activity.title)}</h1><p class="muted">${questions.length} question${questions.length === 1 ? '' : 's'} · ${activity.score_maximum} points · ${htmlEscape(session.display_name || 'Canvas learner')}</p><form method="post" action="/lti/activity/submit"><input type="hidden" name="session" value="${htmlEscape(sessionToken)}">${questions.map((question, index) => questionDisplay(question, index)).join('')}<button type="submit">Submit assessment</button></form>`, platform.service_origin);
+  if (submission) return page(`<h1>${htmlEscape(activity.title)}</h1><p class="notice">Your work was submitted. ${submission.grade_status === 'awaiting_review' ? 'Your teacher will grade the written response.' : submission.grade_status === 'posted' ? `Score: ${submission.score} / ${activity.score_maximum}.` : 'The grade is saved and is waiting to sync with Canvas.'}</p>`, platform.service_origin, '', 'for Students · Canvas');
+  return page(`<h1>${htmlEscape(activity.title)}</h1><p class="muted">${questions.length} question${questions.length === 1 ? '' : 's'} · ${activity.score_maximum} points · ${htmlEscape(session.display_name || 'Canvas learner')}</p><form method="post" action="/lti/activity/submit"><input type="hidden" name="session" value="${htmlEscape(sessionToken)}">${questions.map((question, index) => questionDisplay(question, index)).join('')}<button type="submit">Submit assessment</button></form>`, platform.service_origin, '', 'for Students · Canvas');
 }
 async function submitActivity(request: Request, env: Env): Promise<Response> {
   if (!sameOrigin(request)) return fail('Invalid request origin', 403);
@@ -568,6 +578,136 @@ async function gradeActivity(request: Request, env: Env): Promise<Response> {
   await postSubmissionScore(updated, session, env);
   return instructorReport(sessionToken, session, activity, questions, env);
 }
+function publicEditorPage(env: Env): Response {
+  return page(`<h1>Create an assignment</h1><p>Build an assessment, then paste its student link into a Canvas assignment description or module. Students will complete it on atomEDU. Keep the private teacher link to review and export grades.</p><p class="notice">This works without a school LTI installation. Canvas will not receive grades automatically. Student names are self-entered, so use completion receipts to verify work.</p><form method="post" action="/public/assignments" id="activity-form"><label for="activity-title">Assignment title</label><input id="activity-title" name="title" maxlength="120" required style="width:100%"><div id="questions"></div><input type="hidden" name="questions" id="questions-json"><div class="row"><button type="button" class="secondary" id="add-question">+ Add question</button><button type="submit">Create assignment</button></div><p id="form-error" class="error" role="alert"></p></form>`, env.SITE_ORIGIN, assessmentEditorScript(), 'for Teachers');
+}
+async function limitPublicCreation(request: Request, env: Env): Promise<boolean> {
+  if (!env.PUBLIC_RATE_SECRET || env.PUBLIC_RATE_SECRET.length < 32) throw new Error('Public assignment security is not configured');
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.PUBLIC_RATE_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const digest = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(ip)));
+  const ipHash = [...digest].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  const day = new Date().toISOString().slice(0, 10);
+  await env.DB.prepare('INSERT INTO public_create_limits (ip_hash, day, count) VALUES (?, ?, 1) ON CONFLICT(ip_hash, day) DO UPDATE SET count = count + 1')
+    .bind(ipHash, day).run();
+  const row = await env.DB.prepare('SELECT count FROM public_create_limits WHERE ip_hash = ? AND day = ?').bind(ipHash, day).first<{ count: number }>();
+  return (row?.count ?? 100) <= 10;
+}
+async function createPublicAssignment(request: Request, env: Env): Promise<Response> {
+  if (!sameOrigin(request)) return fail('Invalid request origin', 403);
+  const data = await form(request, 1_500_000);
+  const title = textField(data.get('title'), 120);
+  if (!title) return fail('Assignment title is required');
+  const questions = parseQuestions(data.get('questions') ?? '');
+  if (!(await limitPublicCreation(request, env))) return fail('Daily assignment creation limit reached. Try again tomorrow.', 429);
+  const id = crypto.randomUUID();
+  const teacherToken = token();
+  const now = Math.floor(Date.now() / 1000);
+  const maximum = questions.reduce((sum, question) => sum + question.points, 0);
+  await env.DB.prepare('INSERT INTO public_assignments (id, teacher_token_hash, title, questions_json, score_maximum, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .bind(id, await hash(teacherToken), title, JSON.stringify(questions), maximum, now, now + 180 * 86400).run();
+  const studentUrl = `${env.SITE_ORIGIN}/students-assignment?code=${id}`;
+  const teacherUrl = new URL(`/public/manage/${teacherToken}`, request.url).href;
+  return page(`<h1>${htmlEscape(title)} is ready</h1><p class="notice">Save your private teacher link now. Anyone with it can review and change grades.</p><label>Student link — paste this into Canvas</label><input value="${htmlEscape(studentUrl)}" readonly style="width:100%"><p><a href="${htmlEscape(studentUrl)}" target="_blank" rel="noopener">Open student view</a></p><label>Private teacher report link</label><input value="${htmlEscape(teacherUrl)}" readonly style="width:100%"><p><a href="${htmlEscape(teacherUrl)}">Open teacher report</a></p><h2>Use it in Canvas</h2><p>Create a regular Canvas assignment. Put the student link in its description, choose Online → Text Entry as the submission type, and ask students to paste their completion receipt. Use the teacher report or CSV to enter their scores in Canvas.</p><p class="muted">Students enter their own names. Grades do not sync automatically. This assignment and its submissions expire after 180 days.</p>`, env.SITE_ORIGIN, '', 'for Teachers');
+}
+async function publicAssignmentFor(id: string, env: Env): Promise<PublicAssignment | null> {
+  return env.DB.prepare('SELECT * FROM public_assignments WHERE id = ? AND expires_at > ?')
+    .bind(id, Math.floor(Date.now() / 1000)).first<PublicAssignment>();
+}
+async function publicStudentPage(id: string, env: Env): Promise<Response> {
+  const assignment = await publicAssignmentFor(id, env);
+  if (!assignment) return fail('Assignment not found or expired', 404);
+  const questions = JSON.parse(assignment.questions_json) as Question[];
+  return page(`<h1>${htmlEscape(assignment.title)}</h1><p class="muted">${questions.length} questions · ${assignment.score_maximum} points</p><p>Enter the same name your teacher will recognize in Canvas. After submitting, copy your receipt into the Canvas assignment if your teacher asks for it.</p><form method="post" action="/public/assignments/${htmlEscape(id)}/submit"><label for="student-name">Your name</label><input id="student-name" name="student_name" maxlength="80" required autocomplete="name" style="width:100%">${questions.map((question, index) => questionDisplay(question, index)).join('')}<button type="submit">Submit assignment</button></form><p class="muted">One submission per name. Your teacher grades written responses. This link does not sign you in to Canvas.</p>`, env.SITE_ORIGIN, '', 'for Students');
+}
+async function submitPublicAssignment(request: Request, id: string, env: Env): Promise<Response> {
+  if (!sameOrigin(request)) return fail('Invalid request origin', 403);
+  const assignment = await publicAssignmentFor(id, env);
+  if (!assignment) return fail('Assignment not found or expired', 404);
+  const data = await form(request, 250_000);
+  const name = textField(data.get('student_name'), 80);
+  if (name.length < 2) return fail('Enter a name with at least two characters');
+  const questions = JSON.parse(assignment.questions_json) as Question[];
+  const answers: Record<string, string[]> = {};
+  let score = 0;
+  for (const question of questions) {
+    const answer = data.getAll(`answer:${question.id}`).map(value => textField(value, question.type === 'free-response' ? 8000 : 500));
+    if (!answer.length || answer.every(value => !value)) return fail('Answer every question before submitting');
+    if (question.type !== 'free-response' && question.type !== 'fill-blank' && answer.some(value => !question.options.includes(value))) return fail('Invalid answer');
+    answers[question.id] = answer;
+    score += answerScore(question, answer);
+  }
+  const receipt = token().slice(0, 16);
+  const status = questions.some(question => question.type === 'free-response') ? 'awaiting_review' : 'graded';
+  const inserted = await env.DB.prepare('INSERT OR IGNORE INTO public_submissions (id, assignment_id, student_name, student_name_key, answers_json, score, score_maximum, grade_status, receipt, submitted_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM public_submissions WHERE assignment_id = ?) < 300')
+    .bind(crypto.randomUUID(), id, name, name.toLocaleLowerCase(), JSON.stringify(answers), score, assignment.score_maximum, status, receipt, Math.floor(Date.now() / 1000), id).run();
+  if (inserted.meta.changes !== 1) return fail('This name has already submitted, or the assignment is full. Ask your teacher for help.', 409);
+  return page(`<h1>Submitted</h1><p class="notice">Your work was saved for ${htmlEscape(assignment.title)}.</p><p><strong>Completion receipt:</strong> <code>${htmlEscape(receipt)}</code></p><p>Copy this receipt into Canvas if your teacher asks for proof of completion.</p><p>${status === 'graded' ? `Current score: ${score} / ${assignment.score_maximum}.` : 'Your teacher will grade the written response.'}</p><p class="muted">This link-based assignment does not update the Canvas gradebook automatically.</p>`, env.SITE_ORIGIN, '', 'for Students');
+}
+async function publicManagedAssignment(teacherToken: string, env: Env): Promise<PublicAssignment | null> {
+  if (!/^[A-Za-z0-9_-]{40,50}$/.test(teacherToken)) return null;
+  return env.DB.prepare('SELECT * FROM public_assignments WHERE teacher_token_hash = ? AND expires_at > ?')
+    .bind(await hash(teacherToken), Math.floor(Date.now() / 1000)).first<PublicAssignment>();
+}
+async function publicReport(teacherToken: string, env: Env): Promise<Response> {
+  const assignment = await publicManagedAssignment(teacherToken, env);
+  if (!assignment) return fail('Teacher link is invalid or expired', 404);
+  const questions = JSON.parse(assignment.questions_json) as Question[];
+  const rows = await env.DB.prepare('SELECT * FROM public_submissions WHERE assignment_id = ? ORDER BY submitted_at DESC LIMIT 300')
+    .bind(assignment.id).all<PublicSubmission>();
+  const studentUrl = `${env.SITE_ORIGIN}/students-assignment?code=${assignment.id}`;
+  const entries = rows.results.map(submission => {
+    const answers = JSON.parse(submission.answers_json) as Record<string, string[]>;
+    const overrides = JSON.parse(submission.manual_json) as Record<string, number>;
+    const details = questions.map((question, index) => {
+      const answer = answers[question.id] ?? [];
+      const value = overrides[question.id] ?? (question.type === 'free-response' && submission.grade_status === 'awaiting_review' ? '' : answerScore(question, answer));
+      return `<div class="question"><strong>${index + 1}. ${htmlEscape(question.prompt)}</strong><p>Answer: ${htmlEscape(answer.join(', ') || 'No answer')}</p><label>Points earned (maximum ${question.points})</label><input type="number" name="points:${htmlEscape(question.id)}" min="0" max="${question.points}" step="0.01" value="${value}" required></div>`;
+    }).join('');
+    return `<section class="question"><h2>${htmlEscape(submission.student_name)}</h2><p class="muted">${submission.score} / ${submission.score_maximum} · ${htmlEscape(submission.grade_status)} · Receipt ${htmlEscape(submission.receipt)}</p><details><summary>Review answers and grade</summary><form method="post" action="/public/manage/${htmlEscape(teacherToken)}/grade"><input type="hidden" name="submission_id" value="${htmlEscape(submission.id)}">${details}<button type="submit">Save grade</button></form></details></section>`;
+  }).join('');
+  const awaiting = rows.results.filter(row => row.grade_status === 'awaiting_review').length;
+  return page(`<h1>${htmlEscape(assignment.title)}</h1><p class="muted">${rows.results.length} submissions · ${awaiting} awaiting review · ${assignment.score_maximum} points</p><p class="notice">This is a link-based assignment. Grades do not sync to Canvas automatically. Download the CSV to enter grades in Canvas; students can provide their receipts for verification.</p><label>Student link for Canvas</label><input value="${htmlEscape(studentUrl)}" readonly style="width:100%"><p class="row"><a href="${htmlEscape(studentUrl)}" target="_blank" rel="noopener">Open student view</a><a class="button secondary" href="/public/manage/${htmlEscape(teacherToken)}/grades.csv">Download grades CSV</a></p>${entries || '<p>No student submissions yet.</p>'}<p class="muted">This report and its submissions expire ${new Date(assignment.expires_at * 1000).toISOString().slice(0, 10)}.</p>`, env.SITE_ORIGIN, '', 'for Teachers');
+}
+async function gradePublicSubmission(request: Request, teacherToken: string, env: Env): Promise<Response> {
+  if (!sameOrigin(request)) return fail('Invalid request origin', 403);
+  const assignment = await publicManagedAssignment(teacherToken, env);
+  if (!assignment) return fail('Teacher link is invalid or expired', 404);
+  const data = await form(request);
+  const id = data.get('submission_id') ?? '';
+  const submission = await env.DB.prepare('SELECT * FROM public_submissions WHERE id = ? AND assignment_id = ?')
+    .bind(id, assignment.id).first<PublicSubmission>();
+  if (!submission) return fail('Submission not found', 404);
+  const questions = JSON.parse(assignment.questions_json) as Question[];
+  const points: Record<string, number> = {};
+  let score = 0;
+  for (const question of questions) {
+    const raw = data.get(`points:${question.id}`);
+    const value = Number(raw);
+    if (raw === null || raw === '' || !Number.isFinite(value) || value < 0 || value > question.points || Math.abs(Math.round(value * 100) - value * 100) > 0.000001) return fail('Invalid question grade');
+    points[question.id] = value; score += value;
+  }
+  await env.DB.prepare("UPDATE public_submissions SET manual_json = ?, score = ?, grade_status = 'graded', graded_at = ? WHERE id = ? AND assignment_id = ?")
+    .bind(JSON.stringify(points), Math.round(score * 100) / 100, Math.floor(Date.now() / 1000), id, assignment.id).run();
+  return publicReport(teacherToken, env);
+}
+function csvCell(value: string | number): string {
+  const raw = String(value);
+  const safe = /^[=+@-]/.test(raw) ? `'${raw}` : raw;
+  return `"${safe.replaceAll('"', '""')}"`;
+}
+async function publicGradesCsv(teacherToken: string, env: Env): Promise<Response> {
+  const assignment = await publicManagedAssignment(teacherToken, env);
+  if (!assignment) return fail('Teacher link is invalid or expired', 404);
+  const rows = await env.DB.prepare('SELECT * FROM public_submissions WHERE assignment_id = ? ORDER BY submitted_at ASC LIMIT 300')
+    .bind(assignment.id).all<PublicSubmission>();
+  const lines = ['Student name,Score,Maximum,Status,Receipt,Submitted at', ...rows.results.map(row =>
+    [row.student_name, row.score, row.score_maximum, row.grade_status, row.receipt, new Date(row.submitted_at * 1000).toISOString()].map(csvCell).join(','))];
+  return new Response('\uFEFF' + lines.join('\r\n') + '\r\n', {
+    headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="atomedu-grades-${assignment.id}.csv"`,
+      'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' }
+  });
+}
 function serviceUrl(raw: unknown, platform: Platform): URL {
   if (typeof raw !== 'string') throw new Error('LTI service URL is missing');
   const url = exactHttps(raw);
@@ -662,6 +802,15 @@ export default {
       if (url.pathname === '/lti/activity/submit' && request.method === 'POST') return submitActivity(request, env);
       if (url.pathname === '/lti/activity/grade' && request.method === 'POST') return gradeActivity(request, env);
       if (url.pathname === '/lti/roster' && request.method === 'GET') return roster(request, env);
+      if (url.pathname === '/public/assignments/new' && request.method === 'GET') return publicEditorPage(env);
+      if (url.pathname === '/public/assignments' && request.method === 'POST') return createPublicAssignment(request, env);
+      const publicAssignment = url.pathname.match(/^\/public\/assignments\/([0-9a-f-]{36})(?:\/(submit))?$/);
+      if (publicAssignment && !publicAssignment[2] && request.method === 'GET') return publicStudentPage(publicAssignment[1], env);
+      if (publicAssignment?.[2] === 'submit' && request.method === 'POST') return submitPublicAssignment(request, publicAssignment[1], env);
+      const publicManage = url.pathname.match(/^\/public\/manage\/([A-Za-z0-9_-]{40,50})(?:\/(grade|grades\.csv))?$/);
+      if (publicManage && !publicManage[2] && request.method === 'GET') return publicReport(publicManage[1], env);
+      if (publicManage?.[2] === 'grade' && request.method === 'POST') return gradePublicSubmission(request, publicManage[1], env);
+      if (publicManage?.[2] === 'grades.csv' && request.method === 'GET') return publicGradesCsv(publicManage[1], env);
       return fail('Not found', 404);
     } catch (error) {
       console.error(JSON.stringify({ event: 'lti_request_failed', path: url.pathname, error: error instanceof Error ? error.name : 'unknown' }));
@@ -672,7 +821,10 @@ export default {
     const now = Math.floor(Date.now() / 1000);
     await env.DB.batch([
       env.DB.prepare('DELETE FROM launch_states WHERE expires_at < ?').bind(now),
-      env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(now)
+      env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(now),
+      env.DB.prepare('DELETE FROM public_submissions WHERE assignment_id IN (SELECT id FROM public_assignments WHERE expires_at < ?)').bind(now),
+      env.DB.prepare('DELETE FROM public_assignments WHERE expires_at < ?').bind(now),
+      env.DB.prepare('DELETE FROM public_create_limits WHERE day < ?').bind(new Date((now - 2 * 86400) * 1000).toISOString().slice(0, 10))
     ]);
   }
 };

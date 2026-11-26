@@ -10,7 +10,7 @@
     "LTI_KEY_ID": "atomedu-2026-11-25"
   },
   "secrets": {
-    "required": ["LTI_PRIVATE_KEY", "LTI_PUBLIC_JWK"]
+    "required": ["LTI_PRIVATE_KEY", "LTI_PUBLIC_JWK", "PUBLIC_RATE_SECRET"]
   },
   "d1_databases": [{
     "binding": "DB",

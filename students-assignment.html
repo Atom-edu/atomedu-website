@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#1f2a36"><title>Open assignment | atomEDU</title><link rel="icon" href="/images/logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/teacher.css"></head><body><header class="student-header"><a class="teacher-back" href="/teachers">atomEDU</a><span><span class="brand-core">atom<b>EDU</b></span><span class="brand-context">for Students</span></span></header><main class="teacher-shell narrow"><h1 class="teacher-title">Opening your assignment…</h1><p class="teacher-lead" id="status">Checking the link from your teacher.</p><p><a id="continue" href="/teachers" hidden>Continue to assignment</a></p></main><script>
+  const code = new URLSearchParams(location.search).get('code') || '';
+  if (/^[0-9a-f-]{36}$/.test(code)) {
+    const destination = 'https://atom-lti-api.archimedes-api1.workers.dev/public/assignments/' + code;
+    document.getElementById('continue').href = destination;
+    document.getElementById('continue').hidden = false;
+    location.replace(destination);
+  } else {
+    document.querySelector('h1').textContent = 'Assignment link incomplete';
+    document.getElementById('status').textContent = 'Ask your teacher for the full student link.';
+  }
+</script></body></html>

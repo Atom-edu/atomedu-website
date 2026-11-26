@@ -25,6 +25,26 @@ Each assessment currently allows one submission per student, up to 20
 questions, and resized images. Generic Proof Lab and Teachers links open the
 standalone site and do not create Canvas grades.
 
+## Using assignments without Canvas administrator access
+
+Teachers can open `https://atom-edu.org/teachers-assignments` and create a
+link-based assignment without an account. The builder returns a student link
+and a private teacher report link. The student link opens a persistent
+assessment where students enter their names, submit answers, and receive a
+completion receipt. The teacher link shows responses, allows manual grading
+and point overrides, and exports grades as CSV. Save the private link: it is
+the only way to manage the assignment. Assignments and submissions expire
+after 180 days; each assignment accepts up to 300 distinct names.
+
+To use this in Canvas, create a normal assignment with **Online → Text Entry**
+submission, paste the student link into its description, and ask students to
+paste their receipt. Use the atomEDU report or CSV to enter scores in Canvas.
+This is a link-based workflow, not an LTI installation: student names are
+self-entered, Canvas identity is not verified, and gradebook/roster sync is
+unavailable. A school administrator is still needed for those LTI features.
+The public creation endpoint is limited to 10 assignments per client IP per
+UTC day with an HMAC-hashed IP key; no raw IP is stored in D1.
+
 ## Canvas installation
 
 Give the school's Canvas administrator these URLs:
