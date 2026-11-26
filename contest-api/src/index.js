@@ -57,10 +57,11 @@ export function contestSchedule(now = new Date()) {
   const local = parts(now);
   const today = dayString(local);
   const minutes = local.hour * 60 + local.minute;
-  const contestDate = minutes >= 21 * 60 + 30 ? nextDay(today) : today;
+  const nextOpenMinutes = today === '2026-11-25' ? 22 * 60 + 30 : 21 * 60 + 30;
+  const contestDate = minutes >= nextOpenMinutes ? nextDay(today) : today;
   const deadlineMinutes = TEMPORARY_DEADLINES.get(contestDate) || 18 * 60;
-  const judgingEndMinutes = deadlineMinutes >= 20 * 60 + 30 ? 21 * 60 + 30 : 20 * 60 + 30;
-  const phase = minutes >= 21 * 60 + 30 ? 'open'
+  const judgingEndMinutes = deadlineMinutes >= 20 * 60 + 30 ? nextOpenMinutes : 20 * 60 + 30;
+  const phase = minutes >= nextOpenMinutes ? 'open'
     : minutes < deadlineMinutes ? 'open'
     : minutes < judgingEndMinutes ? 'judging'
       : 'results_pending';
@@ -68,7 +69,9 @@ export function contestSchedule(now = new Date()) {
     phase,
     contestDate,
     deadlineUtc: localToUtc(contestDate, Math.floor(deadlineMinutes / 60), deadlineMinutes % 60),
-    nextOpenUtc: localToUtc(minutes >= 21 * 60 + 30 ? nextDay(today) : today, 21, 30),
+    nextOpenUtc: localToUtc(minutes >= nextOpenMinutes ? nextDay(today) : today,
+      Math.floor((minutes >= nextOpenMinutes ? 21 * 60 + 30 : nextOpenMinutes) / 60),
+      (minutes >= nextOpenMinutes ? 21 * 60 + 30 : nextOpenMinutes) % 60),
   };
 }
 
@@ -386,7 +389,7 @@ async function scoreSubmission(env, id, scores, currentTime) {
   const scoredAt = currentTime();
   const schedule = contestSchedule(scoredAt);
   if (!['judging', 'results_pending'].includes(schedule.phase)) {
-    throw new ApiError(409, 'judging_closed', 'Scoring is only available 18:00–21:30 Chicago time for today');
+    throw new ApiError(409, 'judging_closed', 'Scoring is only available during the judging window for today');
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
     throw new ApiError(400, 'invalid_id', 'Invalid submission ID');
@@ -414,7 +417,7 @@ async function selectWinner(env, id, date, currentTime, origin, expectedRunnerUp
   const selectedAt = currentTime();
   const schedule = contestSchedule(selectedAt);
   if (!['judging', 'results_pending'].includes(schedule.phase) || date !== schedule.contestDate) {
-    throw new ApiError(409, 'judging_closed', 'Winner selection is only available 18:00–21:30 Chicago time for today');
+    throw new ApiError(409, 'judging_closed', 'Winner selection is only available during the judging window for today');
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) throw new ApiError(400, 'invalid_id', 'Invalid submission ID');
   if (await env.DB.prepare('SELECT submission_id FROM winners WHERE contest_date = ?').bind(date).first()) {

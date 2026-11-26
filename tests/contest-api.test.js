@@ -149,8 +149,12 @@ test('November 25 artwork entries stay open until 8:30 PM Central only', () => {
   assert.equal(contestSchedule(new Date('2026-11-26T02:29:00Z')).phase, 'open');
   assert.equal(contestSchedule(new Date('2026-11-26T02:30:00Z')).phase, 'judging');
   assert.equal(contestSchedule(new Date('2026-11-26T03:29:00Z')).phase, 'judging');
-  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).contestDate, '2026-11-26');
-  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).deadlineUtc, '2026-11-27T00:00:00.000Z');
+  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).contestDate, '2026-11-25');
+  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).phase, 'judging');
+  assert.equal(contestSchedule(new Date('2026-11-26T03:30:00Z')).nextOpenUtc, '2026-11-26T04:30:00.000Z');
+  assert.equal(contestSchedule(new Date('2026-11-26T04:29:00Z')).phase, 'judging');
+  assert.equal(contestSchedule(new Date('2026-11-26T04:30:00Z')).contestDate, '2026-11-26');
+  assert.equal(contestSchedule(new Date('2026-11-26T04:30:00Z')).deadlineUtc, '2026-11-27T00:00:00.000Z');
 });
 
 test('login uses signed expiring bearer tokens, explicit CORS, and rate limits', async () => {
