@@ -111,6 +111,7 @@ test('Canvas config exposes the tool registration endpoints', async () => {
   const config = await response.json();
   assert.equal(config.oidc_initiation_url, ORIGIN + '/lti/login');
   assert.equal(config.public_jwk_url, ORIGIN + '/lti/jwks');
+  assert.deepEqual(config.redirect_uris, [ORIGIN + '/lti/launch']);
 });
 
 test('Canvas Deep Linking works in an iframe without cookies', async () => {

@@ -333,6 +333,7 @@ function canvasConfig(request: Request): Response {
     description: 'Proof Lab and classroom learning activities',
     oidc_initiation_url: origin + '/lti/login',
     target_link_uri: origin + '/lti/resource',
+    redirect_uris: [origin + '/lti/launch'],
     public_jwk_url: origin + '/lti/jwks',
     scopes: [
       'https://purl.imsglobal.org/spec/lti-ags/scope/lineitem',

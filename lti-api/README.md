@@ -5,9 +5,9 @@ and server-side AGS/NRPS requests. The site remains accountless outside LTI.
 The launch returns an activity picker or resource page directly so Canvas's
 assignment selection iframe does not depend on third-party cookies.
 
-The integration is dormant until a Canvas administrator installs the tool and its
-issuer, client ID, deployment ID, and institution service origin are registered.
-No school has been registered yet.
+The integration needs a Canvas administrator to install the tool and register
+the institution's issuer, client ID, deployment ID, and service origin. A local
+self-hosted Canvas test installation is registered; no school installation is.
 
 ## Deployment
 
@@ -46,7 +46,10 @@ npm run dry-run
 ```
 
 The automated tests simulate a signed Canvas launch, nonce failure, replay
-failure, and an iframe Deep Linking response without browser cookies.
+failure, and an iframe Deep Linking response without browser cookies. A real
+self-hosted Canvas installation also completed an HTTPS Resource Link launch
+and a Deep Linking return on November 25, 2026. Its temporary tunnel URL is
+for local testing only and must not be used as a school installation URL.
 
 ## Current limits
 
@@ -56,7 +59,7 @@ failure, and an iframe Deep Linking response without browser cookies.
   is not attached to the Canvas learner identity, so grades are not posted
   automatically. The AGS score route is a server-side integration primitive.
 - NRPS reads the roster but does not yet show it in the teacher interface.
-- A real Canvas instructor and learner launch, Deep Linking return, roster
-  query, and gradebook update remain required before claiming production
-  interoperability. This cannot be done without an administrator-controlled
-  Canvas installation.
+- An instructor Resource Link launch and Deep Linking return have been tested
+  against self-hosted Canvas. A learner launch, roster query, and gradebook
+  update remain to be tested end to end before claiming production
+  interoperability with a school installation.
