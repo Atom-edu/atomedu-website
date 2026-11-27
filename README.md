@@ -53,6 +53,8 @@ The public pages are static HTML/CSS/JS. There is no site build step; serve the 
 
 **Keep local dependencies temporary.** Each service has its own `package.json` and lockfile. When working on one service, run `npm ci` **in that service only**, perform its checks/deploy, then remove **that service's `node_modules/`** when done. Do not install dependencies for every service, and do not leave multiple large `node_modules/` folders in this repository. The checked-in site and deployed services continue to run without local `node_modules/`. The root site server and Node-based engine tests can run without a root install; install root dependencies only when refreshing bundled MathLive/KaTeX assets. See [`AGENTS.md`](./AGENTS.md) for contributor requirements.
 
+**Restoring the contest API after a fresh checkout:** `contest-api/wrangler.jsonc` is local-only and is not in Git. Copy [`contest-api/wrangler.example.jsonc`](./contest-api/wrangler.example.jsonc) to `contest-api/wrangler.jsonc`, then fill in `d1_databases[0].database_id` using the ID of the **existing** `atom-contest` D1 database in the correct Cloudflare account. That database ID is the only difference between the former local config and the committed example. Do not create a new database or R2 bucket when restoring the checkout. The deployed Worker keeps running if local files are removed; a future contest API deployment needs this config restored. Worker secrets remain in Cloudflare, not in Git. See [`contest-api/README.md`](./contest-api/README.md) before deploying.
+
 The production site publishes from the root of `main` through GitHub Pages. Keep `CNAME` set to `atom-edu.org` so the custom domain stays attached when replacing site files.
 
 ## Math engine

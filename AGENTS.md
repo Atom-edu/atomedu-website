@@ -54,3 +54,7 @@ The design should look like one coherent education product, with readable math a
 4. If an install must remain temporarily for an active local process, state that explicitly and remove it after the process stops. Never treat generated `node_modules/` as a deliverable or commit them.
 
 The deployed site and Workers do not require local `node_modules/` to stay present. Restore a package's dependencies later with `npm ci` in that package only.
+
+## Recreating the ignored contest configuration
+
+`contest-api/wrangler.jsonc` is intentionally ignored by Git. The current local file differs from `contest-api/wrangler.example.jsonc` only by the `d1_databases[0].database_id` of the existing `atom-contest` database. A fresh checkout therefore does not contain a ready-to-deploy contest config. Before developing or deploying `contest-api`, copy the example to `wrangler.jsonc`, find the existing `atom-contest` D1 database ID in the correct Cloudflare account, and set that `database_id`. Keep the existing database and private `atom-contest-private` R2 bucket; do not create replacements just to restore a checkout. Keep `JUDGING_PASSWORD` and `SESSION_SECRET` in Cloudflare Worker secrets, never in Git or this config. See `contest-api/README.md` for the service workflow.
